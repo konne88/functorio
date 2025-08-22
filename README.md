@@ -35,6 +35,8 @@ This will print a blueprint that you can import directly into Factorio.
 This library is still in early alpha. Let's make it better together! Join the [discord](https://discord.gg/UGEcqxpSMn), send me
 pull requests, file github issues, email me, etc. Anything you think is interesting is probably also interesting to me.
 
+I'm not the first person to have looked into the connection between Factorio and programming languages. Bartosz Milewski gave a [talk](https://www.youtube.com/watch?v=A46KQtriYuM) and wrote a great [blog post](https://bartoszmilewski.com/2021/02/16/functorio/) about the connection; and also came up with the name Functorio in his post.
+
 The following sections describe Functorio's features in more detail. At the end of this post you'll see how to build 
 a factory that generates 150 of all the Nauvis sciences (red, green, blue, yellow, purple, black) per minute.
 
