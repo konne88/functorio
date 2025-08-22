@@ -32,7 +32,7 @@ VSCode. The github repo contains a devcontainer so VSCode will automatically ins
 
 This will print a blueprint that you can import directly into Factorio.
 
-This library is still in early alpha. Let's make it better together! Join the discord, send me
+This library is still in early alpha. Let's make it better together! Join the [discord](https://discord.gg/UGEcqxpSMn), send me
 pull requests, file github issues, email me, etc. Anything you think is interesting is probably also interesting to me.
 
 The following sections describe Functorio's features in more detail. At the end of this post you'll see how to build 
@@ -276,7 +276,7 @@ Bus (BusLane Ingredient.processingUnit (105, 1))
 # Future Work
 
 This library is still in early alpha. Let's make it better together! Expect bugs!
-For any problems, please reach out on discord, file a ticket on github or contact me via email.
+For any problems, please reach out on [discord](https://discord.gg/UGEcqxpSMn), file a ticket on github or contact me via email.
 If you have a Lean problem, there are many really helpful people in this [chat](https://leanprover.zulipchat.com/).
 
 There are still a lot of things that need modeling: e.g. other kinds of belts and inserters, 
