@@ -1,0 +1,17 @@
+name = "functorio"
+version = "0.1.0"
+defaultTargets = ["nauvis-150"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "Functorio"
+
+[[lean_exe]]
+name = "nauvis-150"
+root = "Nauvis150"
+
+[[lean_exe]]
+name = "red-science-150"
+root = "RedScience150"
