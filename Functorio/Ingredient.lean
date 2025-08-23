@@ -36,6 +36,7 @@ inductive Ingredient
   | electricEngineUnit
   | flyingRobotFrame
   | lowDensityStructure
+  | rocketFuel
 
   -- Buildings
   | inserter

@@ -157,39 +157,44 @@ def modifyCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell -> Cell) : Matri
 def setCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell) : Matrix w h :=
   modifyCell matrix x y fun _ => cell
 
-def canApplyEntities {w h} (matrix:Matrix w h) (entities:List Entity): Bool :=
-  if entities.length == 0 then false else
-  entities.all fun e =>
-    if e.x >= w then error! s!"Bus is wider than the maximum supported {e.x}" else
-    if e.y >= h then error! s!"Bus is taller than the maximum supported {e.y}" else
+def canApplyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) : Bool :=
+  match entities with
+  | .none => false | .some entities =>
+    entities.all fun e =>
+      if e.x >= w then error! s!"Bus is wider than the maximum supported {e.x}" else
+      if e.y >= h then error! s!"Bus is taller than the maximum supported {e.y}" else
 
-    match matrix[e.x]![e.y]!, e.type with
-    -- Belt/pipe down followed by up cancels out to just a straight belt/pipe, so overriding is fine.
-    | .entity (.beltDown .E), .beltUp .E => true
-    | .entity (.pipeToGround .W), .pipeToGround .E => true
-    -- For splitters, the box below also has to be free.
-    | .empty, .splitter .E .none =>
-      matrix[e.x]![e.y + 1]! == .empty
-    | .empty, _ => true
-    | _,_ => false
+      match matrix[e.x]![e.y]!, e.type with
+      -- Belt/pipe down followed by up cancels out to just a straight belt/pipe, so overriding is fine.
+      | .entity (.beltDown .E), .beltUp .E => true
+      | .entity (.pipeToGround .W), .pipeToGround .E => true
+      -- For splitters, the box below also has to be free.
+      | .empty, .splitter .E .none =>
+        matrix[e.x]![e.y + 1]! == .empty
+      | .empty, _ => true
+      | _,_ => false
 
-def applyEntities {w h} (matrix:Matrix w h) (entities:List Entity): Matrix w h := Id.run do
-  let mut matrix := matrix
+def applyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) : Matrix w h := Id.run do
+  match entities with
+  | .none => error! s!"Trying to apply invalid entities {reprStr entities}"
+  | .some entities =>
 
-  for e in entities do
-    if e.type ==  .splitter .E .none then
-      matrix := matrix.setCell e.x e.y (.entity e.type)
-      matrix := matrix.setCell e.x (e.y + 1) .blocked
-    else
-      matrix := matrix.modifyCell e.x e.y fun cell =>
-        match cell, e.type with
-        -- Belt/pipe down followed by up cancels out to just a straight belt/pipe.
-        | .entity (.beltDown .E), .beltUp .E => .entity (.belt .E)
-        | .entity (.pipeToGround .W), .pipeToGround .E => .entity .pipe
-        | .empty,_ => .entity e.type
-        | _,_ => error! s!"Trying to override entity {reprStr cell} with {reprStr e}"
+    let mut matrix := matrix
 
-  return matrix
+    for e in entities do
+      if e.type ==  .splitter .E .none then
+        matrix := matrix.setCell e.x e.y (.entity e.type)
+        matrix := matrix.setCell e.x (e.y + 1) .blocked
+      else
+        matrix := matrix.modifyCell e.x e.y fun cell =>
+          match cell, e.type with
+          -- Belt/pipe down followed by up cancels out to just a straight belt/pipe.
+          | .entity (.beltDown .E), .beltUp .E => .entity (.belt .E)
+          | .entity (.pipeToGround .W), .pipeToGround .E => .entity .pipe
+          | .empty,_ => .entity e.type
+          | _,_ => error! s!"Trying to override entity {reprStr cell} with {reprStr e}"
+
+    return matrix
 
 def toEntities {w h} (matrix : Matrix w h) : List Entity := Id.run do
   let mut entities : Array Entity := #[]
@@ -346,9 +351,9 @@ def pipeAccess (type:AccessType) (split:Bool) (x y:Nat) : List Entity :=
 
   ramp ++ lane
 
-def beltAccessGetWithSplit (x y:Nat) : List Entity :=
+def beltAccessGetWithSplit (x y:Nat) : Option (List Entity) :=
   -- We don't have enough room to access a belt with a splitter if x < 2
-  if x < 2 then [] else
+  if x < 2 then .none else
 
   let ramp :=
     match y with
@@ -357,12 +362,12 @@ def beltAccessGetWithSplit (x y:Nat) : List Entity :=
     | 2 => [belt x 0 .N]
     | _ => [beltDown x (y-2) .N, beltUp x 0 .N]
 
-  ramp ++ [
+  .some (ramp ++ [
     beltUp (x-2) y .E,
     splitter (x-1) (y-1) .E,
     beltDown x y .E,
     belt x (y-1) .N,
-  ]
+  ])
 
 def beltAccessGetWithoutSplit (x y:Nat) : List Entity :=
   let lane :=
@@ -387,7 +392,7 @@ def beltAccessPut (x y:Nat) : List Entity :=
 
   [belt x y .E, beltDown (x+1) y .E] ++ ramp
 
-def laneAccess (type:AccessType) (config:LaneConfigs) (ingredient:Ingredient) (yIndex:Nat) (x:Nat) : List Entity :=
+def laneAccess (type:AccessType) (config:LaneConfigs) (ingredient:Ingredient) (yIndex:Nat) (x:Nat) : Option (List Entity) :=
   let split := config[yIndex]!.refCount > 0
 
   if ingredient.isLiquid
@@ -401,7 +406,7 @@ def laneAccess (type:AccessType) (config:LaneConfigs) (ingredient:Ingredient) (y
     | .put =>
       beltAccessPut x yIndex
 
-def busTapImpl
+def busTapGeneric
   (inputs:List BusLane')
   (outputs:List Ingredient)
   (factory:Factory [] [] (busTapInterface inputs outputs) [])
@@ -489,14 +494,14 @@ def busTapNoOutput
   (factory:Factory [] [] (busTapInterface inputs []) [])
   (adapterMinHeight:=0)
 : Bus Unit := do
-  let _ <- busTapImpl inputs [] factory adapterMinHeight
+  let _ <- busTapGeneric inputs [] factory adapterMinHeight
 
 def busTap
   {outputIngredient} {outputThroughput} (inputs:List BusLane')
   (factory:Factory [] [] (busTapInterface inputs [outputIngredient]) [])
   (adapterMinHeight:=0)
 : Bus (BusLane outputIngredient outputThroughput) := do
-  let outputs <- busTapImpl inputs [outputIngredient] factory adapterMinHeight
+  let outputs <- busTapGeneric inputs [outputIngredient] factory adapterMinHeight
   return {index := outputs[0]!}
 
 def split {i left input} (l:BusLane i input) (right := input - left) (_:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
@@ -571,8 +576,6 @@ def pipePumps : Bus Unit :=
           else [ belt 0 y .E, belt 1 y .E, belt 2 y .E]
 
       poles ++ lanes
-
-    -- let poles := (List.range' 0 (config.height / 7) 7).map fun y => pole 1 y
 
     let factory : Factory [] (busInterface config) [] (busInterface config) := {
       entities := entities

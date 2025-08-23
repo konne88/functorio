@@ -31,26 +31,31 @@ private def interfaceW  (leftPipes: LeftPipes:= .none) : List InterfaceH :=
   | .middle i => [(i,.E)]
   | .topAndBottom i j => [(i,.E), (j,.E)]
 
-private def beltline x d := [
-  belt x 0 d,
-  belt x 1 d,
-  belt x 2 d,
-  belt x 3 d,
-]
+private def beltline (x:Nat) (dir:Direction) (height:Nat) : List Entity :=
+  (List.range height).map (fun y => belt x y dir)
+
+abbrev Station ns (e w := []) := Factory ns e ns w
 
 private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredient) (outputs:List Ingredient)
-  (leftPipes: LeftPipes:= .none) (rightPipe : Option Ingredient := .none) : Factory (interfaceNS inputs outputs) (interfaceE rightPipe) (interfaceNS inputs outputs) (interfaceW leftPipes)  :=
+  (leftPipes: LeftPipes:= .none) (rightPipe : Option Ingredient := .none)
+  : Station (interfaceNS inputs outputs) (interfaceE rightPipe) (interfaceW leftPipes)  :=
+
+  let fabricator := fabricator 3 0
+  let size := fabricator.width
 
   let inputLen := inputs.length
-  if inputLen > 3 then error! "cannot use more than 3 inputs" else
-  if outputs.length != 1 then error! "cannot use anything but 1 output" else
+  let outputLen := outputs.length
 
-  let inFarLeft    := beltline 0 .N
-  let inNearLeft   := beltline 1 .N
+  if inputLen > 3 then error! "cannot use more than 3 belt inputs" else
+  if outputLen > 2 then error! "cannot use more than 2 belt outputs" else
+  if outputLen == 2 && inputLen == 3 then error! "2 belt outputs cannot be combined with 3 belt inputs" else
 
-  let inNearRight  := beltline 7 .N ++ [inserter 6 2 .E]
-  let outNearRight := beltline 7 .S ++ [inserter 6 2 .W]
-  let outFarRight  := beltline 8 .S ++ [longInserter 6 1 .W]
+  let inFarLeft    := beltline (x:=0) (height:=size+1) .N
+  let inNearLeft   := beltline (x:=1) (height:=size+1) .N
+
+  let inNearRight  := beltline (x:=size+4) (height:=size+1) .N ++ [inserter (size+3) 2 .E]
+  let outNearRight := beltline (x:=size+4) (height:=size+1) .S ++ [inserter (size+3) 2 .W]
+  let outFarRight  := beltline (x:=size+5) (height:=size+1) .S ++ [longInserter (size+3) 1 .W]
 
   let leftPipeEntities : List Entity :=
     match leftPipes with
@@ -59,21 +64,32 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
     | .middle _ => [pipeToGround 2 1 .E]
     | .topAndBottom _ _ => [pipeToGround 2 0 .E, pipeToGround 2 2 .E]
 
+  let rightPipeEntities :=
+    if rightPipe.isNone then [] else [pipeToGround (size+3) 0 .W]
+
   let leftInserters : List Entity :=
     match leftPipes, inputLen with
     | .topAndBottom _ _, 0 => []
     | .topAndBottom _ _, 1 => [inserter 2 1 .W]
     | .topAndBottom _ _, _ => error! s!"cannot use two left pipes and more than 1 input {reprStr outputs}"
+    | .middle _, 0 => []
+    | .middle _, 1 => [inserter 2 2 .W]
     | .middle _, _ => [inserter 2 2 .W, longInserter 2 0 .W]
     | _, 0 => []
     | _, 1 => [inserter 2 2 .W]
     | _, _ => [inserter 2 2 .W, longInserter 2 1 .W]
 
   let interfaceNS : List InterfaceImpl :=[
+     -- inputs belts
      if inputLen > 1 then [0] else [],
      if inputLen > 0 then [1] else [],
-     if inputLen > 2 then [7] else [],
-     if inputLen > 2 then [8] else [7] ,
+     if inputLen > 2 then [(size+4)] else [],
+
+    -- output belts
+    match outputs.length with
+    | 0 => []
+    | 1 => if inputLen > 2 then [(size+5)] else [(size+4)]
+    | _ => [size+4, size+5]
   ].flatten
 
   let interfaceE : List InterfaceImpl := if rightPipe.isNone then [] else [0]
@@ -84,19 +100,25 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
   | .topAndBottom _ _ => [0,2]
 
   crop {
-    width:= 9,
-    height:= 4,
+    width:= size + 6,
+    height:= size + 1,
     entities := [
-        [fabricator 3 0, pole 4 3],
-        -- belts
+        [fabricator, pole (3 + size/2) size],
+        -- input belts
         if inputLen > 0 then inNearLeft else [],
         if inputLen > 1 then inFarLeft else [],
         if inputLen > 2 then inNearRight else [],
-        if inputLen > 2 then outFarRight else outNearRight,
+
+        -- output belts
+        match outputs.length with
+        | 0 => []
+        | 1 => if inputLen > 2 then outFarRight else outNearRight
+        | _ => outFarRight ++ outNearRight,
+
         -- access
         leftInserters,
         leftPipeEntities,
-        if rightPipe.isNone then [] else [pipeToGround 6 0 .W]
+        rightPipeEntities
       ].flatten,
     interface := {
       n := interfaceNS.castToVector!
@@ -108,7 +130,7 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
   }
 
 private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pipesOut:List Ingredient)
-: Factory [] (pipesOut.map (.,.E)) [] (pipesIn.map (.,.E))
+: Station [] (pipesOut.map (.,.E)) (pipesIn.map (.,.E))
 :=
   let interfaceE := pipesOut.toVector.mapIdx fun i _ => (2*i+1 : InterfaceImpl)
   let interfaceW := pipesIn.toVector.mapIdx fun i _ => (2*i+1 : InterfaceImpl)
@@ -129,7 +151,7 @@ private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pi
     name := s!"chemicalPlant {recipe}"
   }
 
-private def poweredRefinery : Factory [] [(.petroleumGas, .E), (.lightOil,.E), (.heavyOil,.E)] [] [(.crudeOil,.E), (.water,.E)] :=
+private def poweredRefinery : Station [] [(.petroleumGas, .E), (.lightOil,.E), (.heavyOil,.E)] [(.crudeOil,.E), (.water,.E)] :=
  {
     width:= 5,
     height:= 7,
@@ -146,13 +168,11 @@ private def poweredRefinery : Factory [] [(.petroleumGas, .E), (.lightOil,.E), (
     name := "advancedOilProcessing"
   }
 
-private def robotFrameInterfaceNS : List InterfaceV :=
-  [(.battery,.N), (.electricEngineUnit,.N), (.electronicCircuit,.N), (.steelPlate,.N), (.flyingRobotFrame,.S)]
-
-private def flyingRobotFrameStation : Factory robotFrameInterfaceNS [] robotFrameInterfaceNS [] :=
+-- Special case, because it takes 4 inputs.
+private def flyingRobotFrameStation : Station [(.battery,.N), (.electricEngineUnit,.N), (.electronicCircuit,.N), (.steelPlate,.N), (.flyingRobotFrame,.S)] :=
   let entities : List Entity :=
-    beltline 0 .N ++
-    beltline 1 .N ++
+    beltline (x:=0) (height:=4) .N ++
+    beltline (x:=1) (height:=4) .N ++
     [
       beltUp 2 0 .N,
       longInserter 2 1 .W,
@@ -168,8 +188,8 @@ private def flyingRobotFrameStation : Factory robotFrameInterfaceNS [] robotFram
       longInserter 7 1 .W,
       inserter 7 2 .E
     ] ++
-    beltline 8 .N ++
-    beltline 9 .S
+    beltline (x:=8) (height:=4) .N ++
+    beltline (x:=9) (height:=4) .S
 
   {
     width:= 10, height:= 4, entities := entities
@@ -182,9 +202,22 @@ private def flyingRobotFrameStation : Factory robotFrameInterfaceNS [] robotFram
     name := "flyingRobotFrame"
   }
 
-private def sulfurStation : Factory [(.sulfur,.S)] [] [(.sulfur,.S)] [(.petroleumGas, .E), (.water,.E)] :=
+-- Special case, because it needs extra inserters to handle the speed.
+def railStation : Station [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
+  let recipe := RecipeName.rail.getRecipe
+  let fabricator := assembler recipe.name.get!
+  let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
+  -- Needs two output inserters to keep up with the production rate.
+  {factory with
+    entities := factory.entities.append [
+      longInserter 6 0 .W
+    ]
+  }
+
+-- Special case, because it has no belt inputs, so taking the pipes underground looks bad
+private def sulfurStation : Station [(.sulfur,.S)] [] [(.petroleumGas, .E), (.water,.E)] :=
   let entities : List Entity :=
-    beltline 4 .S ++
+    beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
       chemicalPlant RecipeName.sulfur.getRecipe.name.get! 0 0,
@@ -202,23 +235,32 @@ private def sulfurStation : Factory [(.sulfur,.S)] [] [(.sulfur,.S)] [(.petroleu
     name := "sulfur"
   }
 
-
-def railStation : Factory [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] []
-                          [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] [] :=
-  let recipe := RecipeName.rail.getRecipe
-  let fabricator := assembler recipe.name.get!
-  let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
-  -- Needs two output inserters to keep up with the production rate.
-  {factory with
-    entities := factory.entities.append [
-      longInserter 6 0 .W
+-- Special case, because it has no belt inputs, so taking the pipes underground looks bad
+private def solidFuelFromLightOilStation : Station [(.solidFuel,.S)] [] [(.lightOil, .E)] :=
+  let entities : List Entity :=
+    beltline (x:=4) (height:=4) .S ++
+    [
+      inserter 3 2 .W,
+      chemicalPlant RecipeName.solidFuelFromLightOil.getRecipe.name.get! 0 0,
+      pole 1 3,
     ]
+
+  {
+    width:=5, height:=4, entities := entities
+    interface := {
+      n := #v[4]
+      e := #v[]
+      s := #v[4]
+      w := #v[0]
+    }
+    name := "solidFuelFromLightOil"
   }
 
-private def sulfuricAcidStation : Factory [(.ironPlate,.N),(.sulfur,.N)] [(.sulfuricAcid,.E)] [(.ironPlate,.N),(.sulfur,.N)] [(.water,.E)] :=
+-- Special case, because it has no belt outputs, so taking the pipes underground looks bad
+private def sulfuricAcidStation : Station [(.ironPlate,.N),(.sulfur,.N)] [(.sulfuricAcid,.E)] [(.water,.E)] :=
   let entities : List Entity :=
-    beltline 0 .N ++
-    beltline 1 .N ++
+    beltline (x:=0) (height:=4) .N ++
+    beltline (x:=1) (height:=4) .N ++
     [
       pipeToGround 2 0 .E,
       longInserter 2 1 .W,
@@ -338,15 +380,66 @@ def stationInterface (recipeName:RecipeName) : List InterfaceV :=
   let outputs := (recipe.outputs.map Prod.snd).map (., .S)
   inputs ++ outputs
 
-def station (recipeName:RecipeName) : Factory (stationInterface recipeName) [] (stationInterface recipeName) [] :=
+def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
   let recipe := recipeName.getRecipe
   let fabricator :=
     match recipeName with
-    | .copperPlate | .ironPlate | .steelPlate | .stoneBrick => furnace
-    | .sulfur | .plasticBar | .battery | .sulfuricAcid => chemicalPlant recipe.name.get!
-    | _ => assembler recipe.name.get!
+    | .copperPlate
+    | .ironPlate
+    | .steelPlate
+    | .stoneBrick => furnace
 
-  let factory : Factory (stationInterface recipeName) [] (stationInterface recipeName) [] :=
+    | .rocket => rocketSilo
+
+    | .sulfur
+    | .plasticBar
+    | .battery
+    | .sulfuricAcid
+    | .solidFuelFromLightOil
+    | .lubricant
+    | .heavyOilCracking
+    | .lightOilCracking => chemicalPlant recipe.name.get!
+
+    | .advancedOilProcessing => refinery recipe.name.get!
+
+    | .electricEngineUnit
+    | .utilitySciencePack
+    | .productionSciencePack
+    | .militarySciencePack
+    | .chemicalSciencePack
+    | .logisticSciencePack
+    | .automationSciencePack
+    | .stoneWall
+    | .grenade
+    | .piercingRoundsMagazine
+    | .firearmMagazine
+    | .productivityModule
+    | .electricFurnace
+    | .rail
+    | .pipe
+    | .transportBelt
+    | .inserter
+    | .lowDensityStructure
+    | .flyingRobotFrame
+    | .engineUnit
+    | .processingUnit
+    | .advancedCircuit
+    | .electronicCircuit
+    | .ironStick
+    | .copperCable
+    | .ironGearWheel
+    | .rocketFuel => assembler recipe.name.get!
+
+    | .cryogenicSciencePack
+    | .coldFluoroketone
+    | .hotFluoroketone
+    | .lithiumPlate
+    | .lithium
+    | .solidFuelFromAmmonia
+    | .icePlatform
+    | .ammonia => assembler "not-yet-supported"
+
+  let factory : Station (stationInterface recipeName) :=
     match recipeName with
     | .flyingRobotFrame => flyingRobotFrameStation
     | .rail => railStation
@@ -374,6 +467,16 @@ def station (recipeName:RecipeName) : Factory (stationInterface recipeName) [] (
       let factory := row
         (pipesIn [.sulfuricAcid] (underground:=true))
         (stationWithoutPipes fabricator [.electronicCircuit, .advancedCircuit] [.processingUnit] (.middle .sulfuricAcid))
+      factory
+    | .rocketFuel =>
+      let factory := row
+        (pipesIn [.lightOil] (underground:=true))
+        (stationWithoutPipes fabricator [.solidFuel] [.rocketFuel] (.middle .lightOil))
+      factory
+     | .solidFuelFromLightOil =>
+      let factory := row
+        (pipesIn [.lightOil])
+        solidFuelFromLightOilStation
       factory
     | .sulfuricAcid => row3
       (pipesIn [.water] (underground:=true))
@@ -459,7 +562,7 @@ def eraseRectangle (x y width height:Nat) (es:List Entity) : List Entity :=
 
 def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let recipe := recipeName.getRecipe
-  if config.providerChestCapacity == 0 || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
+  if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
 
   let outputOffset := offsets[interface.length-1]!
 
@@ -557,11 +660,21 @@ def assemblyLine [Config] (recipeName:RecipeName) (stations:Nat) : Factory [] []
 
     capN (columnList factories.toList.reverse)
 
+def tupleType {T} (ts:List T) (type:T->Type) : Type :=
+  match ts with
+  | [] => Unit
+  | [t] => type t
+  | t::types => type t × tupleType types type
+
+def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index:=0) : tupleType ts type :=
+  match ts with
+  | [] => ()
+  | [t] => value t index
+  | t::_::_ => (value t index, tuple value (index + 1))
+
 @[simp]
-def BusAssemblyLineReturn (recipeName: RecipeName) (stations:Nat): Type :=
-   -- TODO: need to support more arguments, and not be 0
-  let (items, ingredient) := recipeName.getRecipe.outputs[0]!
-  Bus (BusLane ingredient (providedThroughput recipeName stations ingredient items))
+def BusAssemblyLineReturn (recipeName: RecipeName) (stations:Nat) : Type :=
+  Bus (tupleType recipeName.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (providedThroughput recipeName stations ingredient items))
 
 @[simp]
 def BusAssemblyLineType (recipeName:RecipeName) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := recipeName.getRecipe.inputs): Type :=
@@ -584,8 +697,12 @@ def processBusAssemblyLineArguments
   )
 
 def busAssemblyLine [config:Config] (recipeName: RecipeName) (stations:Nat) : BusAssemblyLineType recipeName stations :=
-  processBusAssemblyLineArguments recipeName stations
-  fun inputs =>
+  processBusAssemblyLineArguments recipeName stations fun inputs => do
     let factory := assemblyLine recipeName stations
     let namedFactory := factory.setName s!"{stations}x{reprStr recipeName}"
-    busTap inputs (unsafeFactoryCast namedFactory) (adapterMinHeight := config.adapterMinHeight)
+    let indexes <- busTapGeneric
+      inputs
+      (recipeName.getRecipe.outputs.map Prod.snd)
+      (unsafeFactoryCast namedFactory)
+      (adapterMinHeight := config.adapterMinHeight)
+    return tuple (fun (_, _) i => {index:=indexes[i]!})

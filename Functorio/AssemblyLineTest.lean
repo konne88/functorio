@@ -73,6 +73,24 @@ import Functorio.Ascii
   ^ ^     v
 "
 
+#guard (station .solidFuelFromLightOil).toAscii == s!"
+  ^     v
+  ||*** ↓
+  | *C* ↓
+  | ***⇨↓
+  |  ⚡  ↓
+  ^     v
+"
+
+#guard (station .rocketFuel).toAscii == s!"
+  ^ ^     v
+  | ↑ *** ↓
+  |┤↑├*A* ↓
+  | ↑⇨***⇨↓
+  | ↑  ⚡  ↓
+  ^ ^     v
+"
+
 #guard (station .heavyOilCracking).toAscii == s!"
   ^ ^     v
   | |     |
@@ -82,6 +100,7 @@ import Functorio.Ascii
   | |  ⚡  |
   ^ ^     v
 "
+
 #guard (station .advancedOilProcessing).toAscii == s!"
   ^ ^       v v v
   | |       | | |
@@ -92,6 +111,21 @@ import Functorio.Ascii
   | | *****┤| |├|
   | |   ⚡   | | |
   ^ ^       v v v
+"
+
+#guard (station .rocket).toAscii == s!"
+ ^^           ^
+ ↑↑ ********* ↑
+ ↑↑↠********* ↑
+ ↑↑⇨*********⇦↑
+ ↑↑ ********* ↑
+ ↑↑ ****L**** ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑     ⚡     ↑
+ ^^           ^
 "
 
 #guard (assemblyLine .advancedCircuit 3).toAscii == s!"

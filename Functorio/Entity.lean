@@ -31,6 +31,7 @@ inductive EntityType
   | roboport
   | passiveProviderChest (capacity:Option Nat)
   | refinedConcrete
+  | rocketSilo
   deriving DecidableEq, Inhabited, Repr
 
 structure Entity where
@@ -77,6 +78,8 @@ def passiveProviderChest x y (capacity : Option Nat := .none) := ({x:=x,y:=y,typ
 
 def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
 
+def rocketSilo x y := ({x:=x,y:=y,type:=.rocketSilo} : Entity)
+
 namespace Entity
 
 def width (e:Entity) : Nat :=
@@ -89,6 +92,7 @@ def width (e:Entity) : Nat :=
   | .assembler _ _ | .furnace | .chemicalPlant _ _ => 3
   | .roboport => 4
   | .refinery _ _ => 5
+  | .rocketSilo => 9
 
 def height (e:Entity) : Nat :=
   match e.type with
@@ -100,6 +104,7 @@ def height (e:Entity) : Nat :=
   | .assembler _ _ | .furnace | .chemicalPlant _ _ => 3
   | .roboport => 4
   | .refinery _ _ => 5
+  | .rocketSilo => 9
 
 def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {
   x := entity.x + dx

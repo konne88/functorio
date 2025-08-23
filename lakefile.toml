@@ -15,3 +15,7 @@ root = "Nauvis150"
 [[lean_exe]]
 name = "red-science-150"
 root = "RedScience150"
+
+[[lean_exe]]
+name = "rocket"
+root = "Rocket"

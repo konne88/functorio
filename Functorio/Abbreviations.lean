@@ -31,8 +31,9 @@ def Battery := BusLane .battery
 def Engine := BusLane .engineUnit
 def IronStick := BusLane .ironStick
 def Sulfur := BusLane .sulfur
-def Pipe := BusLane .pipe
+def RocketFuel := BusLane .rocketFuel
 
+def Pipe := BusLane .pipe
 def Inserter := BusLane .inserter
 def YellowBelt := BusLane .transportBelt
 def Furnace := BusLane .electricFurnace

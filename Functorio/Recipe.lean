@@ -41,6 +41,7 @@ inductive RecipeName
   | electricEngineUnit
   | flyingRobotFrame
   | lowDensityStructure
+  | rocketFuel
 
   -- Buildings
   | inserter
@@ -63,6 +64,9 @@ inductive RecipeName
   | militarySciencePack    -- black
   | productionSciencePack  -- purple
   | utilitySciencePack     -- yellow
+
+  -- Space
+  | rocket
 
   -- Aquilo
   | ammonia
@@ -89,6 +93,9 @@ def speedUp (recipeName:RecipeName) : Fraction :=
 
   -- refinery
   | .advancedOilProcessing => 1
+
+  -- rocket silo
+  | .rocket => 1
 
   -- chemical plant
   | .lightOilCracking
@@ -135,9 +142,22 @@ def speedUp (recipeName:RecipeName) : Fraction :=
   | .militarySciencePack
   | .productionSciencePack
   | .utilitySciencePack
-  | .icePlatform => 5/4
+  | .icePlatform
+  | .rocketFuel => 5/4
 
 def getRecipe : RecipeName → Recipe
+| .rocket => {
+    name := .none
+    inputs := [(50, .processingUnit), (50, .lowDensityStructure), (50, .rocketFuel)],
+    outputs := []
+    time := 150
+}
+| .rocketFuel => {
+    name := "rocket-fuel"
+    inputs := [(10, .lightOil), (10, .solidFuel)],
+    outputs := [(1, .rocketFuel)],
+    time := 15
+}
 | .ammonia => {
     name := "ammonia",
     inputs := [(50, .ammoniacalSolution)],
@@ -145,7 +165,7 @@ def getRecipe : RecipeName → Recipe
     time := 1
 }
 | .icePlatform => {
-    name := "icePlatform",
+    name := "ice-platform",
     inputs := [(400, .ammonia), (50, .ice)],
     outputs := [(1, .icePlatform)],
     time := 30
@@ -163,7 +183,7 @@ def getRecipe : RecipeName → Recipe
     time := 20
 }
 | .lithiumPlate => {
-    name := "lithiumPlate",
+    name := "lithium-plate",
     inputs := [(1, .lithium)],
     outputs := [(1, .lithiumPlate)],
     time := 64/10
@@ -181,7 +201,7 @@ def getRecipe : RecipeName → Recipe
     time := 5
 }
 | .cryogenicSciencePack => {
-    name := "cryogenicSciencePack",
+    name := "cryogenic-science-pack",
     inputs := [(6, .coldFluoroketone), (3, .ice), (1, .lithiumPlate)],
     outputs := [(1, .cryogenicSciencePack), (3, .hotFluoroketone)],
     time := 20
@@ -283,7 +303,7 @@ def getRecipe : RecipeName → Recipe
     time := 1
   }
 | .solidFuelFromLightOil => {
-    name := "solid-fuel",
+    name := "solid-fuel-from-light-oil",
     inputs := [(10, .lightOil)],
     outputs := [(1, .solidFuel)],
     time := 2
