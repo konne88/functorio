@@ -73,6 +73,24 @@ import Functorio.Ascii
   ^ ^     v
 "
 
+#guard (station .solidFuelFromLightOil).toAscii == s!"
+  ^     v
+  ||*** ↓
+  | *C* ↓
+  | ***⇨↓
+  |  ⚡  ↓
+  ^     v
+"
+
+#guard (station .rocketFuel).toAscii == s!"
+  ^ ^     v
+  | ↑ *** ↓
+  |┤↑├*A* ↓
+  | ↑⇨***⇨↓
+  | ↑  ⚡  ↓
+  ^ ^     v
+"
+
 #guard (station .heavyOilCracking).toAscii == s!"
   ^ ^     v
   | |     |

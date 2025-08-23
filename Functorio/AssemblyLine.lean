@@ -72,6 +72,8 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
     | .topAndBottom _ _, 0 => []
     | .topAndBottom _ _, 1 => [inserter 2 1 .W]
     | .topAndBottom _ _, _ => error! s!"cannot use two left pipes and more than 1 input {reprStr outputs}"
+    | .middle _, 0 => []
+    | .middle _, 1 => [inserter 2 2 .W]
     | .middle _, _ => [inserter 2 2 .W, longInserter 2 0 .W]
     | _, 0 => []
     | _, 1 => [inserter 2 2 .W]
@@ -166,6 +168,7 @@ private def poweredRefinery : Station [] [(.petroleumGas, .E), (.lightOil,.E), (
     name := "advancedOilProcessing"
   }
 
+-- Special case, because it takes 4 inputs.
 private def flyingRobotFrameStation : Station [(.battery,.N), (.electricEngineUnit,.N), (.electronicCircuit,.N), (.steelPlate,.N), (.flyingRobotFrame,.S)] :=
   let entities : List Entity :=
     beltline (x:=0) (height:=4) .N ++
@@ -199,6 +202,19 @@ private def flyingRobotFrameStation : Station [(.battery,.N), (.electricEngineUn
     name := "flyingRobotFrame"
   }
 
+-- Special case, because it needs extra inserters to handle the speed.
+def railStation : Station [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
+  let recipe := RecipeName.rail.getRecipe
+  let fabricator := assembler recipe.name.get!
+  let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
+  -- Needs two output inserters to keep up with the production rate.
+  {factory with
+    entities := factory.entities.append [
+      longInserter 6 0 .W
+    ]
+  }
+
+-- Special case, because it has no belt inputs, so taking the pipes underground looks bad
 private def sulfurStation : Station [(.sulfur,.S)] [] [(.petroleumGas, .E), (.water,.E)] :=
   let entities : List Entity :=
     beltline (x:=4) (height:=4) .S ++
@@ -219,18 +235,28 @@ private def sulfurStation : Station [(.sulfur,.S)] [] [(.petroleumGas, .E), (.wa
     name := "sulfur"
   }
 
-
-def railStation : Station [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
-  let recipe := RecipeName.rail.getRecipe
-  let fabricator := assembler recipe.name.get!
-  let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
-  -- Needs two output inserters to keep up with the production rate.
-  {factory with
-    entities := factory.entities.append [
-      longInserter 6 0 .W
+-- Special case, because it has no belt inputs, so taking the pipes underground looks bad
+private def solidFuelFromLightOilStation : Station [(.solidFuel,.S)] [] [(.lightOil, .E)] :=
+  let entities : List Entity :=
+    beltline (x:=4) (height:=4) .S ++
+    [
+      inserter 3 2 .W,
+      chemicalPlant RecipeName.solidFuelFromLightOil.getRecipe.name.get! 0 0,
+      pole 1 3,
     ]
+
+  {
+    width:=5, height:=4, entities := entities
+    interface := {
+      n := #v[4]
+      e := #v[]
+      s := #v[4]
+      w := #v[0]
+    }
+    name := "solidFuelFromLightOil"
   }
 
+-- Special case, because it has no belt outputs, so taking the pipes underground looks bad
 private def sulfuricAcidStation : Station [(.ironPlate,.N),(.sulfur,.N)] [(.sulfuricAcid,.E)] [(.water,.E)] :=
   let entities : List Entity :=
     beltline (x:=0) (height:=4) .N ++
@@ -253,34 +279,6 @@ private def sulfuricAcidStation : Station [(.ironPlate,.N),(.sulfur,.N)] [(.sulf
     }
     name := "sulfuricAcid"
   }
-
--- private def rocketStation : Station [(.processingUnit,.N),(.lowDensityStructure,.N),(.rocketFuel,.N)] :=
---   let entities : List Entity :=
---     beltline 0 .N ++
---     beltline 1 .N ++
---     beltline 1 .N ++
---     [
---       rocketSilo
-
-
-
---       -- pipeToGround 2 0 .E,
---       -- longInserter 2 1 .W,
---       -- inserter 2 2 .W,
---       -- chemicalPlant RecipeName.sulfuricAcid.getRecipe.name.get! 3 0,
---       pole 4 3,
---     ]
-
---   {
---     width:=6, height:=4, entities := entities
---     interface := {
---       n := #v[0,1]
---       e := #v[0]
---       s := #v[0,1]
---       w := #v[0]
---     }
---     name := "sulfuricAcid"
---   }
 
 private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
 : Factory (ingredients.map (.,.N)) (ingredients.map (.,.E)) (ingredients.map (.,.N)) []
@@ -386,10 +384,60 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
   let recipe := recipeName.getRecipe
   let fabricator :=
     match recipeName with
-    | .copperPlate | .ironPlate | .steelPlate | .stoneBrick => furnace
+    | .copperPlate
+    | .ironPlate
+    | .steelPlate
+    | .stoneBrick => furnace
+
     | .rocket => rocketSilo
-    | .sulfur | .plasticBar | .battery | .sulfuricAcid => chemicalPlant recipe.name.get!
-    | _ => assembler recipe.name.get!
+
+    | .sulfur
+    | .plasticBar
+    | .battery
+    | .sulfuricAcid
+    | .solidFuelFromLightOil
+    | .lubricant
+    | .heavyOilCracking
+    | .lightOilCracking => chemicalPlant recipe.name.get!
+
+    | .advancedOilProcessing => refinery recipe.name.get!
+
+    | .electricEngineUnit
+    | .utilitySciencePack
+    | .productionSciencePack
+    | .militarySciencePack
+    | .chemicalSciencePack
+    | .logisticSciencePack
+    | .automationSciencePack
+    | .stoneWall
+    | .grenade
+    | .piercingRoundsMagazine
+    | .firearmMagazine
+    | .productivityModule
+    | .electricFurnace
+    | .rail
+    | .pipe
+    | .transportBelt
+    | .inserter
+    | .lowDensityStructure
+    | .flyingRobotFrame
+    | .engineUnit
+    | .processingUnit
+    | .advancedCircuit
+    | .electronicCircuit
+    | .ironStick
+    | .copperCable
+    | .ironGearWheel
+    | .rocketFuel => assembler recipe.name.get!
+
+    | .cryogenicSciencePack
+    | .coldFluoroketone
+    | .hotFluoroketone
+    | .lithiumPlate
+    | .lithium
+    | .solidFuelFromAmmonia
+    | .icePlatform
+    | .ammonia => assembler "not-yet-supported"
 
   let factory : Station (stationInterface recipeName) :=
     match recipeName with
@@ -419,6 +467,16 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let factory := row
         (pipesIn [.sulfuricAcid] (underground:=true))
         (stationWithoutPipes fabricator [.electronicCircuit, .advancedCircuit] [.processingUnit] (.middle .sulfuricAcid))
+      factory
+    | .rocketFuel =>
+      let factory := row
+        (pipesIn [.lightOil] (underground:=true))
+        (stationWithoutPipes fabricator [.solidFuel] [.rocketFuel] (.middle .lightOil))
+      factory
+     | .solidFuelFromLightOil =>
+      let factory := row
+        (pipesIn [.lightOil])
+        solidFuelFromLightOilStation
       factory
     | .sulfuricAcid => row3
       (pipesIn [.water] (underground:=true))
@@ -504,7 +562,7 @@ def eraseRectangle (x y width height:Nat) (es:List Entity) : List Entity :=
 
 def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let recipe := recipeName.getRecipe
-  if config.providerChestCapacity == 0 || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
+  if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
 
   let outputOffset := offsets[interface.length-1]!
 

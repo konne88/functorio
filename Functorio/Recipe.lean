@@ -153,7 +153,7 @@ def getRecipe : RecipeName → Recipe
     time := 150
 }
 | .rocketFuel => {
-    name := "rocketFuel"
+    name := "rocket-fuel"
     inputs := [(10, .lightOil), (10, .solidFuel)],
     outputs := [(1, .rocketFuel)],
     time := 15
@@ -165,7 +165,7 @@ def getRecipe : RecipeName → Recipe
     time := 1
 }
 | .icePlatform => {
-    name := "icePlatform",
+    name := "ice-platform",
     inputs := [(400, .ammonia), (50, .ice)],
     outputs := [(1, .icePlatform)],
     time := 30
@@ -183,7 +183,7 @@ def getRecipe : RecipeName → Recipe
     time := 20
 }
 | .lithiumPlate => {
-    name := "lithiumPlate",
+    name := "lithium-plate",
     inputs := [(1, .lithium)],
     outputs := [(1, .lithiumPlate)],
     time := 64/10
@@ -201,7 +201,7 @@ def getRecipe : RecipeName → Recipe
     time := 5
 }
 | .cryogenicSciencePack => {
-    name := "cryogenicSciencePack",
+    name := "cryogenic-science-pack",
     inputs := [(6, .coldFluoroketone), (3, .ice), (1, .lithiumPlate)],
     outputs := [(1, .cryogenicSciencePack), (3, .hotFluoroketone)],
     time := 20
@@ -303,7 +303,7 @@ def getRecipe : RecipeName → Recipe
     time := 1
   }
 | .solidFuelFromLightOil => {
-    name := "solid-fuel",
+    name := "solid-fuel-from-light-oil",
     inputs := [(10, .lightOil)],
     outputs := [(1, .solidFuel)],
     time := 2
