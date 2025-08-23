@@ -41,6 +41,7 @@ inductive RecipeName
   | electricEngineUnit
   | flyingRobotFrame
   | lowDensityStructure
+  | rocketFuel
 
   -- Buildings
   | inserter
@@ -63,6 +64,9 @@ inductive RecipeName
   | militarySciencePack    -- black
   | productionSciencePack  -- purple
   | utilitySciencePack     -- yellow
+
+  -- Space
+  | rocket
 
   -- Aquilo
   | ammonia
@@ -89,6 +93,9 @@ def speedUp (recipeName:RecipeName) : Fraction :=
 
   -- refinery
   | .advancedOilProcessing => 1
+
+  -- rocket silo
+  | .rocket => 1
 
   -- chemical plant
   | .lightOilCracking
@@ -135,9 +142,22 @@ def speedUp (recipeName:RecipeName) : Fraction :=
   | .militarySciencePack
   | .productionSciencePack
   | .utilitySciencePack
-  | .icePlatform => 5/4
+  | .icePlatform
+  | .rocketFuel => 5/4
 
 def getRecipe : RecipeName → Recipe
+| .rocket => {
+    name := .none
+    inputs := [(50, .processingUnit), (50, .lowDensityStructure), (50, .rocketFuel)],
+    outputs := []
+    time := 150
+}
+| .rocketFuel => {
+    name := "rocketFuel"
+    inputs := [(10, .lightOil), (10, .solidFuel)],
+    outputs := [(1, .rocketFuel)],
+    time := 15
+}
 | .ammonia => {
     name := "ammonia",
     inputs := [(50, .ammoniacalSolution)],

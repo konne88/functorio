@@ -557,11 +557,21 @@ def assemblyLine [Config] (recipeName:RecipeName) (stations:Nat) : Factory [] []
 
     capN (columnList factories.toList.reverse)
 
+def tupleType {T} (ts:List T) (type:T->Type) : Type :=
+  match ts with
+  | [] => Unit
+  | [t] => type t
+  | t::types => type t × tupleType types type
+
+def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index:=0) : tupleType ts type :=
+  match ts with
+  | [] => ()
+  | [t] => value t index
+  | t::_::_ => (value t index, tuple value (index + 1))
+
 @[simp]
-def BusAssemblyLineReturn (recipeName: RecipeName) (stations:Nat): Type :=
-   -- TODO: need to support more arguments, and not be 0
-  let (items, ingredient) := recipeName.getRecipe.outputs[0]!
-  Bus (BusLane ingredient (providedThroughput recipeName stations ingredient items))
+def BusAssemblyLineReturn (recipeName: RecipeName) (stations:Nat) : Type :=
+  Bus (tupleType recipeName.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (providedThroughput recipeName stations ingredient items))
 
 @[simp]
 def BusAssemblyLineType (recipeName:RecipeName) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := recipeName.getRecipe.inputs): Type :=
@@ -584,8 +594,12 @@ def processBusAssemblyLineArguments
   )
 
 def busAssemblyLine [config:Config] (recipeName: RecipeName) (stations:Nat) : BusAssemblyLineType recipeName stations :=
-  processBusAssemblyLineArguments recipeName stations
-  fun inputs =>
+  processBusAssemblyLineArguments recipeName stations fun inputs => do
     let factory := assemblyLine recipeName stations
     let namedFactory := factory.setName s!"{stations}x{reprStr recipeName}"
-    busTap inputs (unsafeFactoryCast namedFactory) (adapterMinHeight := config.adapterMinHeight)
+    let indexes <- busTapGeneric
+      inputs
+      (recipeName.getRecipe.outputs.map Prod.snd)
+      (unsafeFactoryCast namedFactory)
+      (adapterMinHeight := config.adapterMinHeight)
+    return tuple (fun (_, _) i => {index:=indexes[i]!})

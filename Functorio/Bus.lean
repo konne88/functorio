@@ -401,7 +401,7 @@ def laneAccess (type:AccessType) (config:LaneConfigs) (ingredient:Ingredient) (y
     | .put =>
       beltAccessPut x yIndex
 
-def busTapImpl
+def busTapGeneric
   (inputs:List BusLane')
   (outputs:List Ingredient)
   (factory:Factory [] [] (busTapInterface inputs outputs) [])
@@ -489,14 +489,14 @@ def busTapNoOutput
   (factory:Factory [] [] (busTapInterface inputs []) [])
   (adapterMinHeight:=0)
 : Bus Unit := do
-  let _ <- busTapImpl inputs [] factory adapterMinHeight
+  let _ <- busTapGeneric inputs [] factory adapterMinHeight
 
 def busTap
   {outputIngredient} {outputThroughput} (inputs:List BusLane')
   (factory:Factory [] [] (busTapInterface inputs [outputIngredient]) [])
   (adapterMinHeight:=0)
 : Bus (BusLane outputIngredient outputThroughput) := do
-  let outputs <- busTapImpl inputs [outputIngredient] factory adapterMinHeight
+  let outputs <- busTapGeneric inputs [outputIngredient] factory adapterMinHeight
   return {index := outputs[0]!}
 
 def split {i left input} (l:BusLane i input) (right := input - left) (_:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
@@ -571,8 +571,6 @@ def pipePumps : Bus Unit :=
           else [ belt 0 y .E, belt 1 y .E, belt 2 y .E]
 
       poles ++ lanes
-
-    -- let poles := (List.range' 0 (config.height / 7) 7).map fun y => pole 1 y
 
     let factory : Factory [] (busInterface config) [] (busInterface config) := {
       entities := entities
