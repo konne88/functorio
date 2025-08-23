@@ -82,6 +82,7 @@ import Functorio.Ascii
   | |  ⚡  |
   ^ ^     v
 "
+
 #guard (station .advancedOilProcessing).toAscii == s!"
   ^ ^       v v v
   | |       | | |
@@ -92,6 +93,21 @@ import Functorio.Ascii
   | | *****┤| |├|
   | |   ⚡   | | |
   ^ ^       v v v
+"
+
+#guard (station .rocket).toAscii == s!"
+ ^^           ^
+ ↑↑ ********* ↑
+ ↑↑↠********* ↑
+ ↑↑⇨*********⇦↑
+ ↑↑ ********* ↑
+ ↑↑ ****L**** ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑ ********* ↑
+ ↑↑     ⚡     ↑
+ ^^           ^
 "
 
 #guard (assemblyLine .advancedCircuit 3).toAscii == s!"

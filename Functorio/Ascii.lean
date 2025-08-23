@@ -71,7 +71,7 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .roboport => 'R'
   | .pump _ => 'P'
   | .passiveProviderChest _ => '🄿'
-  | .rocketSilo => '🚀'
+  | .rocketSilo => 'L'  -- L is for Launch-site
 
   | .refinedConcrete => .none
 

@@ -44,8 +44,11 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
   let size := fabricator.width
 
   let inputLen := inputs.length
-  if inputLen > 3 then error! "cannot use more than 3 inputs" else
-  if outputs.length != 1 then error! "cannot use anything but 1 output" else
+  let outputLen := outputs.length
+
+  if inputLen > 3 then error! "cannot use more than 3 belt inputs" else
+  if outputLen > 2 then error! "cannot use more than 2 belt outputs" else
+  if outputLen == 2 && inputLen == 3 then error! "2 belt outputs cannot be combined with 3 belt inputs" else
 
   let inFarLeft    := beltline (x:=0) (height:=size+1) .N
   let inNearLeft   := beltline (x:=1) (height:=size+1) .N
@@ -61,6 +64,9 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
     | .middle _ => [pipeToGround 2 1 .E]
     | .topAndBottom _ _ => [pipeToGround 2 0 .E, pipeToGround 2 2 .E]
 
+  let rightPipeEntities :=
+    if rightPipe.isNone then [] else [pipeToGround (size+3) 0 .W]
+
   let leftInserters : List Entity :=
     match leftPipes, inputLen with
     | .topAndBottom _ _, 0 => []
@@ -72,10 +78,16 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
     | _, _ => [inserter 2 2 .W, longInserter 2 1 .W]
 
   let interfaceNS : List InterfaceImpl :=[
+     -- inputs belts
      if inputLen > 1 then [0] else [],
      if inputLen > 0 then [1] else [],
      if inputLen > 2 then [(size+4)] else [],
-     if inputLen > 2 then [(size+5)] else [(size+4)] ,
+
+    -- output belts
+    match outputs.length with
+    | 0 => []
+    | 1 => if inputLen > 2 then [(size+5)] else [(size+4)]
+    | _ => [size+4, size+5]
   ].flatten
 
   let interfaceE : List InterfaceImpl := if rightPipe.isNone then [] else [0]
@@ -86,19 +98,25 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
   | .topAndBottom _ _ => [0,2]
 
   crop {
-    width:= 9,
-    height:= 4,
+    width:= size + 6,
+    height:= size + 1,
     entities := [
-        [fabricator, pole 4 3],
-        -- belts
+        [fabricator, pole (3 + size/2) size],
+        -- input belts
         if inputLen > 0 then inNearLeft else [],
         if inputLen > 1 then inFarLeft else [],
         if inputLen > 2 then inNearRight else [],
-        if inputLen > 2 then outFarRight else outNearRight,
+
+        -- output belts
+        match outputs.length with
+        | 0 => []
+        | 1 => if inputLen > 2 then outFarRight else outNearRight
+        | _ => outFarRight ++ outNearRight,
+
         -- access
         leftInserters,
         leftPipeEntities,
-        if rightPipe.isNone then [] else [pipeToGround (size+3) 0 .W]
+        rightPipeEntities
       ].flatten,
     interface := {
       n := interfaceNS.castToVector!
