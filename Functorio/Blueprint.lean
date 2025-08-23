@@ -45,6 +45,7 @@ private def entityName (e:Entity) : String :=
   | .roboport => "roboport"
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
+  | .rocketSilo => "rocket-silo"
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
@@ -52,7 +53,7 @@ private def entityDirection (e:Entity) : Option Direction :=
   | .pipeToGround d | .pump d | .inserter d | .longInserter d
   | .assembler _ d | .chemicalPlant _ d | .refinery _ d => d
   | .pipe | .pole | .bigPole | .furnace | .roboport | .passiveProviderChest _
-  | .refinedConcrete => .none
+  | .refinedConcrete | .rocketSilo => .none
 
 private def entityProps (e:Entity) : List (String × Json):=
   match e.type with
@@ -63,6 +64,7 @@ private def entityProps (e:Entity) : List (String × Json):=
   | .passiveProviderChest capacity => match capacity with | .none => [] | .some capacity => [("bar", capacity)]
   | .splitter _ priority => match priority with | .none => [] | .some p => [("output_priority", p)]
   | .assembler r _ | .chemicalPlant r _ | .refinery r _ => [("recipe", r), ("recipe_quality", "normal")]
+  | .rocketSilo => [("recipe", "rocket-part"), ("recipe_quality", "normal")]
 
 private def directionToNat (d:Direction) :=
   match d with
