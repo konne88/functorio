@@ -23,6 +23,10 @@ In addition to making it easy to write factories, Functiorio also makes it safe!
 
 ![](figures/red-science-stats.png)
 
+[Here](Nauvis150.lean)'s a factory that is a bit more complicated, producing 150 science per minute for all the sciences on Nauvis, and here's a video walkthrough of the factory:
+
+[![](figures/nauvis150-play.png)](https://youtu.be/HK3KwjN-Dtc)
+
 To get started download the [github repo](https://github.com/konne88/factorio2) and open it in
 VSCode. The github repo contains a devcontainer so VSCode will automatically install all necessary dependencies and you can just run:
 
