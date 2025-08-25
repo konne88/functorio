@@ -9,49 +9,67 @@ import Functorio.Fraction
 import Functorio.Util
 import Functorio.Config
 
+def defaultCategoryFabricator : RecipeCategory -> Fabricator
+| .chemistry
+| .organicOrChemistry
+| .chemistryOrCryogenics => .chemicalPlant
+| .basicCrafting
+| .crafting
+| .advancedCrafting
+| .craftingWithFluid
+| .craftingWithFluidOrMetallurgy
+| .electronics
+| .electronicsOrAssembling
+| .electronicsWithFluid
+| .metallurgyOrAssembling
+| .organicOrAssembling
+| .pressing
+| .parameters
+| .cryogenicsOrAssembling => .assemblingMachine3
+| .oilProcessing => .oilRefinery
+| .rocketBuilding => .rocketSilo
+| .smelting => .electricFurnace
+| .captiveSpawnerProcess => .captiveBiterSpawner
+| .centrifuging => .centrifuge
+| .crushing => .crusher
+| .cryogenics => .cryogenicPlant
+| .electromagnetics => .electromagneticPlant
+| .metallurgy => .foundry
+| .organic
+| .organicOrHandCrafting => .biochamber
+| .recyclingOrHandCrafting
+| .recycling => .recycler
+
+def fabricatorEntity (recipeName:RecipeName) (x y: Nat) : Entity :=
+  let recipe := recipeName.getRecipe
+  let fabricator := defaultCategoryFabricator recipeName.getRecipe.category
+
+  match fabricator with
+  | .assemblingMachine3 => assembler recipe.name x y
+  | .chemicalPlant => chemicalPlant recipe.name x y
+  | .electricFurnace => furnace x y
+  | .oilRefinery => refinery recipe.name x y
+  | .rocketSilo => rocketSilo x y
+
+  | .assemblingMachine1
+  | .assemblingMachine2
+  | .biochamber
+  | .captiveBiterSpawner
+  | .centrifuge
+  | .character
+  | .crusher
+  | .cryogenicPlant
+  | .electromagneticPlant
+  | .foundry
+  | .recycler
+  | .steelFurnace
+  | .stoneFurnace => error! s!"{reprStr fabricator} not yet supported"
+
 namespace RecipeName
 
 @[simp]
 def speedUp (recipeName:RecipeName) : Fraction :=
-  match recipeName.getRecipe.category with
-  -- chemical plant
-  | .chemistry
-  | .organicOrChemistry
-  | .chemistryOrCryogenics => 1
-
-  -- assembly machine 3
-  | .crafting
-  | .advancedCrafting
-  | .craftingWithFluid
-  | .craftingWithFluidOrMetallurgy
-  | .electronics
-  | .electronicsOrAssembling
-  | .electronicsWithFluid
-  | .metallurgyOrAssembling
-  | .organicOrAssembling
-  | .pressing
-  | .cryogenicsOrAssembling => 5/4
-
-  -- refinery
-  | .oilProcessing => 1
-
-  -- rocket silo
-  | .rocketBuilding => 1
-
-  -- electric furnance
-  | .smelting => 2
-
-  | .captiveSpawnerProcess
-  | .centrifuging
-  | .crushing
-  | .cryogenics
-  | .electromagnetics
-  | .metallurgy
-  | .organic
-  | .organicOrHandCrafting
-  | .parameters
-  | .recycling
-  | .recyclingOrHandCrafting => error! s!"recipeName speedup not yet defined {reprStr recipeName}"
+  (defaultCategoryFabricator recipeName.getRecipe.category).speedup
 
 end RecipeName
 
@@ -81,7 +99,7 @@ private def beltline (x:Nat) (dir:Direction) (height:Nat) : List Entity :=
 
 abbrev Station ns (e w := []) := Factory ns e ns w
 
-private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredient) (outputs:List Ingredient)
+private def stationWithoutPipes (fabricator : Nat -> Nat -> Entity) (inputs:List Ingredient) (outputs:List Ingredient)
   (leftPipes: LeftPipes:= .none) (rightPipe : Option Ingredient := .none)
   : Station (interfaceNS inputs outputs) (interfaceE rightPipe) (interfaceW leftPipes)  :=
 
@@ -202,7 +220,7 @@ private def poweredRefinery : Station []
     width:= 5,
     height:= 7,
     entities := [
-      refinery RecipeName.advancedOilProcessing.getRecipe.name.get! 0 1 (mirror:=true),
+      refinery RecipeName.advancedOilProcessing.getRecipe.name 0 1 (mirror:=true),
       pole 2 6
     ],
     interface := {
@@ -228,7 +246,7 @@ private def flyingRobotFrameStation : Station [(.steelPlate,.N), (.battery,.N), 
       longInserter 3 0 .W,
       inserter 3 2 .W,
 
-      assembler RecipeName.flyingRobotFrame.getRecipe.name.get! 4 0,
+      assembler RecipeName.flyingRobotFrame.getRecipe.name 4 0,
       pole 5 3,
 
       longInserter 7 1 .W,
@@ -251,7 +269,7 @@ private def flyingRobotFrameStation : Station [(.steelPlate,.N), (.battery,.N), 
 -- Special case, because it needs extra inserters to handle the speed.
 def railStation : Station [(.stone,.N), (.steelPlate,.N), (.ironStick,.N), (.rail, .S)] :=
   let recipe := RecipeName.rail.getRecipe
-  let fabricator := assembler recipe.name.get!
+  let fabricator := assembler recipe.name
   let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
   -- Needs two output inserters to keep up with the production rate.
   {factory with
@@ -266,7 +284,7 @@ private def sulfurStation : Station [(.sulfur,.S)] [] [(.water,.E), (.petroleumG
     beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
-      chemicalPlant RecipeName.sulfur.getRecipe.name.get! 0 0 (mirror:=true),
+      chemicalPlant RecipeName.sulfur.getRecipe.name 0 0 (mirror:=true),
       pole 1 3,
     ]
 
@@ -287,7 +305,7 @@ private def solidFuelFromLightOilStation : Station [(.solidFuel,.S)] [] [(.light
     beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
-      chemicalPlant RecipeName.solidFuelFromLightOil.getRecipe.name.get! 0 0,
+      chemicalPlant RecipeName.solidFuelFromLightOil.getRecipe.name 0 0,
       pole 1 3,
     ]
 
@@ -311,7 +329,7 @@ private def sulfuricAcidStation : Station [(.ironPlate,.N),(.sulfur,.N)] [(.sulf
       pipeToGround 2 0 .E,
       longInserter 2 1 .W,
       inserter 2 2 .W,
-      chemicalPlant RecipeName.sulfuricAcid.getRecipe.name.get! 3 0,
+      chemicalPlant RecipeName.sulfuricAcid.getRecipe.name 3 0,
       pole 4 3,
     ]
 
@@ -427,56 +445,7 @@ def stationInterface (recipeName:RecipeName) : List InterfaceV :=
   inputs ++ outputs
 
 def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
-  let recipe := recipeName.getRecipe
-  let fabricator :=
-    match recipeName with
-    | .copperPlate
-    | .ironPlate
-    | .steelPlate
-    | .stoneBrick => furnace
-
-    | .rocketPart => rocketSilo
-
-    | .sulfur
-    | .plasticBar
-    | .battery
-    | .sulfuricAcid
-    | .solidFuelFromLightOil
-    | .lubricant
-    | .heavyOilCracking
-    | .lightOilCracking => chemicalPlant recipe.name.get!
-
-    | .advancedOilProcessing => refinery recipe.name.get!
-
-    | .electricEngineUnit
-    | .utilitySciencePack
-    | .productionSciencePack
-    | .militarySciencePack
-    | .chemicalSciencePack
-    | .logisticSciencePack
-    | .automationSciencePack
-    | .stoneWall
-    | .grenade
-    | .piercingRoundsMagazine
-    | .firearmMagazine
-    | .productivityModule
-    | .electricFurnace
-    | .rail
-    | .pipe
-    | .transportBelt
-    | .inserter
-    | .lowDensityStructure
-    | .flyingRobotFrame
-    | .engineUnit
-    | .processingUnit
-    | .advancedCircuit
-    | .electronicCircuit
-    | .ironStick
-    | .copperCable
-    | .ironGearWheel
-    | .rocketFuel => assembler recipe.name.get!
-
-    | _ => assembler "not-yet-supported"
+  let fabricator := fabricatorEntity recipeName
 
   let factory : Station (stationInterface recipeName) :=
     match recipeName with
@@ -531,7 +500,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name.get! inputs outputs)
+        (poweredChemicalPlant recipe.name inputs outputs)
         (pipesOut outputs)
     | .lubricant =>
       let recipe := RecipeName.lubricant.getRecipe
@@ -539,7 +508,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name.get! inputs outputs)
+        (poweredChemicalPlant recipe.name inputs outputs)
         (pipesOut outputs)
     | .lightOilCracking =>
       let recipe := RecipeName.lightOilCracking.getRecipe
@@ -547,7 +516,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name.get! inputs outputs)
+        (poweredChemicalPlant recipe.name inputs outputs)
         (pipesOut outputs)
     | recipeName =>
       let recipe := recipeName.getRecipe

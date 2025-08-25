@@ -40,8 +40,6 @@ structure Entity where
   type : EntityType
   deriving DecidableEq, Inhabited, Repr
 
-def Fabricator := Nat -> Nat -> Entity
-
 def belt x y d := ({x:=x,y:=y,type:=.belt d} : Entity)
 
 def beltDown x y d := ({x:=x,y:=y,type:=.beltDown d} : Entity)
