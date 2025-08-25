@@ -39,7 +39,7 @@ instance : Config where
   let petrol <- input .petroleumGas 5400
   let iron <- input .ironPlate 60
   let (water0, water1) <- split (left:=5400) water
-  let sulfur <- busAssemblyLine .sulfur 3 petrol water0
+  let sulfur <- busAssemblyLine .sulfur 3 water0 petrol
   let _ <- busAssemblyLine .sulfuricAcid 1 water1.exact iron sulfur.less
 ).toAscii == s!"
 
@@ -59,10 +59,10 @@ instance : Config where
   | |↓←←←←← |→↑↑     |
   | |↓      |↑→↑     |
   | |↓      |↑↑|||||||
-  | |⤓      |↑↑|
->┤|├|||||||||↑↑||||||||>
->⇥|↦⇥↧↦→→→→→→↑↑
->||  →→→→→→→→→↑
+  | |↓      |↑↑|
+>||┤|↓├||||||↑↑||||||||>
+>→→⇥|↓↦→→→→→→↑↑
+>||||→→→→→→→→→↑
 
 "
 
@@ -84,7 +84,7 @@ instance : Config where
   let circuit <- busAssemblyLine .electronicCircuit 1 iron2 cable.less
   let inserter <- busAssemblyLine .inserter 1 iron3 gear1 circuit
 
-  let _ <- busAssemblyLine .logisticSciencePack 1 inserter.less belt.less
+  let _ <- busAssemblyLine .logisticSciencePack 1 belt.less inserter.less
 ).toAscii == s!"
 
 
@@ -99,11 +99,11 @@ instance : Config where
  ↑  ↓←←←↑↑   ↓←←↑ ↓←←←←↑↑   ↓←←↑↑ →→→→↑↓↑↑ ↓←←←←
  ↑  ↓   ↑↑←←←↓  ↑ ↓    ↑↑←←←↓  ↑↑←↑↓←←←←↑↑←↓
  ↑←←↓   ↑←← ↑↓  ↑←↓    ↑←← ↑↓  ↑←↑↑↓    ↑←↑↓
-   ↑↓     ↑ ↑↓   ↑↓      ↑ ↑↓   ↑↥↑↓     ↑↑↓
->⇥*↑↓↦→→⇥*↑ ↑↓↦→→↑→→→→→⇥*↑↦↑→→→⇥↑↦↑→→→→→→↑↑→→→→→>
->→S⇥↓↦→→→S⇥*↑↓↦→→→→→→→→→S→→→→→→→↑⤒        ↑
-    →→→→→→→S⇥↓↦→→→→→→→→→→→→→→→→→→↑        ↑
-             →→→→→→→→→→→→→→→→→→→→→→→→→→→→→↑
+   ↑↓     ↑ ↑↓   ↑↓      ↑ ↑↓   ↑↥↑↓     ↥↑↓
+>⇥*↑↓↦→→⇥*↑ ↑↓↦→→↑→→→→→⇥*↑↦↑→→→⇥↑↦↑→→→→→→→↑→→→→→>
+>→S⇥↓↦→→→S⇥*↑↓↦→→→→→→→→→S→→→→→→→↑⤒       ⤒
+    →→→→→→→S⇥↓↦→→→→→→→→→→→→→→→→→→↑       ↑
+             →→→→→→→→→→→→→→→→→→→→→→→→→→→→↑
 
 "
 

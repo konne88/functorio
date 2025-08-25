@@ -2,13 +2,58 @@ import Functorio.Entity
 import Functorio.Factory
 import Functorio.Crop
 import Functorio.Recipe
-import Functorio.Ingredient
 import Functorio.Row
 import Functorio.Bus
 import Functorio.Cap
 import Functorio.Fraction
 import Functorio.Util
 import Functorio.Config
+
+namespace RecipeName
+
+@[simp]
+def speedUp (recipeName:RecipeName) : Fraction :=
+  match recipeName.getRecipe.category with
+  -- chemical plant
+  | .chemistry
+  | .organicOrChemistry
+  | .chemistryOrCryogenics => 1
+
+  -- assembly machine 3
+  | .crafting
+  | .advancedCrafting
+  | .craftingWithFluid
+  | .craftingWithFluidOrMetallurgy
+  | .electronics
+  | .electronicsOrAssembling
+  | .electronicsWithFluid
+  | .metallurgyOrAssembling
+  | .organicOrAssembling
+  | .pressing
+  | .cryogenicsOrAssembling => 5/4
+
+  -- refinery
+  | .oilProcessing => 1
+
+  -- rocket silo
+  | .rocketBuilding => 1
+
+  -- electric furnance
+  | .smelting => 2
+
+  | .captiveSpawnerProcess
+  | .centrifuging
+  | .crushing
+  | .cryogenics
+  | .electromagnetics
+  | .metallurgy
+  | .organic
+  | .organicOrHandCrafting
+  | .parameters
+  | .recycling
+  | .recyclingOrHandCrafting => error! s!"recipeName speedup not yet defined {reprStr recipeName}"
+
+end RecipeName
 
 private inductive LeftPipes
 | none
@@ -129,7 +174,7 @@ private def stationWithoutPipes (fabricator : Fabricator) (inputs:List Ingredien
     name := s!"stationWithoutPipes {reprStr outputs}"
   }
 
-private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pipesOut:List Ingredient)
+private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pipesOut:List Ingredient) (mirror:=false)
 : Station [] (pipesOut.map (.,.E)) (pipesIn.map (.,.E))
 :=
   let interfaceE := pipesOut.toVector.mapIdx fun i _ => (2*i+1 : InterfaceImpl)
@@ -139,7 +184,7 @@ private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pi
     width:= 3,
     height:= 5,
     entities := [
-      chemicalPlant recipe 0 1,
+      chemicalPlant recipe 0 1 mirror,
       pole 1 4
     ],
     interface := {
@@ -151,12 +196,13 @@ private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pi
     name := s!"chemicalPlant {recipe}"
   }
 
-private def poweredRefinery : Station [] [(.petroleumGas, .E), (.lightOil,.E), (.heavyOil,.E)] [(.crudeOil,.E), (.water,.E)] :=
+private def poweredRefinery : Station []
+[(.heavyOil,.E), (.lightOil,.E), (.petroleumGas, .E)] [(.water,.E), (.crudeOil,.E)] :=
  {
     width:= 5,
     height:= 7,
     entities := [
-      refinery RecipeName.advancedOilProcessing.getRecipe.name.get! 0 1,
+      refinery RecipeName.advancedOilProcessing.getRecipe.name.get! 0 1 (mirror:=true),
       pole 2 6
     ],
     interface := {
@@ -169,7 +215,7 @@ private def poweredRefinery : Station [] [(.petroleumGas, .E), (.lightOil,.E), (
   }
 
 -- Special case, because it takes 4 inputs.
-private def flyingRobotFrameStation : Station [(.battery,.N), (.electricEngineUnit,.N), (.electronicCircuit,.N), (.steelPlate,.N), (.flyingRobotFrame,.S)] :=
+private def flyingRobotFrameStation : Station [(.steelPlate,.N), (.battery,.N), (.electronicCircuit,.N), (.electricEngineUnit,.N), (.flyingRobotFrame,.S)] :=
   let entities : List Entity :=
     beltline (x:=0) (height:=4) .N ++
     beltline (x:=1) (height:=4) .N ++
@@ -203,7 +249,7 @@ private def flyingRobotFrameStation : Station [(.battery,.N), (.electricEngineUn
   }
 
 -- Special case, because it needs extra inserters to handle the speed.
-def railStation : Station [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
+def railStation : Station [(.stone,.N), (.steelPlate,.N), (.ironStick,.N), (.rail, .S)] :=
   let recipe := RecipeName.rail.getRecipe
   let fabricator := assembler recipe.name.get!
   let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
@@ -215,12 +261,12 @@ def railStation : Station [(.stone,.N), (.ironStick,.N), (.steelPlate,.N), (.rai
   }
 
 -- Special case, because it has no belt inputs, so taking the pipes underground looks bad
-private def sulfurStation : Station [(.sulfur,.S)] [] [(.petroleumGas, .E), (.water,.E)] :=
+private def sulfurStation : Station [(.sulfur,.S)] [] [(.water,.E), (.petroleumGas, .E)] :=
   let entities : List Entity :=
     beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
-      chemicalPlant RecipeName.sulfur.getRecipe.name.get! 0 0,
+      chemicalPlant RecipeName.sulfur.getRecipe.name.get! 0 0 (mirror:=true),
       pole 1 3,
     ]
 
@@ -389,7 +435,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
     | .steelPlate
     | .stoneBrick => furnace
 
-    | .rocket => rocketSilo
+    | .rocketPart => rocketSilo
 
     | .sulfur
     | .plasticBar
@@ -430,14 +476,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
     | .ironGearWheel
     | .rocketFuel => assembler recipe.name.get!
 
-    | .cryogenicSciencePack
-    | .coldFluoroketone
-    | .hotFluoroketone
-    | .lithiumPlate
-    | .lithium
-    | .solidFuelFromAmmonia
-    | .icePlatform
-    | .ammonia => assembler "not-yet-supported"
+    | _ => assembler "not-yet-supported"
 
   let factory : Station (stationInterface recipeName) :=
     match recipeName with
@@ -445,7 +484,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
     | .rail => railStation
     | .sulfur =>
       let factory := row
-        (pipesIn [.petroleumGas, .water])
+        (pipesIn [.water, .petroleumGas])
         sulfurStation
       factory
     | .plasticBar =>
@@ -456,7 +495,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
     | .battery =>
       let factory := row
           (pipesIn [.sulfuricAcid] (underground:=true))
-          (stationWithoutPipes fabricator [.copperPlate, .ironPlate] [.battery] (.top .sulfuricAcid))
+          (stationWithoutPipes fabricator [.ironPlate, .copperPlate] [.battery] (.top .sulfuricAcid))
       factory
     | .electricEngineUnit =>
       let factory := row
@@ -483,9 +522,9 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       sulfuricAcidStation
       (pipesOut [.sulfuricAcid])
     | .advancedOilProcessing => row3
-      (pipesIn [.crudeOil, .water])
+      (pipesIn [.water, .crudeOil])
       poweredRefinery
-      (pipesOut [.petroleumGas, .lightOil, .heavyOil])
+      (pipesOut [.heavyOil, .lightOil, .petroleumGas])
     | .heavyOilCracking =>
       let recipe := RecipeName.heavyOilCracking.getRecipe
       let inputs := recipe.inputs.map Prod.snd

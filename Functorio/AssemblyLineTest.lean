@@ -113,7 +113,7 @@ import Functorio.Ascii
   ^ ^       v v v
 "
 
-#guard (station .rocket).toAscii == s!"
+#guard (station .rocketPart).toAscii == s!"
  ^^           ^
  ↑↑ ********* ↑
  ↑↑↠********* ↑
@@ -294,9 +294,9 @@ instance : Config where
 
 #guard (bus do
   let stone <- input .stone 750
-  let stick <- input .ironStick 750
   let steel <- input .steelPlate 750
-  let _ <- busAssemblyLine .rail 5 stone stick steel
+  let stick <- input .ironStick 750
+  let _ <- busAssemblyLine .rail 5 stone steel stick
 ).toAscii == s!"
 
 

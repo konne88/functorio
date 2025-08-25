@@ -46,7 +46,7 @@ def steelFactory (iron:Vector (Iron 2700) 4) : Bus (Steel 2160) := do
   merge steel01 steel23
 
 def brickFactory : Stone 2700 -> Bus (Brick 1350) :=
-  busAssemblyLine .stoneBrick 72
+  busAssemblyLine .stoneBrick 36
 
 def gearFactory : Iron 1500 -> Bus (Gear 750) :=
   busAssemblyLine .ironGearWheel 5
@@ -60,7 +60,7 @@ def inserterFactory : Iron 150 -> Gear 150 -> GreenCircuit 150 -> Bus (Inserter 
 def yellowBeltFactory : Iron 150 -> Gear 150 -> Bus (YellowBelt 300) :=
   busAssemblyLine .transportBelt 1
 
-def greenScienceFactory : Inserter 150 -> YellowBelt 150 -> Bus (GreenScience 150) :=
+def greenScienceFactory : YellowBelt 150 -> Inserter 150 -> Bus (GreenScience 150) :=
   busAssemblyLine .logisticSciencePack 12
 
 def yellowAmmoFactory : Iron 300 -> Bus (YellowAmmo 75) :=
@@ -75,7 +75,7 @@ def wallFactory : Brick 750 -> Bus (Wall 150) :=
 def grenadeFactory : Coal 750 -> Iron 375 -> Bus (Grenade 75) :=
   busAssemblyLine .grenade 8
 
-def blackScienceFactory : Grenade 75 -> RedAmmo 75 ->  Wall 150 -> Bus (BlackScience 150) :=
+def blackScienceFactory : RedAmmo 75 -> Grenade 75 -> Wall 150 -> Bus (BlackScience 150) :=
   busAssemblyLine .militarySciencePack 10
 
 def plasticFactory (petrol:Petrolium 28800) (coal:Coal 1440) : Bus (Plastic 2000 × Plastic 750) := do
@@ -94,13 +94,13 @@ def pipeFactory : Iron 450 -> Bus (Pipe 450) :=
 def engineFactory : Steel 210 -> Gear 210 -> Pipe 420 -> Bus (Engine 210) :=
   busAssemblyLine .engineUnit 28
 
-def sulfurFactory : Petrolium 7200 -> Water 7200 -> Bus (Sulfur 480) :=
+def sulfurFactory : Water 7200 -> Petrolium 7200 -> Bus (Sulfur 480) :=
   busAssemblyLine .sulfur 4
 
-def blueScienceAssemblyLine : RedCircuit 225 -> Engine 150 -> Sulfur 75 -> Bus (BlueScience 150) :=
+def blueScienceAssemblyLine : Sulfur 75 -> RedCircuit 225 -> Engine 150 -> Bus (BlueScience 150) :=
   busAssemblyLine .chemicalSciencePack 24
 
-def furnaceFactory : Brick 600 -> Steel 600 -> RedCircuit 300 -> Bus (Furnace 60) :=
+def furnaceFactory : Steel 600 -> RedCircuit 300 -> Brick 600 -> Bus (Furnace 60) :=
   busAssemblyLine .electricFurnace 4
 
 def prodModuleFactory : GreenCircuit 250 -> RedCircuit 250 -> Bus (ProdModule 50) :=
@@ -109,19 +109,19 @@ def prodModuleFactory : GreenCircuit 250 -> RedCircuit 250 -> Bus (ProdModule 50
 def ironStickFactory : Iron 450 -> Bus (IronStick 900) :=
   busAssemblyLine .ironStick 3
 
-def railFactory : Stone 750 -> IronStick 750 -> Steel 750 -> Bus (Rail 1500) :=
+def railFactory : Stone 750 -> Steel 750 -> IronStick 750-> Bus (Rail 1500) :=
   busAssemblyLine .rail 5
 
-def purpleScienceFactory : Furnace 50 -> ProdModule 50 -> Rail 1500 -> Bus (PurpleScience 150) :=
+def purpleScienceFactory : Rail 1500 -> Furnace 50 -> ProdModule 50 -> Bus (PurpleScience 150) :=
   busAssemblyLine .productionSciencePack 14
 
-def batteryFactory : Acid 2400 -> Copper 120 -> Iron 120 -> Bus (Battery 120) :=
+def batteryFactory : Acid 2400 -> Iron 120 -> Copper 120 -> Bus (Battery 120) :=
   busAssemblyLine .battery 8
 
 def electricEngineFactory : Lubricant 900 -> GreenCircuit 120 -> Engine 60 -> Bus (ElectricEngine 60) :=
   busAssemblyLine .electricEngineUnit 8
 
-def robotFrameFactory : Battery 120 -> ElectricEngine 60 -> GreenCircuit 180 -> Steel 60 -> Bus (RobotFrame 60) :=
+def robotFrameFactory : Steel 60 -> Battery 120 -> GreenCircuit 180 -> ElectricEngine 60 -> Bus (RobotFrame 60) :=
   busAssemblyLine .flyingRobotFrame 16
 
 def lowDensityStructureFactory (copperA:Copper 300) (copperB:Copper 2700) (steel:Steel 300) (plastic:Plastic 750) : Bus (LowDensityStructure 150) := do
@@ -153,7 +153,7 @@ def greenCircuitFullBeltFactory (copper0:Copper 1350) (copper1:Copper 2700) (iro
 
 def redCircuitFactory (copper:Copper 1050) (greenCircuit:GreenCircuit 1000) (plastic:Plastic 1000) : Bus (RedCircuit 500) := do
   let cable : Cable 2100 <- busAssemblyLine .copperCable 7 copper
-  busAssemblyLine .advancedCircuit 40 cable.less greenCircuit plastic
+  busAssemblyLine .advancedCircuit 40 plastic cable.less greenCircuit
 
 def blueCircuitFactory : Acid 525 -> GreenCircuit 2100 -> RedCircuit 210 -> Bus (BlueCircuit 105) :=
   busAssemblyLine .processingUnit 14
@@ -226,7 +226,7 @@ def nauvisFactory := bus do
   let (water0, water1) <- split (left:=7200) water
   let (petrol0, petrol1) <- split (left:=7200) petrol
 
-  let sulfur <- sulfurFactory petrol0 water0
+  let sulfur <- sulfurFactory water0 petrol0
   let (sulfur0, sulfur1) <- split sulfur
   let acid <- acidFactory water1 iron0 sulfur0
   let (acid0, acid1) <- split (left:=525) acid
@@ -251,28 +251,28 @@ def nauvisFactory := bus do
 
   let inserter <- inserterFactory iron2 gear1 greenCircuit0
   let belt <- yellowBeltFactory iron3 gear2
-  let _ <- greenScienceFactory inserter belt.less
+  let _ <- greenScienceFactory belt.less inserter
 
   let yellowAmmo <- yellowAmmoFactory iron4
   let redAmmo <- redAmmoFactory copper1 steel0 yellowAmmo
   let wall <- wallFactory brick0
   let grenade <- grenadeFactory coal1 iron5
-  let _ <- blackScienceFactory grenade redAmmo wall
+  let _ <- blackScienceFactory redAmmo grenade wall
 
   let pipe <- pipeFactory iron6
   let engine <- engineFactory steel1 gear3 pipe.less
   let (engine0, engine1) <- split engine
-  let _ <- blueScienceAssemblyLine redCircuit0 engine0 sulfur1.less
+  let _ <- blueScienceAssemblyLine sulfur1.less redCircuit0 engine0
 
-  let furnace <- furnaceFactory brick1 steel2 redCircuit1
+  let furnace <- furnaceFactory steel2 redCircuit1 brick1
   let prodModule <- prodModuleFactory greenCircuit1 redCircuit2
   let stick <- ironStickFactory iron7
-  let rail <- railFactory stone1 stick.less steel3
-  let _ <- purpleScienceFactory furnace.less prodModule rail
+  let rail <- railFactory stone1 steel3 stick.less
+  let _ <- purpleScienceFactory rail furnace.less prodModule
 
-  let battery <- batteryFactory acid1.less copper2 iron8
+  let battery <- batteryFactory acid1.less iron8 copper2
   let electricEngine <- electricEngineFactory lubricant greenCircuit2 engine1
-  let robotFrame <- robotFrameFactory battery electricEngine greenCircuit3 steel4
+  let robotFrame <- robotFrameFactory steel4 battery greenCircuit3 electricEngine
   let lowDensityStruct <- lowDensityStructureFactory copper3 copper[5] steel5 plastic1
   let _ <- yellowScienceFactory blueCircuit.less robotFrame.less lowDensityStruct
 
