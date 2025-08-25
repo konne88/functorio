@@ -15,13 +15,13 @@ namespace RecipeName
 def speedUp (recipeName:RecipeName) : Fraction :=
   match recipeName.getRecipe.category with
   -- chemical plant
-  | .advancedCrafting
   | .chemistry
   | .organicOrChemistry
   | .chemistryOrCryogenics => 1
 
   -- assembly machine 3
   | .crafting
+  | .advancedCrafting
   | .craftingWithFluid
   | .craftingWithFluidOrMetallurgy
   | .electronics

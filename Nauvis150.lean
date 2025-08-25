@@ -45,11 +45,8 @@ def steelFactory (iron:Vector (Iron 2700) 4) : Bus (Steel 2160) := do
   let steel23 <- merge steel2 steel3
   merge steel01 steel23
 
-def x : BusAssemblyLineType RecipeName.stoneBrick 72 := by
-  simp!
-
 def brickFactory : Stone 2700 -> Bus (Brick 1350) :=
-  busAssemblyLine .stoneBrick 72
+  busAssemblyLine .stoneBrick 36
 
 def gearFactory : Iron 1500 -> Bus (Gear 750) :=
   busAssemblyLine .ironGearWheel 5
@@ -93,11 +90,6 @@ def acidFactory : Water 6000 -> Iron 60 -> Sulfur 300 -> Bus (Acid 3000) :=
 
 def pipeFactory : Iron 450 -> Bus (Pipe 450) :=
   busAssemblyLine .pipe 3
-
--- BusLane Ingredient.steelPlate (168, 1) →
---   BusLane Ingredient.ironGearWheel (168, 1) →
---     BusLane Ingredient.pipe (336, 1) →
---      Bus (BusLane Ingredient.engineUnit (168, 1))
 
 def engineFactory : Steel 210 -> Gear 210 -> Pipe 420 -> Bus (Engine 210) :=
   busAssemblyLine .engineUnit 28
