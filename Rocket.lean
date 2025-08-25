@@ -21,7 +21,7 @@ def makeIron : IronOre 900 -> Bus (Iron 900) :=
 def makeSteel : Iron 225 -> Bus (Steel 45) :=
   busAssemblyLine .steelPlate 6
 
-def makeSulfur : Petrolium 7200 -> Water 7200 -> Bus (Sulfur 480) :=
+def makeSulfur : Water 7200 -> Petrolium 7200 -> Bus (Sulfur 480) :=
   busAssemblyLine .sulfur 4
 
 def makePlastic : Petrolium 2400 -> Coal 120 -> Bus (Plastic 240) :=
@@ -33,20 +33,20 @@ def makeCable : Copper 1050 -> Bus (Cable 2100) :=
 def makeGreenCircuit : Iron 600 -> Cable 1800 -> Bus (GreenCircuit 600) :=
   busAssemblyLine .electronicCircuit 4
 
-def makeRedCircuit : Cable 200 -> GreenCircuit 100 -> Plastic 100 -> Bus (RedCircuit 50) :=
+def makeRedCircuit : Plastic 100 -> Cable 200 -> GreenCircuit 100 -> Bus (RedCircuit 50) :=
   busAssemblyLine .advancedCircuit 4
 
 def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (BlueCircuit (45/2)) :=
   busAssemblyLine .processingUnit 3
 
-def makeSolidFuel : LightOil 2250 -> Bus (SolidFuel 225) :=
-  busAssemblyLine .solidFuelFromLightOil 6
+def makeSolidFuel : LightOil 2400 -> Bus (SolidFuel 240) :=
+  busAssemblyLine .solidFuelFromLightOil 4
 
 def makeRocketFuel : LightOil 200 -> SolidFuel 200 -> Bus (RocketFuel 20) :=
   busAssemblyLine .rocketFuel 4
 
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
-  busAssemblyLine .rocket 1
+  busAssemblyLine .rocketPart 1
 
 def rocketFactory := bus do
   let copper <- input .copperPlate 1500
@@ -54,7 +54,7 @@ def rocketFactory := bus do
   let coal <- input .coal 120
   let water <- input .water 13200
   let petrol <- input .petroleumGas 9600
-  let lightOil <- input .lightOil 2450
+  let lightOil <- input .lightOil 2600
 
   let (water0, water1) <- split (left:=7200) water
   let (petrol0, petrol1) <- split (left:=7200) petrol
@@ -66,7 +66,7 @@ def rocketFactory := bus do
   let (iron1, iron2) <- split iron
   let steel <- makeSteel iron0
 
-  let sulfur <- makeSulfur petrol0 water0
+  let sulfur <- makeSulfur water0 petrol0
   let acid <- makeAcid water1 iron1 sulfur.less
   let plastic <- makePlastic petrol1 coal
   let (plastic0, plastic1) <- split plastic
@@ -80,7 +80,7 @@ def rocketFactory := bus do
   let (cable0, cable1) <- split cable
   let greenCircuit <- makeGreenCircuit iron2.less cable0
   let (greenCircuit0, greenCircuit1) <- split greenCircuit
-  let redCircuit <- makeRedCircuit cable1.less greenCircuit0 plastic1.less
+  let redCircuit <- makeRedCircuit plastic1.less cable1.less greenCircuit0
   let blueCircuit <- makeBlueCircuit acid.less greenCircuit1.less redCircuit.less
 
   makeRocket blueCircuit.less lowDensityStruct rocketFuel
