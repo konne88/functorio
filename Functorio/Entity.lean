@@ -26,8 +26,8 @@ inductive EntityType
   | bigPole
   | assembler (recipe:String) (direction:Direction)
   | furnace
-  | chemicalPlant (recipe:String) (direction:Direction)
-  | refinery (recipe:String) (direction:Direction)
+  | chemicalPlant (recipe:String) (direction:Direction) (mirror:Bool)
+  | refinery (recipe:String) (direction:Direction) (mirror:Bool)
   | roboport
   | passiveProviderChest (capacity:Option Nat)
   | refinedConcrete
@@ -68,9 +68,9 @@ def assembler r x y (d := Direction.W) := ({x:=x,y:=y,type:=.assembler r d} : En
 
 def furnace x y := ({x:=x,y:=y,type:=.furnace} : Entity)
 
-def chemicalPlant r x y (d := Direction.W) := ({x:=x,y:=y,type:=.chemicalPlant r d} : Entity)
+def chemicalPlant r x y (mirror:=false) (d := Direction.W) := ({x:=x,y:=y,type:=.chemicalPlant r d mirror} : Entity)
 
-def refinery r x y (d := Direction.E) := ({x:=x,y:=y,type:=.refinery r d} : Entity)
+def refinery r x y (mirror:=false) (d := Direction.E) := ({x:=x,y:=y,type:=.refinery r d mirror} : Entity)
 
 def roboport x y := ({x:=x,y:=y,type:=.roboport} : Entity)
 
@@ -89,9 +89,9 @@ def width (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
   | .pump dir => if dir == .N || dir == .S then 1 else 2
-  | .assembler _ _ | .furnace | .chemicalPlant _ _ => 3
+  | .assembler _ _ | .furnace | .chemicalPlant _ _ _ => 3
   | .roboport => 4
-  | .refinery _ _ => 5
+  | .refinery _ _ _ => 5
   | .rocketSilo => 9
 
 def height (e:Entity) : Nat :=
@@ -101,9 +101,9 @@ def height (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
   | .pump dir => if dir == .N || dir == .S then 2 else 1
-  | .assembler _ _ | .furnace | .chemicalPlant _ _ => 3
+  | .assembler _ _ | .furnace | .chemicalPlant _ _ _ => 3
   | .roboport => 4
-  | .refinery _ _ => 5
+  | .refinery _ _ _ => 5
   | .rocketSilo => 9
 
 def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {

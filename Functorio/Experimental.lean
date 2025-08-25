@@ -1,5 +1,4 @@
 import Functorio.Factory
-import Functorio.Ingredient
 import Functorio.Bus
 import Functorio.Ascii
 import Functorio.AssemblyLine

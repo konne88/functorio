@@ -1,6 +1,6 @@
 import Functorio.Entity
-import Functorio.Ingredient
 import Functorio.Util
+import Functorio.Recipe
 
 -- coordinates increase from N to S, and W to E
 --

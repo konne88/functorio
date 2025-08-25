@@ -53,8 +53,8 @@ def PurpleScience := BusLane .productionSciencePack
 def YellowScience := BusLane .utilitySciencePack
 
 def CryogenicScience := BusLane .cryogenicSciencePack
-def HotFluoroketone := BusLane .hotFluoroketone
-def ColdFluoroketone := BusLane .coldFluoroketone
+def HotFluoroketone := BusLane .fluoroketoneHot
+def ColdFluoroketone := BusLane .fluoroketoneCold
 def Ice := BusLane .ice
 def LithiumPlate := BusLane .lithiumPlate
 def Lithium := BusLane .lithium

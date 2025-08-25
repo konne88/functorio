@@ -40,8 +40,8 @@ private def entityName (e:Entity) : String :=
   | .bigPole => "big-electric-pole"
   | .assembler _ _ => "assembling-machine-3"
   | .furnace => "electric-furnace"
-  | .chemicalPlant _ _ => "chemical-plant"
-  | .refinery _ _ => "oil-refinery"
+  | .chemicalPlant _ _ _ => "chemical-plant"
+  | .refinery _ _ _ => "oil-refinery"
   | .roboport => "roboport"
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
@@ -51,7 +51,7 @@ private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
   | .belt d | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d | .longInserter d
-  | .assembler _ d | .chemicalPlant _ d | .refinery _ d => d
+  | .assembler _ d | .chemicalPlant _ d _ | .refinery _ d _ => d
   | .pipe | .pole | .bigPole | .furnace | .roboport | .passiveProviderChest _
   | .refinedConcrete | .rocketSilo => .none
 
@@ -63,7 +63,8 @@ private def entityProps (e:Entity) : List (String × Json):=
   | .beltUp _ => [("type", "output")]
   | .passiveProviderChest capacity => match capacity with | .none => [] | .some capacity => [("bar", capacity)]
   | .splitter _ priority => match priority with | .none => [] | .some p => [("output_priority", p)]
-  | .assembler r _ | .chemicalPlant r _ | .refinery r _ => [("recipe", r), ("recipe_quality", "normal")]
+  | .assembler r _ => [("recipe", r), ("recipe_quality", "normal")]
+  | .chemicalPlant r _ m | .refinery r _ m => [("recipe", r), ("recipe_quality", "normal"), ("mirror", m)]
   | .rocketSilo => [("recipe", "rocket-part"), ("recipe_quality", "normal")]
 
 private def directionToNat (d:Direction) :=

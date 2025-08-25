@@ -2,7 +2,6 @@ import Functorio.Entity
 import Functorio.Factory
 import Functorio.Column
 import Functorio.Row
-import Functorio.Ingredient
 import Functorio.Fraction
 import Functorio.Util
 

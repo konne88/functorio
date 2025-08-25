@@ -16,7 +16,6 @@ import Functorio.Expand
 import Functorio.ExpandTest
 import Functorio.Factory
 import Functorio.Fraction
-import Functorio.Ingredient
 import Functorio.Readme
 import Functorio.Recipe
 import Functorio.Row
