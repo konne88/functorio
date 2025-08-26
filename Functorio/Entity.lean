@@ -2,15 +2,10 @@ import Lean.Data.Json
 import Lean.Data.Json.Printer
 import Lean.Data.Json.FromToJson
 
+import Functorio.Direction
+
 open Lean
 open Lean (Json)
-
-inductive Direction where
-  | N
-  | E
-  | S
-  | W
-  deriving DecidableEq, Inhabited, Repr
 
 inductive EntityType
   | belt (dir:Direction)

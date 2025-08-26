@@ -56,7 +56,6 @@ def fabricatorEntity (recipeName:RecipeName) (x y: Nat) : Entity :=
   | .biochamber
   | .captiveBiterSpawner
   | .centrifuge
-  | .character
   | .crusher
   | .cryogenicPlant
   | .electromagneticPlant
