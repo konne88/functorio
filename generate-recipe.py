@@ -1,175 +1,8 @@
 #!/usr/bin/env python3
 
+# Generates the Recipe.lean file from a factorio data dump, get it by passing --dump-data to factorio
+
 from fractions import Fraction
-
-# Generate the recipes.json and buildings.json file by running these two commands inside Factorio's console (open by pressing `)
-"""
-/c
-local out = ""
-function write(...)
-  local arg = {...}
-  for i, v in ipairs(arg) do
-    out = out .. tostring(v)
-  end
-end
-
-function item_count(node)
-  local count = 0
-  for k, v in pairs(node) do
-    count = count + 1
-  end
-  return count
-end
-
-function traverse_table(node)
-  write("{")
-  local i = 1
-  local count = item_count(node)
-  for k, v in pairs(node) do
-    write("\"", tostring(k), "\": ")
-    traverse(v)
-    if i < count then
-      write(",")
-    end
-    i = i + 1
-  end
-  write("}")
-end
-
-function traverse_array(node)
-  local count = item_count(node)
-  write("[")
-  for k, v in ipairs(node) do
-    traverse(v)
-    if k < count then
-      write(",")
-    end
-  end
-  write("]")
-end
-
-function traverse(node)
-  if type(node) == "table" then
-    if type(next(node)) == "number" then
-      traverse_array(node)
-    else
-      traverse_table(node)
-    end
-  elseif type(node) == "string" then
-    write("\"", node, "\"")
-  else
-    write(node)
-  end
-end
-
-function inspect_recipe(node)
-  return {
-    name=node.name,
-    category=node.category,
-    products=node.products,
-    ingredients=node.ingredients,
-    hidden=node.hidden,
-    energy=node.energy,
-    order=node.order
-  }
-end
-
-function inspect_all(recipes)
-  local r = {}
-  for k, v in pairs(recipes) do
-    r[k] = inspect_recipe(v)
-  end
-  traverse(r)
-end
-
-inspect_all(game.player.force.recipes)
-
-helpers.write_file("recipes.json", out)
-"""
-
-"""
-/c
-local out = ""
-function write(...)
-  local arg = {...}
-  for i, v in ipairs(arg) do
-    out = out .. tostring(v)
-  end
-end
-
-function item_count(node)
-  local count = 0
-  for k, v in pairs(node) do
-    count = count + 1
-  end
-  return count
-end
-
-function traverse_table(node)
-  write("{")
-  local i = 1
-  local count = item_count(node)
-  for k, v in pairs(node) do
-    write("\"", tostring(k), "\": ")
-    traverse(v)
-    if i < count then
-      write(",")
-    end
-    i = i + 1
-  end
-  write("}")
-end
-
-function traverse_array(node)
-  local count = item_count(node)
-  write("[")
-  for k, v in ipairs(node) do
-    traverse(v)
-    if k < count then
-      write(",")
-    end
-  end
-  write("]")
-end
-
-function traverse(node)
-  if type(node) == "table" then
-    if type(next(node)) == "number" then
-      traverse_array(node)
-    else
-      traverse_table(node)
-    end
-  elseif type(node) == "string" then
-    write("\"", node, "\"")
-  else
-    write(node)
-  end
-end
-
-function inspect_building(node)
-  return {
-    name=node.name,
-    speed=node.get_crafting_speed(),
-    categories=node.crafting_categories,
-    energy=node.energy_usage,
-  }
-end
-
-function inspect_buildings(recipes)
-  local r = {}
-  for k, v in pairs(recipes) do
-    if v.get_crafting_speed() then
-      r[k] = inspect_building(v)
-    end
-  end
-  traverse(r)
-end
-
-inspect_buildings(prototypes.entity)
-
-helpers.write_file("buildings.json", out)
-"""
-
 import json
 
 def to_camel_case(kebab_case_str: str) -> str:
@@ -179,156 +12,228 @@ def to_camel_case(kebab_case_str: str) -> str:
 def float_to_fraction(f: float) -> str:
     return str(Fraction(f).limit_denominator(1000)) 
 
-def generate_lean_from_json(recipes_path: str, buildings_path: str, lean_path: str):
-    with open(recipes_path, 'r') as f:
-        recipes_data = json.load(f)
-    with open(buildings_path, 'r') as f:
-        buildings_data = json.load(f)
+with open('data-raw-dump.json', 'r') as f:
+    data = json.load(f)
 
-    # Collect all unique ingredients and recipe names
-    ingredients = set()
-    fluids = set()
-    categories = set()
-    recipe_names = list(recipes_data.keys())
-    building_names = list(buildings_data.keys())
+buildings_data = data['assembling-machine'] | data['furnace'] | data['rocket-silo']
+recipes_data = data['recipe']
 
-    for recipe in recipes_data.values():
-        categories.add(recipe['category'])
-        for ingredient in recipe.get('ingredients', []):
-            ingredients.add(ingredient['name'])
-            if ingredient['type'] == 'fluid':
-                fluids.add(ingredient['name'])
-        for product in recipe.get('products', []):
-            ingredients.add(product['name'])
-       
-    for building in buildings_data.values():
-        for category in building["categories"].keys():
-            categories.add(category)
+# Collect all unique ingredients and recipe names
+ingredients = set()
+fluids = set()
+categories = set()
+recipe_names = list(recipes_data.keys())
+building_names = list(buildings_data.keys())
 
-    # Build the Lean file content as a list of strings
-    lean_code = []
-
-    # Header
-    lean_code.append("-- Generated by generate-recipe.py. Do not modify.\n")
-    lean_code.append("import Functorio.Fraction\n")
-
-    # Ingredient inductive type
-    lean_code.append("inductive Ingredient")
-    for ingredient in sorted(list(ingredients)):
-        lean_code.append(f"  | {to_camel_case(ingredient)}")
-    lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
-
-    # Categories inductive type
-    lean_code.append("inductive RecipeCategory")
-    for category in sorted(list(categories)):
-        lean_code.append(f"  | {to_camel_case(category)}")
-    lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
-
-    # isLiquid function
-    lean_code.append("namespace Ingredient\n")
-    lean_code.append("def isLiquid : Ingredient -> Bool")
-    for fluid in sorted(list(fluids)):
-        lean_code.append(f"| .{to_camel_case(fluid)} => true")
-    lean_code.append(f"| _ => false\n")
-    lean_code.append("end Ingredient")
-
-    # Static Recipe structure
-    lean_code.append("""
-structure Recipe where
-    name: String
-    -- The `Fraction` indicates how many items are needed to execute the recipe.
-    inputs : List (Fraction × Ingredient)
-    -- The `Fraction` indicates how many output items are generated by executing the recipe.
-    outputs : List (Fraction × Ingredient)
-    category : RecipeCategory
-    -- Number of seconds that it takes the user to execute the recipe.
-    time : Fraction
-    deriving DecidableEq, Repr, Inhabited\n""")
-
-    # RecipeName inductive type
-    lean_code.append("inductive RecipeName")
-    for name in sorted(recipe_names):
-        lean_code.append(f"  | {to_camel_case(name)}")
-    lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
-
-    # getRecipe function definition
-    lean_code.append("namespace RecipeName\n")
-    lean_code.append("def getRecipe : RecipeName -> Recipe")
-    for name in sorted(recipe_names):
-        recipe = recipes_data[name]
-        camel_case_name = to_camel_case(name)
-        
-        # Start the case
-        lean_code.append(f"| .{camel_case_name} => {{")
-        
-        # Add fields
-        lean_code.append(f'  name := "{name}",')
-
-        # Inputs
-        fluid_inputs_list = [
-            f"({ingredient['amount']}, .{to_camel_case(ingredient['name'])})"
-            for ingredient in recipe.get('ingredients', [])
-            if ingredient['type'] == 'fluid'
-        ]
-        solid_inputs_list = [
-            f"({ingredient['amount']}, .{to_camel_case(ingredient['name'])})"
-            for ingredient in recipe.get('ingredients', [])
-            if ingredient['type'] != 'fluid'
-        ]
-
-        lean_code.append(f"  inputs := [{', '.join(fluid_inputs_list + solid_inputs_list)}],")
-
-        # Outputs
-        outputs_list = [
-            f"({float_to_fraction(product['amount'] * product.get('probability', 1))}, .{to_camel_case(product['name'])})"
-            for product in recipe.get('products', [])
-        ]
-
-        # Rocket parts cannot be removed from the rocket silo.
-        if name == "rocket-part":
-            outputs_list = []
-
-        lean_code.append(f"  outputs := [{', '.join(outputs_list)}],")
-
-        # Category
-        lean_code.append(f"  category := .{to_camel_case(recipe['category'])}")
-
-        # Time
-        lean_code.append(f"  time := {float_to_fraction(recipe.get('energy', 0))}")
-        lean_code.append("}")
-    lean_code.append("\nend RecipeName\n")
-
-    # Fabricators
-    lean_code.append("inductive Fabricator")
-    for building_name in sorted(building_names):
-        building = buildings_data[building_name]
-        lean_code.append(f"  | {to_camel_case(building['name'])}")
-    lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
-
-    # speedup & handlesCategory functions
-    lean_code.append("namespace Fabricator\n")
-
-    lean_code.append("@[simp]")
-    lean_code.append("def speedup : Fabricator -> Fraction")
-    for building_name in sorted(building_names):
-        building = buildings_data[building_name]
-        lean_code.append(f"| .{to_camel_case(building['name'])} => {float_to_fraction(building['speed'])}")
-    lean_code.append("")
+for recipe in recipes_data.values():
+    if recipe["name"] == "recipe-unknown": continue
+    categories.add(recipe.get('category', 'crafting'))
+    for ingredient in recipe.get('ingredients', []):
+        ingredients.add(ingredient['name'])
+        if ingredient['type'] == 'fluid':
+            fluids.add(ingredient['name'])
+    for product in recipe.get('results', []):
+        ingredients.add(product['name'])
     
-    lean_code.append("def handlesCategory : Fabricator -> RecipeCategory -> Bool")
-    for building_name in sorted(building_names):
-        building = buildings_data[building_name]
-        for category in sorted(building["categories"].keys()):
-            lean_code.append(f"| .{to_camel_case(building['name'])}, .{to_camel_case(category)} => true")
-    lean_code.append("| _, _ => false\n")
+for building in buildings_data.values():
+    for category in building["crafting_categories"]:
+        categories.add(category)
 
-    lean_code.append("end Fabricator\n")
+# Build the Lean file content as a list of strings
+lean_code = []
 
-    # Write the content to the output file
-    with open(lean_path, 'w') as f:
-        f.write('\n'.join(lean_code))
+# Header
+lean_code.append("-- Generated by generate-recipe.py. Do not modify.\n")
+lean_code.append("import Functorio.Fraction\n")
+lean_code.append("import Functorio.Direction\n")
 
-    print(f"✅ Successfully generated Lean file at '{lean_path}'")
+# Ingredient inductive type
+lean_code.append("inductive Ingredient")
+for ingredient in sorted(list(ingredients)):
+    lean_code.append(f"  | {to_camel_case(ingredient)}")
+lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
 
-if __name__ == "__main__":
-    generate_lean_from_json('recipes.json', 'buildings.json', 'Functorio/Recipe.lean')
+# Categories inductive type
+lean_code.append("inductive RecipeCategory")
+for category in sorted(list(categories)):
+    lean_code.append(f"  | {to_camel_case(category)}")
+lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
+
+# isLiquid function
+lean_code.append("namespace Ingredient\n")
+lean_code.append("def isLiquid : Ingredient -> Bool")
+for fluid in sorted(list(fluids)):
+    lean_code.append(f"| .{to_camel_case(fluid)} => true")
+lean_code.append(f"| _ => false\n")
+lean_code.append("end Ingredient")
+
+# Static Recipe structure
+lean_code.append("""
+structure Recipe where
+  name: String
+  -- The `Fraction` indicates how many items are needed to execute the recipe.
+  inputs : List (Fraction × Ingredient)
+  -- The `Fraction` indicates how many output items are generated by executing the recipe.
+  outputs : List (Fraction × Ingredient)
+  category : RecipeCategory
+  -- Number of seconds that it takes the user to execute the recipe.
+  time : Fraction
+  deriving DecidableEq, Repr, Inhabited
+
+inductive FluidBoxType where
+  | input
+  | output
+  | inputOutput
+  deriving DecidableEq, Repr, Inhabited
+
+structure FluidBox where
+  side: Direction
+  offset: Nat
+  type: FluidBoxType
+  deriving DecidableEq, Repr, Inhabited
+
+structure FabricatorDetails where
+  name : String
+  width : Nat
+  height : Nat
+  speedup : Fraction
+  productivity : Fraction
+  moduleSlots : Nat
+  fluidBoxes : List FluidBox
+  categories : List RecipeCategory
+  deriving DecidableEq, Repr, Inhabited
+""")
+
+# RecipeName inductive type
+lean_code.append("inductive RecipeName")
+for name in sorted(recipe_names):
+    lean_code.append(f"  | {to_camel_case(name)}")
+lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
+
+# getRecipe function definition
+lean_code.append("namespace RecipeName\n")
+lean_code.append("def getRecipe : RecipeName -> Recipe")
+for name in sorted(recipe_names):
+    recipe = recipes_data[name]
+    camel_case_name = to_camel_case(name)
+    try:
+        inputs = recipe.get('ingredients', [])
+        outputs = recipe.get('results', [])
+        category = recipe.get('category', 'crafting')
+        time = recipe.get('energy_required', 0.5)
+    except Exception as e:
+        print(f"{name} not supported because of {e}")
+
+    # sort fluids before solids    
+    inputs = [i for i in inputs if i['type'] == 'fluid'] + \
+             [i for i in inputs if i['type'] != 'fluid'] 
+
+    # sort solids before fluids    
+    outputs = [i for i in outputs if i['type'] != 'fluid'] + \
+              [i for i in outputs if i['type'] == 'fluid'] 
+
+    # Rocket parts cannot be removed from the rocket silo.
+    if name == "rocket-part":
+        outputs = []
+
+    lean_code.append(f"| .{camel_case_name} => {{")
+    lean_code.append(f'  name := "{name}",')
+
+    inputs_list = [
+        f"({ingredient['amount']}, .{to_camel_case(ingredient['name'])})"
+        for ingredient in inputs
+    ]
+    lean_code.append(f"  inputs := [{', '.join(inputs_list)}],")
+
+    outputs_list = [
+        f"({float_to_fraction(product['amount'] * product.get('probability', 1))}, .{to_camel_case(product['name'])})"
+        for product in outputs
+    ]
+    lean_code.append(f"  outputs := [{', '.join(outputs_list)}],")
+    
+    lean_code.append(f"  category := .{to_camel_case(category)}")
+    lean_code.append(f"  time := {float_to_fraction(time)}")
+    
+    lean_code.append("}")
+    
+lean_code.append("\nend RecipeName\n")
+
+# Fabricators
+lean_code.append("inductive Fabricator")
+for building_name in sorted(building_names):
+    building = buildings_data[building_name]
+    lean_code.append(f"  | {to_camel_case(building['name'])}")
+lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
+
+# Fabricator details
+lean_code.append("namespace Fabricator\n")
+
+lean_code.append("@[simp]")
+lean_code.append("def details : Fabricator -> FabricatorDetails")
+for building_name in sorted(building_names):
+    building = buildings_data[building_name]
+    ((x0,y0),(x1,y1)) = building["selection_box"]
+    productivity = building.get('effect_receiver', {}).get("base_effect", {}).get("productivity", 0)
+
+    lean_code.append(f"| .{to_camel_case(building['name'])} => {{")
+    lean_code.append(f'  name := "{to_camel_case(building["name"])}"')
+    lean_code.append(f"  speedup := {float_to_fraction(building['crafting_speed'])}")
+    lean_code.append(f"  productivity := {float_to_fraction(productivity)}")
+    lean_code.append(f"  moduleSlots := {building.get('module_slots', 0)}")
+    lean_code.append(f"  width := {int(x1 - x0)}")
+    lean_code.append(f"  height := {int(y1 - y0)}")    
+
+    lean_code.append(f"  fluidBoxes := [")
+    for box in building.get("fluid_boxes", []):
+        info = box["pipe_connections"][0]
+        dir = {0: 'N', 4: 'E', 8: 'S', 12: 'W'}[info['direction']]
+        (x,y) = info["position"]
+        offset = int({
+            'N': x - x0 - 0.5,
+            'E': y - y0 - 0.5,
+            'S': x - x0 - 0.5,
+            'W': y - y0 - 0.5,
+        }[dir])
+        lean_code.append("    {")
+        lean_code.append(f"      offset := {offset}")
+        lean_code.append(f"      side := .{dir}")
+        lean_code.append(f"      type := .{to_camel_case(info['flow_direction'])}")
+        lean_code.append("    },")
+    lean_code.append("  ]")
+    
+    lean_code.append(f"  categories := [")
+    for category in sorted(building["crafting_categories"]):
+        lean_code.append(f"    .{to_camel_case(category)},")
+    lean_code.append("  ]")
+    lean_code.append("}")
+
+lean_code.append("""
+def name (f:Fabricator) := f.details.name
+
+def width (f:Fabricator) := f.details.width
+
+def height (f:Fabricator) := f.details.height
+
+@[simp]
+def speedup (f:Fabricator) := f.details.speedup
+
+@[simp]
+def productivity (f:Fabricator) := f.details.productivity
+
+@[simp]
+def moduleSlots (f:Fabricator) := f.details.moduleSlots
+
+def fluidBoxes (f:Fabricator) := f.details.fluidBoxes
+
+def handlesCategory (f:Fabricator) (c:RecipeCategory) :=
+  f.details.categories.contains c
+  
+end Fabricator
+""")
+
+# Write the content to the output file
+file = "Functorio/Recipe.lean"
+with open(file, 'w') as f:
+    f.write('\n'.join(lean_code))
+
+print(f"✅ Successfully generated Lean file at '{file}'")

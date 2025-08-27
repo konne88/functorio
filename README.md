@@ -279,6 +279,12 @@ BusLane Ingredient.advancedCircuit (210, 1) →
 Bus (BusLane Ingredient.processingUnit (105, 1))
 ```
 
+If a test `#guard TEST.toAscii = OUTPUT` fails you can run this command to see by the new output:
+
+```
+#eval IO.print (TEST).toAscii
+```
+
 # Future Work
 
 This library is still in early alpha. Let's make it better together! Expect bugs!
