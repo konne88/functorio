@@ -232,7 +232,7 @@ private def poweredRefinery : Station []
   }
 
 -- Special case, because it takes 4 inputs.
-private def flyingRobotFrameStation : Station [(.steelPlate,.N), (.battery,.N), (.electronicCircuit,.N), (.electricEngineUnit,.N), (.flyingRobotFrame,.S)] :=
+private def flyingRobotFrameStation : Station [ (.electricEngineUnit,.N), (.battery,.N), (.steelPlate,.N), (.electronicCircuit,.N), (.flyingRobotFrame,.S)] :=
   let entities : List Entity :=
     beltline (x:=0) (height:=4) .N ++
     beltline (x:=1) (height:=4) .N ++
@@ -266,7 +266,7 @@ private def flyingRobotFrameStation : Station [(.steelPlate,.N), (.battery,.N), 
   }
 
 -- Special case, because it needs extra inserters to handle the speed.
-def railStation : Station [(.stone,.N), (.steelPlate,.N), (.ironStick,.N), (.rail, .S)] :=
+def railStation : Station [(.stone,.N),(.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
   let recipe := RecipeName.rail.getRecipe
   let fabricator := assembler recipe.name
   let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
@@ -320,7 +320,7 @@ private def solidFuelFromLightOilStation : Station [(.solidFuel,.S)] [] [(.light
   }
 
 -- Special case, because it has no belt outputs, so taking the pipes underground looks bad
-private def sulfuricAcidStation : Station [(.ironPlate,.N),(.sulfur,.N)] [(.sulfuricAcid,.E)] [(.water,.E)] :=
+private def sulfuricAcidStation : Station [(.sulfur,.N),(.ironPlate,.N)] [(.sulfuricAcid,.E)] [(.water,.E)] :=
   let entities : List Entity :=
     beltline (x:=0) (height:=4) .N ++
     beltline (x:=1) (height:=4) .N ++
@@ -468,7 +468,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
     | .electricEngineUnit =>
       let factory := row
         (pipesIn [.lubricant] (underground:=true))
-        (stationWithoutPipes fabricator [.electronicCircuit, .engineUnit] [.electricEngineUnit] (.middle .lubricant))
+        (stationWithoutPipes fabricator [.engineUnit, .electronicCircuit] [.electricEngineUnit] (.middle .lubricant))
       factory
     | .processingUnit =>
       let factory := row

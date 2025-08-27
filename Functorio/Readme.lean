@@ -22,7 +22,7 @@ def makeSteel : Iron 2700 -> Bus (Steel 540) :=
 def makeBelt : Iron 150 -> Gear 150 -> Bus (YellowBelt 300):=
   busAssemblyLine .transportBelt 1
 
-def makeAcid : Water 6000 -> Iron 60 -> Sulfur 300 -> Bus (Acid 3000) :=
+def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 ->Bus (Acid 3000) :=
   busAssemblyLine .sulfuricAcid 1
 
 def redScience := bus do
@@ -56,7 +56,7 @@ def acidFactory := bus do
   let iron <- input .ironPlate 60
   let sulfur <- input .sulfur 300
   let water <- input .water 6000
-  let _ <- makeAcid water iron sulfur
+  let _ <- makeAcid water sulfur iron
 
 def gearFactory1 :=
   station .ironGearWheel

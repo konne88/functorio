@@ -40,7 +40,7 @@ instance : Config where
   let iron <- input .ironPlate 60
   let (water0, water1) <- split (left:=5400) water
   let sulfur <- busAssemblyLine .sulfur 3 water0 petrol
-  let _ <- busAssemblyLine .sulfuricAcid 1 water1.exact iron sulfur.less
+  let _ <- busAssemblyLine .sulfuricAcid 1 water1.exact sulfur.less iron
 ).toAscii == s!"
 
 
@@ -56,13 +56,13 @@ instance : Config where
   | | *C* ↓ | ↑↑↠*C* |
   | ||***⇨↓ | ↑↑⇨*** |
   | |  ⚡  ↓ | ↑↑  ⚡  |
-  | |↓←←←←← |→↑↑     |
-  | |↓      |↑→↑     |
-  | |↓      |↑↑|||||||
-  | |↓      |↑↑|
->||┤|↓├||||||↑↑||||||||>
->→→⇥|↓↦→→→→→→↑↑
->||||→→→→→→→→→↑
+  | |↓←←←←← |→↑↑||||||
+  | |↓      |↑ ↑|
+  | |↓      |↑ ↑|
+  | |↓      |↑ ↑|
+>||┤|↓├||||||↑ ↑|||||||>
+>→→⇥|↓↦→→→→→⇥↑↦↑
+>||||→→→→→→→→↑
 
 "
 
@@ -82,9 +82,9 @@ instance : Config where
   let belt <- busAssemblyLine .transportBelt 1 iron1 gear0
   let cable <- busAssemblyLine .copperCable 2 copper
   let circuit <- busAssemblyLine .electronicCircuit 1 iron2 cable.less
-  let inserter <- busAssemblyLine .inserter 1 iron3 gear1 circuit
+  let inserter <- busAssemblyLine .inserter 1 circuit gear1 iron3
 
-  let _ <- busAssemblyLine .logisticSciencePack 1 belt.less inserter.less
+  let _ <- busAssemblyLine .logisticSciencePack 1 inserter.less belt.less
 ).toAscii == s!"
 
 
@@ -96,14 +96,14 @@ instance : Config where
  ↑ *A* ↓↑↑↠*A* ↓↑ *A* ↓↑↑↠*A* ↓↑↑↠*A*↠↑↓↑↑↠*A* ↓
  ↑⇨***⇨↓↑↑⇨***⇨↓↑⇨***⇨↓↑↑⇨***⇨↓↑↑⇨***⇦↑↓↑↑⇨***⇨↓
  ↑  ⚡  ↓↑↑  ⚡  ↓↑  ⚡  ↓↑↑  ⚡  ↓↑↑  ⚡  ↑↓↑↑  ⚡  ↓
- ↑  ↓←←←↑↑   ↓←←↑ ↓←←←←↑↑   ↓←←↑↑ →→→→↑↓↑↑ ↓←←←←
- ↑  ↓   ↑↑←←←↓  ↑ ↓    ↑↑←←←↓  ↑↑←↑↓←←←←↑↑←↓
- ↑←←↓   ↑←← ↑↓  ↑←↓    ↑←← ↑↓  ↑←↑↑↓    ↑←↑↓
-   ↑↓     ↑ ↑↓   ↑↓      ↑ ↑↓   ↑↥↑↓     ↥↑↓
->⇥*↑↓↦→→⇥*↑ ↑↓↦→→↑→→→→→⇥*↑↦↑→→→⇥↑↦↑→→→→→→→↑→→→→→>
->→S⇥↓↦→→→S⇥*↑↓↦→→→→→→→→→S→→→→→→→↑⤒       ⤒
-    →→→→→→→S⇥↓↦→→→→→→→→→→→→→→→→→→↑       ↑
-             →→→→→→→→→→→→→→→→→→→→→→→→→→→→↑
+ ↑  ↓←←←↑↑   ↓←←↑ ↓←←←←↑↑   ↓←←↑↑  →→→↑↓↑↑ ↓←←←←
+ ↑  ↓   ↑↑←←←↓  ↑ ↓    ↑↑←←←↓  ↑↑← ↑↓←←←↑↑←↓
+ ↑←←↓   ↑←← ↑↓  ↑←↓    ↑←← ↑↓  ↑←↑ ↑↓   ↑←↑↓
+   ↑↓     ↑ ↑↓   ↑↓      ↑ ↑↓   ↑↑ ↑↓    ↑↑↓
+>⇥*↑↓↦→→⇥*↑ ↑↓↦→→↑→→→→→⇥*↑↦↑→→→→↑↑ ↑→→→→→↑↑→→→→→>
+>→S⇥↓↦→→→S⇥*↑↓↦→→→→→→→→→S→→→→→→→⇥↑↦↑      ↑
+    →→→→→→→S⇥↓↦→→→→→→→→→→→→→→→→→→↑        ↑
+             →→→→→→→→→→→→→→→→→→→→→→→→→→→→→↑
 
 "
 

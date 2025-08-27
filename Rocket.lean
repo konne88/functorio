@@ -6,10 +6,10 @@ instance : Config where
   providerChestCapacity := 0
   adapterMinHeight := 3
 
-def makeLowDensityStructure : Copper 400 -> Steel 40 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
+def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
   busAssemblyLine .lowDensityStructure 4
 
-def makeAcid : Water 6000 -> Iron 60 -> Sulfur 300 -> Bus (Acid 3000) :=
+def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 -> Bus (Acid 3000) :=
   busAssemblyLine .sulfuricAcid 1
 
 def makeCopper : CopperOre 1500 -> Bus (Copper 1500) :=
@@ -33,7 +33,7 @@ def makeCable : Copper 1050 -> Bus (Cable 2100) :=
 def makeGreenCircuit : Iron 600 -> Cable 1800 -> Bus (GreenCircuit 600) :=
   busAssemblyLine .electronicCircuit 4
 
-def makeRedCircuit : Plastic 100 -> Cable 200 -> GreenCircuit 100 -> Bus (RedCircuit 50) :=
+def makeRedCircuit : GreenCircuit 100 -> Plastic 100 -> Cable 200 -> Bus (RedCircuit 50) :=
   busAssemblyLine .advancedCircuit 4
 
 def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (BlueCircuit (45/2)) :=
@@ -67,11 +67,11 @@ def rocketFactory := bus do
   let steel <- makeSteel iron0
 
   let sulfur <- makeSulfur water0 petrol0
-  let acid <- makeAcid water1 iron1 sulfur.less
+  let acid <- makeAcid water1 sulfur.less iron1
   let plastic <- makePlastic petrol1 coal
   let (plastic0, plastic1) <- split plastic
 
-  let lowDensityStruct <- makeLowDensityStructure copper0 steel.less plastic0
+  let lowDensityStruct <- makeLowDensityStructure steel.less copper0 plastic0
 
   let solidFuel <- makeSolidFuel lightOil0
   let rocketFuel <- makeRocketFuel lightOil1 solidFuel.less
@@ -80,7 +80,7 @@ def rocketFactory := bus do
   let (cable0, cable1) <- split cable
   let greenCircuit <- makeGreenCircuit iron2.less cable0
   let (greenCircuit0, greenCircuit1) <- split greenCircuit
-  let redCircuit <- makeRedCircuit plastic1.less cable1.less greenCircuit0
+  let redCircuit <- makeRedCircuit greenCircuit0 plastic1.less cable1.less
   let blueCircuit <- makeBlueCircuit acid.less greenCircuit1.less redCircuit.less
 
   makeRocket blueCircuit.less lowDensityStruct rocketFuel

@@ -214,10 +214,13 @@ def width (f:Fabricator) := f.details.width
 
 def height (f:Fabricator) := f.details.height
 
+@[simp]
 def speedup (f:Fabricator) := f.details.speedup
 
+@[simp]
 def productivity (f:Fabricator) := f.details.productivity
 
+@[simp]
 def moduleSlots (f:Fabricator) := f.details.moduleSlots
 
 def fluidBoxes (f:Fabricator) := f.details.fluidBoxes
