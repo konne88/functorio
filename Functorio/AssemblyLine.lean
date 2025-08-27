@@ -54,28 +54,8 @@ instance : Coe RecipeName Process where
   }
 
 def fabricatorEntity (recipeName:RecipeName) (x y: Nat) : Entity :=
-  let recipe := recipeName.getRecipe
-  let fabricator := defaultCategoryFabricator recipeName.getRecipe.category
-
-  match fabricator with
-  | .assemblingMachine3 => assembler recipe.name x y
-  | .chemicalPlant => chemicalPlant recipe.name x y
-  | .electricFurnace => furnace x y
-  | .oilRefinery => refinery recipe.name x y
-  | .rocketSilo => rocketSilo x y
-
-  | .assemblingMachine1
-  | .assemblingMachine2
-  | .biochamber
-  | .captiveBiterSpawner
-  | .centrifuge
-  | .crusher
-  | .cryogenicPlant
-  | .electromagneticPlant
-  | .foundry
-  | .recycler
-  | .steelFurnace
-  | .stoneFurnace => error! s!"{reprStr fabricator} not yet supported"
+  let f := defaultCategoryFabricator recipeName.getRecipe.category
+  fabricator x y f recipeName
 
 private inductive LeftPipes
 | none
@@ -196,7 +176,7 @@ private def stationWithoutPipes (fabricator : Nat -> Nat -> Entity) (inputs:List
     name := s!"stationWithoutPipes {reprStr outputs}"
   }
 
-private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pipesOut:List Ingredient) (mirror:=false)
+private def poweredChemicalPlant (recipeName : RecipeName) (pipesIn:List Ingredient) (pipesOut:List Ingredient) (mirror:=false)
 : Station [] (pipesOut.map (.,.E)) (pipesIn.map (.,.E))
 :=
   let interfaceE := pipesOut.toVector.mapIdx fun i _ => (2*i+1 : InterfaceImpl)
@@ -206,7 +186,7 @@ private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pi
     width:= 3,
     height:= 5,
     entities := [
-      chemicalPlant recipe 0 1 mirror,
+      chemicalPlant recipeName 0 1 mirror,
       pole 1 4
     ],
     interface := {
@@ -215,7 +195,7 @@ private def poweredChemicalPlant (recipe : String) (pipesIn:List Ingredient) (pi
       s := #v[]
       w := cast (by simp) interfaceW
     }
-    name := s!"chemicalPlant {recipe}"
+    name := s!"chemicalPlant {reprStr recipeName}"
   }
 
 private def poweredRefinery : Station []
@@ -224,7 +204,7 @@ private def poweredRefinery : Station []
     width:= 5,
     height:= 7,
     entities := [
-      refinery RecipeName.advancedOilProcessing.getRecipe.name 0 1 (mirror:=true),
+      refinery RecipeName.advancedOilProcessing 0 1 (mirror:=true),
       pole 2 6
     ],
     interface := {
@@ -250,7 +230,7 @@ private def flyingRobotFrameStation : Station [ (.electricEngineUnit,.N), (.batt
       longInserter 3 0 .W,
       inserter 3 2 .W,
 
-      assembler RecipeName.flyingRobotFrame.getRecipe.name 4 0,
+      assembler RecipeName.flyingRobotFrame 4 0,
       pole 5 3,
 
       longInserter 7 1 .W,
@@ -272,8 +252,9 @@ private def flyingRobotFrameStation : Station [ (.electricEngineUnit,.N), (.batt
 
 -- Special case, because it needs extra inserters to handle the speed.
 def railStation : Station [(.stone,.N),(.ironStick,.N), (.steelPlate,.N), (.rail, .S)] :=
-  let recipe := RecipeName.rail.getRecipe
-  let fabricator := assembler recipe.name
+  let recipeName := RecipeName.rail
+  let recipe := recipeName.getRecipe
+  let fabricator := assembler recipeName
   let factory := stationWithoutPipes fabricator (recipe.inputs.map Prod.snd) (recipe.outputs.map Prod.snd)
   -- Needs two output inserters to keep up with the production rate.
   {factory with
@@ -288,7 +269,7 @@ private def sulfurStation : Station [(.sulfur,.S)] [] [(.water,.E), (.petroleumG
     beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
-      chemicalPlant RecipeName.sulfur.getRecipe.name 0 0 (mirror:=true),
+      chemicalPlant RecipeName.sulfur 0 0 (mirror:=true),
       pole 1 3,
     ]
 
@@ -309,7 +290,7 @@ private def solidFuelFromLightOilStation : Station [(.solidFuel,.S)] [] [(.light
     beltline (x:=4) (height:=4) .S ++
     [
       inserter 3 2 .W,
-      chemicalPlant RecipeName.solidFuelFromLightOil.getRecipe.name 0 0,
+      chemicalPlant RecipeName.solidFuelFromLightOil 0 0,
       pole 1 3,
     ]
 
@@ -333,7 +314,7 @@ private def sulfuricAcidStation : Station [(.sulfur,.N),(.ironPlate,.N)] [(.sulf
       pipeToGround 2 0 .E,
       longInserter 2 1 .W,
       inserter 2 2 .W,
-      chemicalPlant RecipeName.sulfuricAcid.getRecipe.name 3 0,
+      chemicalPlant RecipeName.sulfuricAcid 3 0,
       pole 4 3,
     ]
 
@@ -504,7 +485,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name inputs outputs)
+        (poweredChemicalPlant recipeName inputs outputs)
         (pipesOut outputs)
     | .lubricant =>
       let recipe := RecipeName.lubricant.getRecipe
@@ -512,7 +493,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name inputs outputs)
+        (poweredChemicalPlant recipeName inputs outputs)
         (pipesOut outputs)
     | .lightOilCracking =>
       let recipe := RecipeName.lightOilCracking.getRecipe
@@ -520,7 +501,7 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
       let outputs := recipe.outputs.map Prod.snd
       row3
         (pipesIn inputs)
-        (poweredChemicalPlant recipe.name inputs outputs)
+        (poweredChemicalPlant recipeName inputs outputs)
         (pipesOut outputs)
     | recipeName =>
       let recipe := recipeName.getRecipe

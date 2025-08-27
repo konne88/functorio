@@ -3,6 +3,7 @@ import Lean.Data.Json.Printer
 import Lean.Data.Json.FromToJson
 
 import Functorio.Direction
+import Functorio.Recipe
 
 open Lean
 open Lean (Json)
@@ -19,14 +20,10 @@ inductive EntityType
   | longInserter (direction:Direction)
   | pole
   | bigPole
-  | assembler (recipe:String) (direction:Direction)
-  | furnace
-  | chemicalPlant (recipe:String) (direction:Direction) (mirror:Bool)
-  | refinery (recipe:String) (direction:Direction) (mirror:Bool)
+  | fabricator (fabricator:Fabricator) (recipe:RecipeName) (direction:Direction) (mirror:Bool)
   | roboport
   | passiveProviderChest (capacity:Option Nat)
   | refinedConcrete
-  | rocketSilo
   deriving DecidableEq, Inhabited, Repr
 
 structure Entity where
@@ -57,21 +54,23 @@ def pole x y := ({x:=x,y:=y,type:=.pole} : Entity)
 
 def bigPole x y := ({x:=x,y:=y,type:=.bigPole} : Entity)
 
-def assembler r x y (d := Direction.W) := ({x:=x,y:=y,type:=.assembler r d} : Entity)
+def fabricator x y f r (d := Direction.N) (mirror:=false) := ({x:=x,y:=y,type:=.fabricator f r d mirror} : Entity)
 
-def furnace x y := ({x:=x,y:=y,type:=.furnace} : Entity)
+def assembler r x y (d := Direction.W) := fabricator x y .assemblingMachine3 r d
 
-def chemicalPlant r x y (mirror:=false) (d := Direction.W) := ({x:=x,y:=y,type:=.chemicalPlant r d mirror} : Entity)
+def furnace r x y := fabricator x y .electricFurnace r
 
-def refinery r x y (mirror:=false) (d := Direction.E) := ({x:=x,y:=y,type:=.refinery r d mirror} : Entity)
+def chemicalPlant r x y (mirror:=false) (d := Direction.W) := fabricator x y .chemicalPlant r d mirror
+
+def refinery r x y (mirror:=false) (d := Direction.E) := fabricator x y .oilRefinery r d mirror
+
+def rocketSilo x y := fabricator x y .rocketSilo .rocketPart
 
 def roboport x y := ({x:=x,y:=y,type:=.roboport} : Entity)
 
 def passiveProviderChest x y (capacity : Option Nat := .none) := ({x:=x,y:=y,type:=.passiveProviderChest capacity} : Entity)
 
 def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
-
-def rocketSilo x y := ({x:=x,y:=y,type:=.rocketSilo} : Entity)
 
 namespace Entity
 
@@ -82,10 +81,8 @@ def width (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
   | .pump dir => if dir == .N || dir == .S then 1 else 2
-  | .assembler _ _ | .furnace | .chemicalPlant _ _ _ => 3
   | .roboport => 4
-  | .refinery _ _ _ => 5
-  | .rocketSilo => 9
+  | .fabricator f _ _ _ => f.width
 
 def height (e:Entity) : Nat :=
   match e.type with
@@ -94,10 +91,8 @@ def height (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
   | .pump dir => if dir == .N || dir == .S then 2 else 1
-  | .assembler _ _ | .furnace | .chemicalPlant _ _ _ => 3
   | .roboport => 4
-  | .refinery _ _ _ => 5
-  | .rocketSilo => 9
+  | .fabricator f _ _ _ => f.height
 
 def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {
   x := entity.x + dx

@@ -38,34 +38,28 @@ private def entityName (e:Entity) : String :=
   | .longInserter _ => "long-handed-inserter"
   | .pole => "medium-electric-pole"
   | .bigPole => "big-electric-pole"
-  | .assembler _ _ => "assembling-machine-3"
-  | .furnace => "electric-furnace"
-  | .chemicalPlant _ _ _ => "chemical-plant"
-  | .refinery _ _ _ => "oil-refinery"
   | .roboport => "roboport"
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
-  | .rocketSilo => "rocket-silo"
+  | .fabricator f _ _ _ => f.name
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
   | .belt d | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d | .longInserter d
-  | .assembler _ d | .chemicalPlant _ d _ | .refinery _ d _ => d
-  | .pipe | .pole | .bigPole | .furnace | .roboport | .passiveProviderChest _
-  | .refinedConcrete | .rocketSilo => .none
+  | .fabricator _ _ d _ => d
+  | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
+  | .refinedConcrete => .none
 
 private def entityProps (e:Entity) : List (String × Json):=
   match e.type with
   | .belt _ | .pipe | .pipeToGround _ | .pump _ | .inserter _
-  | .longInserter _ | .pole | .bigPole | .furnace | .roboport | .refinedConcrete => []
+  | .longInserter _ | .pole | .bigPole | .roboport | .refinedConcrete => []
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]
   | .passiveProviderChest capacity => match capacity with | .none => [] | .some capacity => [("bar", capacity)]
   | .splitter _ priority => match priority with | .none => [] | .some p => [("output_priority", p)]
-  | .assembler r _ => [("recipe", r), ("recipe_quality", "normal")]
-  | .chemicalPlant r _ m | .refinery r _ m => [("recipe", r), ("recipe_quality", "normal"), ("mirror", m)]
-  | .rocketSilo => [("recipe", "rocket-part"), ("recipe_quality", "normal")]
+  | .fabricator _ r _ m => [("recipe", r.getRecipe.name), ("recipe_quality", "normal"), ("mirror", m)]
 
 private def directionToNat (d:Direction) :=
   match d with
