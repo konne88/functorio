@@ -7,7 +7,7 @@ instance : Config where
   adapterMinHeight := 3
 
 def ironFullBeltFactory : IronOre 2700 -> Bus (Iron 2700) :=
-  busAssemblyLine .ironPlate 72
+  busAssemblyLine RecipeName.ironPlate 72
 
 def ironFactory (ore:Vector (IronOre 2700 ) 8) : Bus (Vector (Iron 2700) 8) := do
   let iron0 <- ironFullBeltFactory ore[0]
@@ -21,7 +21,7 @@ def ironFactory (ore:Vector (IronOre 2700 ) 8) : Bus (Vector (Iron 2700) 8) := d
   return Array.toVector #[iron0, iron1, iron2, iron3, iron4, iron5, iron6, iron7]
 
 def copperFullBeltFactory : CopperOre 2700 -> Bus (Copper 2700) :=
-  busAssemblyLine .copperPlate 72
+  busAssemblyLine RecipeName.copperPlate 72
 
 def copperFactory (ore:Vector (CopperOre 2700 ) 6) : Bus (Vector (Copper 2700) 6) := do
   let copper0 <- copperFullBeltFactory ore[0]
@@ -33,7 +33,7 @@ def copperFactory (ore:Vector (CopperOre 2700 ) 6) : Bus (Vector (Copper 2700) 6
   return Array.toVector #[copper0, copper1, copper2, copper3, copper4, copper5]
 
 def steelPartialBeltFactory : Iron 2700 -> Bus (Steel 540) :=
-  busAssemblyLine .steelPlate 72
+  busAssemblyLine RecipeName.steelPlate 72
 
 def steelFactory (iron:Vector (Iron 2700) 4) : Bus (Steel 2160) := do
   let steel0 <- steelPartialBeltFactory iron[0]
@@ -46,97 +46,97 @@ def steelFactory (iron:Vector (Iron 2700) 4) : Bus (Steel 2160) := do
   merge steel01 steel23
 
 def brickFactory : Stone 2700 -> Bus (Brick 1350) :=
-  busAssemblyLine .stoneBrick 36
+  busAssemblyLine RecipeName.stoneBrick 36
 
 def gearFactory : Iron 1500 -> Bus (Gear 750) :=
-  busAssemblyLine .ironGearWheel 5
+  busAssemblyLine RecipeName.ironGearWheel 5
 
 def redScienceFactory : Copper 150 -> Gear 150 -> Bus (RedScience 150) :=
-  busAssemblyLine .automationSciencePack 10
+  busAssemblyLine RecipeName.automationSciencePack 10
 
 def inserterFactory : GreenCircuit 150 -> Gear 150 -> Iron 150 -> Bus (Inserter 150) :=
-  busAssemblyLine .inserter 1
+  busAssemblyLine RecipeName.inserter 1
 
 def yellowBeltFactory : Iron 150 -> Gear 150 -> Bus (YellowBelt 300) :=
-  busAssemblyLine .transportBelt 1
+  busAssemblyLine RecipeName.transportBelt 1
 
 def greenScienceFactory : Inserter 150 -> YellowBelt 150 -> Bus (GreenScience 150) :=
-  busAssemblyLine .logisticSciencePack 12
+  busAssemblyLine RecipeName.logisticSciencePack 12
 
 def yellowAmmoFactory : Iron 300 -> Bus (YellowAmmo 75) :=
-  busAssemblyLine .firearmMagazine 1
+  busAssemblyLine RecipeName.firearmMagazine 1
 
 def redAmmoFactory : YellowAmmo 75 -> Steel (75/2) -> Copper 75 -> Bus (RedAmmo 75) :=
-  busAssemblyLine .piercingRoundsMagazine 3
+  busAssemblyLine RecipeName.piercingRoundsMagazine 3
 
 def wallFactory : Brick 750 -> Bus (Wall 150) :=
-  busAssemblyLine .stoneWall 1
+  busAssemblyLine RecipeName.stoneWall 1
 
 def grenadeFactory : Iron 375 -> Coal 750 -> Bus (Grenade 75) :=
-  busAssemblyLine .grenade 8
+  busAssemblyLine RecipeName.grenade 8
 
 def blackScienceFactory : RedAmmo 75 -> Grenade 75 -> Wall 150 -> Bus (BlackScience 150) :=
-  busAssemblyLine .militarySciencePack 10
+  busAssemblyLine RecipeName.militarySciencePack 10
 
 def plasticFactory (petrol:Petrolium 28800) (coal:Coal 1440) : Bus (Plastic 2000 × Plastic 750) := do
   let (petrol0, petrol1) <- split (left:=20400) petrol
   let (coal0, coal1) <- split (left:=1020) coal
-  let plastic0 <- busAssemblyLine .plasticBar 17 petrol0 coal0
-  let plastic1 <- busAssemblyLine .plasticBar 7 petrol1 coal1
+  let plastic0 <- busAssemblyLine RecipeName.plasticBar 17 petrol0 coal0
+  let plastic1 <- busAssemblyLine RecipeName.plasticBar 7 petrol1 coal1
   return (plastic0.less, plastic1.less)
 
 def acidFactory : Water 6000 -> Sulfur 300 -> Iron 60 -> Bus (Acid 3000) :=
-  busAssemblyLine .sulfuricAcid 1
+  busAssemblyLine RecipeName.sulfuricAcid 1
 
 def pipeFactory : Iron 450 -> Bus (Pipe 450) :=
-  busAssemblyLine .pipe 3
+  busAssemblyLine RecipeName.pipe 3
 
 def engineFactory : Steel 210 -> Gear 210 -> Pipe 420 -> Bus (Engine 210) :=
-  busAssemblyLine .engineUnit 28
+  busAssemblyLine RecipeName.engineUnit 28
 
 def sulfurFactory : Water 7200 -> Petrolium 7200 -> Bus (Sulfur 480) :=
-  busAssemblyLine .sulfur 4
+  busAssemblyLine RecipeName.sulfur 4
 
 def blueScienceAssemblyLine : Engine 150 -> RedCircuit 225 -> Sulfur 75 -> Bus (BlueScience 150) :=
-  busAssemblyLine .chemicalSciencePack 24
+  busAssemblyLine RecipeName.chemicalSciencePack 24
 
 def furnaceFactory : Steel 600 -> RedCircuit 300 -> Brick 600 -> Bus (Furnace 60) :=
-  busAssemblyLine .electricFurnace 4
+  busAssemblyLine RecipeName.electricFurnace 4
 
 def prodModuleFactory : RedCircuit 250 -> GreenCircuit 250 -> Bus (ProdModule 50) :=
-  busAssemblyLine .productivityModule 10
+  busAssemblyLine RecipeName.productivityModule 10
 
 def ironStickFactory : Iron 450 -> Bus (IronStick 900) :=
-  busAssemblyLine .ironStick 3
+  busAssemblyLine RecipeName.ironStick 3
 
 def railFactory : Stone 750 -> IronStick 750-> Steel 750 -> Bus (Rail 1500) :=
-  busAssemblyLine .rail 5
+  busAssemblyLine RecipeName.rail 5
 
 def purpleScienceFactory : Furnace 50 -> ProdModule 50 -> Rail 1500 ->  Bus (PurpleScience 150) :=
-  busAssemblyLine .productionSciencePack 14
+  busAssemblyLine RecipeName.productionSciencePack 14
 
 def batteryFactory : Acid 2400 -> Iron 120 -> Copper 120 -> Bus (Battery 120) :=
-  busAssemblyLine .battery 8
+  busAssemblyLine RecipeName.battery 8
 
 def electricEngineFactory : Lubricant 900 -> Engine 60 -> GreenCircuit 120 -> Bus (ElectricEngine 60) :=
-  busAssemblyLine .electricEngineUnit 8
+  busAssemblyLine RecipeName.electricEngineUnit 8
 
 def robotFrameFactory : ElectricEngine 60 -> Battery 120 -> Steel 60 ->GreenCircuit 180 -> Bus (RobotFrame 60) :=
-  busAssemblyLine .flyingRobotFrame 16
+  busAssemblyLine RecipeName.flyingRobotFrame 16
 
 def lowDensityStructureFactory (copperA:Copper 300) (copperB:Copper 2700) (steel:Steel 300) (plastic:Plastic 750) : Bus (LowDensityStructure 150) := do
   let (steelA, steelB) <- split steel
   let (plasticA, plasticB) <- split plastic
-  let structA <- busAssemblyLine .lowDensityStructure 3 steelA copperA plasticA
-  let structB <- busAssemblyLine .lowDensityStructure 27 steelB copperB plasticB
+  let structA <- busAssemblyLine RecipeName.lowDensityStructure 3 steelA copperA plasticA
+  let structB <- busAssemblyLine RecipeName.lowDensityStructure 27 steelB copperB plasticB
   merge structA structB
 
 def yellowScienceFactory : LowDensityStructure 150 -> BlueCircuit 100 -> RobotFrame 50 -> Bus (YellowScience 150) :=
-  busAssemblyLine .utilitySciencePack 14
+  busAssemblyLine RecipeName.utilitySciencePack 14
 
 def greenCircuitFactory (copper:Copper 1350) (iron:Iron 900) : Bus (GreenCircuit 900) := do
-  let cable : Cable 2700 <- busAssemblyLine .copperCable 9 copper
-  busAssemblyLine .electronicCircuit 6 iron cable
+  let cable : Cable 2700 <- busAssemblyLine RecipeName.copperCable 9 copper
+  busAssemblyLine RecipeName.electronicCircuit 6 iron cable
 
 def greenCircuitFullBeltFactory (copper0:Copper 1350) (copper1:Copper 2700) (iron:Iron 2700) : Bus (GreenCircuit 2700) := do
   let (copper1, copper2) <- split copper1
@@ -152,11 +152,11 @@ def greenCircuitFullBeltFactory (copper0:Copper 1350) (copper1:Copper 2700) (iro
   return green
 
 def redCircuitFactory (copper:Copper 1050) (greenCircuit:GreenCircuit 1000) (plastic:Plastic 1000) : Bus (RedCircuit 500) := do
-  let cable : Cable 2100 <- busAssemblyLine .copperCable 7 copper
-  busAssemblyLine .advancedCircuit 40 greenCircuit plastic cable.less
+  let cable : Cable 2100 <- busAssemblyLine RecipeName.copperCable 7 copper
+  busAssemblyLine RecipeName.advancedCircuit 40 greenCircuit plastic cable.less
 
 def blueCircuitFactory : Acid 525 -> GreenCircuit 2100 -> RedCircuit 210 -> Bus (BlueCircuit 105) :=
-  busAssemblyLine .processingUnit 14
+  busAssemblyLine RecipeName.processingUnit 14
 
 def circuitFactory (copper: Vector (Copper 2700) 4) (iron: Vector (Iron 2700) 2) (plastic:Plastic 2000) (acid:Acid 525)
 : Bus (GreenCircuit 700 × RedCircuit 775 × BlueCircuit 100)

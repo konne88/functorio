@@ -5,25 +5,25 @@ import Functorio.Bus
 namespace Readme
 
 def makeIron : IronOre 300 -> Bus (Iron 300) :=
-  busAssemblyLine .ironPlate 8
+  busAssemblyLine RecipeName.ironPlate 8
 
 def makeCopper : CopperOre 150 -> Bus (Copper 150) :=
-  busAssemblyLine .copperPlate 4
+  busAssemblyLine RecipeName.copperPlate 4
 
 def makeGear : Iron 300 -> Bus (Gear 150) :=
-  busAssemblyLine .ironGearWheel 1
+  busAssemblyLine RecipeName.ironGearWheel 1
 
 def makeRedScience : Copper 150 -> Gear 150 -> Bus (RedScience 150) :=
-  busAssemblyLine .automationSciencePack 10
+  busAssemblyLine RecipeName.automationSciencePack 10
 
 def makeSteel : Iron 2700 -> Bus (Steel 540) :=
-  busAssemblyLine .steelPlate 72
+  busAssemblyLine RecipeName.steelPlate 72
 
 def makeBelt : Iron 150 -> Gear 150 -> Bus (YellowBelt 300):=
-  busAssemblyLine .transportBelt 1
+  busAssemblyLine RecipeName.transportBelt 1
 
 def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 ->Bus (Acid 3000) :=
-  busAssemblyLine .sulfuricAcid 1
+  busAssemblyLine RecipeName.sulfuricAcid 1
 
 def redScience := bus do
   let ironOre <- input .ironOre 300

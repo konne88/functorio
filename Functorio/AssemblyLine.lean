@@ -9,6 +9,7 @@ import Functorio.Fraction
 import Functorio.Util
 import Functorio.Config
 
+@[simp]
 def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .chemistry
 | .organicOrChemistry
@@ -40,6 +41,18 @@ def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .recyclingOrHandCrafting
 | .recycling => .recycler
 
+structure Process where
+  recipeName:RecipeName
+  fabricator:Fabricator
+--  fabricatorOk : fabricator.handlesCategory recipeName.getRecipe.category := by decide
+
+instance : Coe RecipeName Process where
+  coe recipeName := {
+    recipeName := recipeName,
+    fabricator := defaultCategoryFabricator recipeName.getRecipe.category,
+   -- fabricatorOk := by sorry
+  }
+
 def fabricatorEntity (recipeName:RecipeName) (x y: Nat) : Entity :=
   let recipe := recipeName.getRecipe
   let fabricator := defaultCategoryFabricator recipeName.getRecipe.category
@@ -63,14 +76,6 @@ def fabricatorEntity (recipeName:RecipeName) (x y: Nat) : Entity :=
   | .recycler
   | .steelFurnace
   | .stoneFurnace => error! s!"{reprStr fabricator} not yet supported"
-
-namespace RecipeName
-
-@[simp]
-def speedUp (recipeName:RecipeName) : Fraction :=
-  (defaultCategoryFabricator recipeName.getRecipe.category).speedup
-
-end RecipeName
 
 private inductive LeftPipes
 | none
@@ -525,12 +530,12 @@ def station (recipeName:RecipeName) : Station (stationInterface recipeName) :=
 
 -- Item's per minute
 @[simp]
-def throughput (recipeName:RecipeName) (stations:Nat) (items:Fraction) : Fraction :=
-  stations * items * recipeName.speedUp * 60 / recipeName.getRecipe.time
+def inputThroughput (process:Process) (stations:Nat) (items:Fraction) : Fraction :=
+  stations * items * process.fabricator.speedup * 60 / process.recipeName.getRecipe.time
 
 @[simp]
-def providedThroughput (recipeName:RecipeName) (stations:Nat) (ingredient:Ingredient) (items:Fraction) : Fraction :=
-  let t := throughput recipeName stations items
+def outputThroughput (process:Process) (stations:Nat) (ingredient:Ingredient) (items:Fraction) : Fraction :=
+  let t := stations * items * process.fabricator.speedup * (1 + process.fabricator.productivity) * 60 / process.recipeName.getRecipe.time
   if ingredient.isLiquid then t else min expressBeltTroughput t
 
 def expressBeltHalfThroughput := expressBeltTroughput / 2
@@ -641,7 +646,7 @@ def maxRoboportLogisticsDistance := 46
 def assemblyLine [Config] (recipeName:RecipeName) (stations:Nat) : Factory [] [] (stationInterface recipeName) [] :=
   Id.run do
     let output := recipeName.getRecipe.outputs[0]!
-    let stationOutput := throughput recipeName 1 output.fst
+    let stationOutput := inputThroughput recipeName 1 output.fst
     let station := station recipeName
     let mut factories : Array (Factory (stationInterface recipeName) [] (stationInterface recipeName) []) := #[
       bigPoleInsert station.interface.s,
@@ -680,36 +685,36 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
   | t::_::_ => (value t index, tuple value (index + 1))
 
 @[simp]
-def BusAssemblyLineReturn (recipeName: RecipeName) (stations:Nat) : Type :=
-  Bus (tupleType recipeName.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (providedThroughput recipeName stations ingredient items))
+def BusAssemblyLineReturn (process:Process) (stations:Nat) : Type :=
+  Bus (tupleType process.recipeName.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (outputThroughput process stations ingredient items))
 
 @[simp]
-def BusAssemblyLineType (recipeName:RecipeName) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := recipeName.getRecipe.inputs): Type :=
+def BusAssemblyLineType (process:Process) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := process.recipeName.getRecipe.inputs): Type :=
   match remainingInputs with
-  | [] => BusAssemblyLineReturn recipeName stations
-  | (items,ingredient)::inputs => BusLane ingredient (throughput recipeName stations items) -> BusAssemblyLineType recipeName stations inputs
+  | [] => BusAssemblyLineReturn process stations
+  | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process stations items) -> BusAssemblyLineType process stations inputs
 
 def processBusAssemblyLineArguments
-  (recipeName:RecipeName)
+  (process:Process)
   (stations:Nat)
-  (processor: List BusLane' -> BusAssemblyLineReturn recipeName stations)
-  (remainingInputs: List (Fraction × Ingredient) := recipeName.getRecipe.inputs)
+  (processor: List BusLane' -> BusAssemblyLineReturn process stations)
+  (remainingInputs: List (Fraction × Ingredient) := process.recipeName.getRecipe.inputs)
   (args: List BusLane' := [])
-: BusAssemblyLineType recipeName stations remainingInputs := by
+: BusAssemblyLineType process stations remainingInputs := by
   revert args
   refine (match remainingInputs with
   | [] => processor
   | _::inputs => fun args arg =>
-    processBusAssemblyLineArguments recipeName stations processor inputs (args ++ [arg.toBusLane'])
+    processBusAssemblyLineArguments process stations processor inputs (args ++ [arg.toBusLane'])
   )
 
-def busAssemblyLine [config:Config] (recipeName: RecipeName) (stations:Nat) : BusAssemblyLineType recipeName stations :=
-  processBusAssemblyLineArguments recipeName stations fun inputs => do
-    let factory := assemblyLine recipeName stations
-    let namedFactory := factory.setName s!"{stations}x{reprStr recipeName}"
+def busAssemblyLine [config:Config] (process: Process) (stations:Nat) : BusAssemblyLineType process stations :=
+  processBusAssemblyLineArguments process stations fun inputs => do
+    let factory := assemblyLine process.recipeName stations
+    let namedFactory := factory.setName s!"{stations}x{reprStr process.recipeName}"
     let indexes <- busTapGeneric
       inputs
-      (recipeName.getRecipe.outputs.map Prod.snd)
+      (process.recipeName.getRecipe.outputs.map Prod.snd)
       (unsafeFactoryCast namedFactory)
       (adapterMinHeight := config.adapterMinHeight)
     return tuple (fun (_, _) i => {index:=indexes[i]!})

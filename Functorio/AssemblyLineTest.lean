@@ -150,7 +150,7 @@ import Functorio.Ascii
   let acid <- input .sulfuricAcid (75/2)
   let green <- input .electronicCircuit 150
   let red <- input .advancedCircuit 15
-  let _ <- busAssemblyLine .processingUnit 1 acid.exact green red
+  let _ <- busAssemblyLine RecipeName.processingUnit 1 acid.exact green red
 ).toAscii == s!"
 
 
@@ -168,7 +168,7 @@ import Functorio.Ascii
 
 #guard (bus do
   let copper <- input .copperPlate 750
-  let _ <- busAssemblyLine .copperCable 5 copper
+  let _ <- busAssemblyLine RecipeName.copperCable 5 copper
 ).toAscii == s!"
 
 
@@ -210,7 +210,7 @@ instance : Config where
 
 #guard (bus do
   let ironOre <- input .ironOre 525
-  let _ <- busAssemblyLine .ironPlate 14 ironOre
+  let _ <- busAssemblyLine RecipeName.ironPlate 14 ironOre
 ).toAscii = s!"
 
 
@@ -296,7 +296,7 @@ instance : Config where
   let stone <- input .stone 750
   let steel <- input .steelPlate 750
   let stick <- input .ironStick 750
-  let _ <- busAssemblyLine .rail 5 stone stick steel
+  let _ <- busAssemblyLine RecipeName.rail 5 stone stick steel
 ).toAscii == s!"
 
 
