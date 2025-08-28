@@ -1,22 +1,22 @@
 import Functorio.AssemblyLine
 import Functorio.Ascii
 
-#guard (station .ironPlate).toAscii ==s!"
- ^     v
- ↑ *** ↓
- ↑ *F* ↓
- ↑⇨***⇨↓
- ↑  ⚡  ↓
- ^     v
+#eval (IO.print (station RecipeName.electronicCircuit).toAscii)
+
+#guard (station RecipeName.ironPlate).toAscii ==s!"
+  ^     v
+  ↑⇨***⇨↓
+  ↑⚡*F*⚡↓
+  ↑ *** ↓
+  ^     v
 "
 
-#guard (station .electronicCircuit).toAscii == s!"
- ^^     v
- ↑↑ *** ↓
- ↑↑↠*A* ↓
- ↑↑⇨***⇨↓
- ↑↑  ⚡  ↓
- ^^     v
+#guard (station RecipeName.electronicCircuit).toAscii == s!"
+  ^     ^v
+  ↑⇨***⇦↑↓
+  ↑⚡*A*↠↑↓
+  ↑ ***⚡↑↓
+  ^     ^v
 "
 
 #guard (station .advancedCircuit).toAscii == s!"

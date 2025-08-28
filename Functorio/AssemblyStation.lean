@@ -179,9 +179,11 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
           | _ => error! "nope"
           break
 
-    for y in List.range height do
+    for i in List.range height do
+      let y := height - i - 1
       if entities[y]! == .none then
         entities := entities.set! y (.some .pole)
+        break
 
     return entities.toList.zipIdx.flatMap fun (type, y) =>
       match type with | .none => [] | .some type => [{x:=x, y:=y, type:=type}]
@@ -225,17 +227,17 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
     }
 
 
-def interfaceNS' (recipe:RecipeName) : List InterfaceV :=
+def interfaceNS (recipe:RecipeName) : List InterfaceV :=
   (solidInputs recipe).map (.,.N) ++ (solidOutputs recipe).map (.,.S)
 
 def pipesOnSideStation (process:Process) : Factory
-  (interfaceNS' process.recipe)
+  (interfaceNS process.recipe)
   (interfaceE process.recipe)
-  (interfaceNS' process.recipe)
+  (interfaceNS process.recipe)
   (interfaceW process.recipe)
 :=
   let station := plainStation process
-  let ns := interfaceNS' process.recipe
+  let ns := interfaceNS process.recipe
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
   let leftAccess := leftAccessor station.interface.w station.height leftNS
   let rightAccess := rightAccessor station.interface.e station.height rightNS
@@ -292,8 +294,6 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
 private def pipesOut (ingredients:List Ingredient) (underground:Bool)
 : Factory (ingredients.map (.,.S)) [] (ingredients.map (.,.S)) (ingredients.map (.,.E))
 :=
-  if !underground then unimplemented! s!"pipesOut requires underground belts, passed {underground}" else
-
   let pipes := ingredients.length
   let width := pipes * 2 + 1
   let height := pipes * 2 - 1
@@ -309,7 +309,7 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool)
       let x := 2 * i
       let y := 2 * i
 
-      if i == 0
+      if i == 0 && !underground
       then pipe x y
       else pipeToGround x y .E
 
@@ -318,7 +318,7 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool)
       let x := 0
       let y := 2 * i
 
-      if i == 0
+      if i == 0 || underground
       then []
       else [pipeToGround x y .W]
 
@@ -338,37 +338,49 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool)
     name := s!"pipesOut {reprStr ingredients}"
   }
 
-def interfaceNS (recipe:RecipeName) : List InterfaceV :=
+def stationInterface (recipe:RecipeName) : List InterfaceV :=
   recipe.inputIngredients.map (., .N) ++
   recipe.outputIngredients.map (., .S)
 
-abbrev Station recipe := Factory (interfaceNS recipe) [] (interfaceNS recipe) []
+abbrev Station recipe := Factory (stationInterface recipe) [] (stationInterface recipe) []
+
+def stationWithoutOverride (process:Process) : Station process.recipe :=
+  let station := pipesOnSideStation process
+
+  let ns := interfaceNS process.recipe
+  let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
+
+  unsafeFactoryCast (row3
+    (pipesIn (liquidInputs process.recipe) (underground:=!leftNS.isEmpty))
+    station
+    (pipesOut (liquidOutputs process.recipe) (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
 private def flyingRobotFrameStation : Station .flyingRobotFrame :=
+  let height := 3
   let entities : List Entity :=
-    beltline (x:=0) (height:=4) .N ++
-    beltline (x:=1) (height:=4) .N ++
+    beltline (x:=0) .N height ++
+    beltline (x:=1) .N height ++
     [
       beltUp 2 0 .N,
       longInserter 2 1 .W,
       beltDown 2 2 .N,
-      belt 2 3 .N,
 
       longInserter 3 0 .W,
+      pole 3 1,
       inserter 3 2 .W,
 
       assembler RecipeName.flyingRobotFrame 4 0,
-      pole 5 3,
 
-      longInserter 7 1 .W,
+      longInserter 7 0 .W,
+      pole 7 1,
       inserter 7 2 .E
     ] ++
-    beltline (x:=8) (height:=4) .N ++
-    beltline (x:=9) (height:=4) .S
+    beltline (x:=8) .N height ++
+    beltline (x:=9) .S height
 
   {
-    width:= 10, height:= 4, entities := entities
+    width:= 10, height:=height, entities := entities
     interface := {
       n := #v[0,1,2,8,9]
       e := #v[]
@@ -392,13 +404,4 @@ def station (process:Process) : Station process.recipe :=
   match process.recipe with
   | .flyingRobotFrame => flyingRobotFrameStation
   | .rail => railStation
-  | _ =>
-    let station := pipesOnSideStation process
-
-    let ns := interfaceNS' process.recipe
-    let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
-
-    unsafeFactoryCast (row3
-      (pipesIn (liquidInputs process.recipe) (underground:=!leftNS.isEmpty))
-      station
-      (pipesOut (liquidOutputs process.recipe) (underground:=!rightNS.isEmpty)))
+  | process => stationWithoutOverride process

@@ -2,8 +2,11 @@
     "cSpell.words": [
         "Factorio",
         "foldl",
+        "Functorio",
         "nauvis",
-        "println"
+        "println",
+        "repr",
+        "roboport"
     ],
 
     "files.exclude": {
