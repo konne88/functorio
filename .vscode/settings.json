@@ -6,7 +6,8 @@
         "nauvis",
         "println",
         "repr",
-        "roboport"
+        "roboport",
+        "Supercapacitor"
     ],
 
     "files.exclude": {

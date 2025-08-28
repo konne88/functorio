@@ -7,6 +7,7 @@ structure Process where
   recipe:RecipeName
   fabricator:Fabricator
   -- fabricatorOk : fabricator.handlesCategory recipeName.getRecipe.category := by decide
+  deriving Repr, DecidableEq
 
 namespace RecipeName
 
@@ -176,7 +177,7 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
           match i with
           | 0 => entities := entities.set! y (.some (.inserter inserterDir))
           | 1 => entities := entities.set! y (.some (.longInserter inserterDir))
-          | _ => error! "nope"
+          | _ => error! s!"More than 2 belt inputs/outputs per side are not supported, belt index = {i}"
           break
 
     for i in List.range height do
@@ -248,7 +249,7 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
 : Factory (ingredients.map (.,.N)) (ingredients.map (.,.E)) (ingredients.map (.,.N)) []
 :=
   let pipes := ingredients.length
-  let width := pipes * 2 + 1
+  let width := if pipes == 0 then 0 else pipes * 2 + 1
   let height := pipes * 2 - 1
 
   let pipelines : List Entity :=
@@ -295,7 +296,7 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool)
 : Factory (ingredients.map (.,.S)) [] (ingredients.map (.,.S)) (ingredients.map (.,.E))
 :=
   let pipes := ingredients.length
-  let width := pipes * 2 + 1
+  let width := if pipes == 0 then 0 else pipes * 2 + 1
   let height := pipes * 2 - 1
 
   let pipelines : List Entity :=
@@ -404,4 +405,4 @@ def station (process:Process) : Station process.recipe :=
   match process.recipe with
   | .flyingRobotFrame => flyingRobotFrameStation
   | .rail => railStation
-  | process => stationWithoutOverride process
+  | recipe => stationWithoutOverride {process with recipe := recipe}

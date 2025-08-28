@@ -1,148 +1,18 @@
 import Functorio.AssemblyLine
 import Functorio.Ascii
 
-#eval (IO.print (station RecipeName.electronicCircuit).toAscii)
-
-#guard (station RecipeName.ironPlate).toAscii ==s!"
-  ^     v
-  ↑⇨***⇨↓
-  ↑⚡*F*⚡↓
-  ↑ *** ↓
-  ^     v
-"
-
-#guard (station RecipeName.electronicCircuit).toAscii == s!"
-  ^     ^v
-  ↑⇨***⇦↑↓
-  ↑⚡*A*↠↑↓
-  ↑ ***⚡↑↓
-  ^     ^v
-"
-
-#guard (station .advancedCircuit).toAscii == s!"
- ^^     ^v
- ↑↑ *** ↑↓
- ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ^^     ^v
-"
-
-#guard (station .flyingRobotFrame).toAscii == s!"
- ^^^     ^v
- ↑↑↥↠*** ↑↓
- ↑↑↠ *A*↠↑↓
- ↑↑⤒⇨***⇦↑↓
- ↑↑↑  ⚡  ↑↓
- ^^^     ^v
-"
-
-#guard (station .processingUnit).toAscii == s!"
-  ^ ^^     v
-  | ↑↑↠*** ↓
-  |┤↑↑├*A* ↓
-  | ↑↑⇨***⇨↓
-  | ↑↑  ⚡  ↓
-  ^ ^^     v
-"
-
-#guard (station .battery).toAscii == s!"
-  ^ ^^     v
-  |┤↑↑├*** ↓
-  | ↑↑↠*C* ↓
-  | ↑↑⇨***⇨↓
-  | ↑↑  ⚡  ↓
-  ^ ^^     v
-"
-
-#guard (station .sulfuricAcid).toAscii == s!"
-  ^ ^^     v
-  |┤↑↑├***||
-  | ↑↑↠*C* |
-  | ↑↑⇨*** |
-  | ↑↑  ⚡  |
-  ^ ^^     v
-"
-
-#guard (station .sulfur).toAscii == s!"
-  ^ ^     v
-  |┤|├*** ↓
-  | | *C* ↓
-  | ||***⇨↓
-  | |  ⚡  ↓
-  ^ ^     v
-"
-
-#guard (station .solidFuelFromLightOil).toAscii == s!"
-  ^     v
-  ||*** ↓
-  | *C* ↓
-  | ***⇨↓
-  |  ⚡  ↓
-  ^     v
-"
-
-#guard (station .rocketFuel).toAscii == s!"
-  ^ ^     v
-  | ↑ *** ↓
-  |┤↑├*A* ↓
-  | ↑⇨***⇨↓
-  | ↑  ⚡  ↓
-  ^ ^     v
-"
-
-#guard (station .heavyOilCracking).toAscii == s!"
-  ^ ^     v
-  | |     |
-  |┤|├***||
-  | | *C* |
-  | ||*** |
-  | |  ⚡  |
-  ^ ^     v
-"
-
-#guard (station .advancedOilProcessing).toAscii == s!"
-  ^ ^       v v v
-  | |       | | |
-  | | *****|| | |
-  |┤|├***** | | |
-  | | **O**┤|├| |
-  | ||***** | | |
-  | | *****┤| |├|
-  | |   ⚡   | | |
-  ^ ^       v v v
-"
-
-#guard (station .rocketPart).toAscii == s!"
- ^^           ^
- ↑↑ ********* ↑
- ↑↑↠********* ↑
- ↑↑⇨*********⇦↑
- ↑↑ ********* ↑
- ↑↑ ****L**** ↑
- ↑↑ ********* ↑
- ↑↑ ********* ↑
- ↑↑ ********* ↑
- ↑↑ ********* ↑
- ↑↑     ⚡     ↑
- ^^           ^
-"
-
 #guard (assemblyLine .advancedCircuit 3).toAscii == s!"
 
 
- ↑↑ *** ↑↓
- ↑↑↠*A*↠↑↓
  ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ↑↑ *** ↑↓
  ↑↑↠*A*↠↑↓
+ ↑↑⚡***⚡↑↓
  ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ↑↑ *** ↑↓
  ↑↑↠*A*↠↑↓
+ ↑↑⚡***⚡↑↓
  ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
+ ↑↑↠*A*↠↑↓
+ ↑↑⚡***⚡↑↓
  ^^     ^v
 "
 
@@ -154,11 +24,12 @@ import Functorio.Ascii
 ).toAscii == s!"
 
 
-  | ↑↑↠*** ↓
-  |┤↑↑├*A* ↓
-  | ↑↑⇨***⇨↓
-  | ↑↑  ⚡  ↓
-  |→↑↑↓←←←←←
+  | ↑⇨***⇦↑↓
+  |┤↑├*A*↠↑↓
+  | ↑⚡***⚡↑↓
+  |→↑     ↑↓
+  |↑ →→→→→↑↓
+  |↑ ↑↓←←←←←
   |↑ ↑↓
 >||↑ ↑→→→→→→>
 >→⇥↑↦↑
@@ -172,30 +43,25 @@ import Functorio.Ascii
 ).toAscii == s!"
 
 
- ↑ *** ↓
- ↑ *A* ↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
+ ↑ *A* ↓
+ ↑⚡***⚡↓
  ↑  ↓←*↓
  ↑↓←←↓S←
  ↑↓ ↑←→↓
  ↑→⇥⚡↦↑↓
- ↑ *** ↓
- ↑ *A* ↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *A* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *A* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *A* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
+ ↑ *A* ↓
+ ↑⚡***⚡↓
  ↑←↓←←←←
   ↑↓
 >→↑→→→→→>
@@ -209,71 +75,63 @@ instance : Config where
   adapterMinHeight := 3
 
 #guard (bus do
-  let ironOre <- input .ironOre 525
-  let _ <- busAssemblyLine RecipeName.ironPlate 14 ironOre
+  let ironOre <- input .ironOre 600
+  let _ <- busAssemblyLine RecipeName.ironPlate 16 ironOre
 ).toAscii = s!"
 
 
- ↑ *** ↓
- ↑ *F* ↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
- ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
- ↑ *F* ↓
- ↑⇨***⇨↓
- ↑  ⚡  ↓
+ ↑⚡***⚡↓
  ↑ ****↓
  ↑ ****↓
  ↑ **R*↓
  ↑ ****↓
- ↑ *** ↓
- ↑ *F* ↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
- ↑ *** ↓
  ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑⇨***⇨↓
- ↑  ⚡  ↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
+ ↑⇨***⇨↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
+ ↑⇨***⇨↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
+ ↑⇨***⇨↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
+ ↑⇨***⇨↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
  ↑ ****↓
  ↑ ****↓
  ↑ **R*↓
@@ -292,6 +150,7 @@ instance : Config where
 
 "
 
+-- TODO: rails are still broken :(
 #guard (bus do
   let stone <- input .stone 750
   let steel <- input .steelPlate 750
@@ -300,30 +159,25 @@ instance : Config where
 ).toAscii == s!"
 
 
- ↑↑ ***↠↑↓
+ ↑↑⇨***!↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
+ ↑↑⚡***⚡↑↓
  ↑↑  ↓←*↥↓
  ↑↑↓←←↓S←←
  ↑↑↓ ↑←→→↓
  ↑↑→⇥⚡↦↑⤒↓
- ↑↑ ***↠↑↓
+ ↑↑⇨***!↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ↑↑ ***↠↑↓
+ ↑↑⚡***⚡↑↓
+ ↑↑⇨***!↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ↑↑ ***↠↑↓
+ ↑↑⚡***⚡↑↓
+ ↑↑⇨***!↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
- ↑↑ ***↠↑↓
+ ↑↑⚡***⚡↑↓
+ ↑↑⇨***!↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⇨***⇦↑↓
- ↑↑  ⚡  ↑↓
+ ↑↑⚡***⚡↑↓
  ↑↑ ****↑↓
  ↑↑ ****↑↓
  ↑↑ **R*↑↓
