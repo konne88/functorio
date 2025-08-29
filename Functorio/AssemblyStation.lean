@@ -155,6 +155,9 @@ def plainStation (process:Process) : Factory [] (interfaceE process.recipe) [] (
 private def beltline (x:Nat) (dir:Direction) (height:Nat) : List Entity :=
   (List.range height).map (fun y => belt x y dir)
 
+private def pipeline (x:Nat) (height:Nat): List Entity :=
+  (List.range height).map fun y => pipe x y
+
 structure Access where
   direction: DirectionV
   ingredient: Ingredient
@@ -292,7 +295,7 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
     name := s!"pipesIn {reprStr ingredients}"
   }
 
-private def pipesOut (ingredients:List Ingredient) (underground:Bool)
+private def pipesOut (ingredients:List Ingredient) (underground:Bool := false)
 : Factory (ingredients.map (.,.S)) [] (ingredients.map (.,.S)) (ingredients.map (.,.E))
 :=
   let pipes := ingredients.length
@@ -402,30 +405,95 @@ def railStation : Station .rail :=
   }
 
 def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, .E)] := {
-
+  width := 4, height := 1
+  entities := [pipe x 0, pipeToGround (x-1) 0 .E]
+  name := "accessPipe"
+  interface := {n := #v[], e := #v[], s := #v[], w := #v[0]}
 }
 
--- Special case, because it needs extra inserters to handle the speed.
+-- Special case, because the plant's pipes come out in weird spots
 def electrolyteStation : Station .electrolyte :=
-  let factory := pipesOnSideStation RecipeName.electrolyte
-  -- Needs two output inserters to keep up with the production rate.
-  {factory with
-    entities := factory.entities.append [
-      longInserter 6 0 .W
-    ]
+  {
+    width := 13, height := 6,
+    name := ".electrolyte"
+    interface := {n := #v[1,3,5,11], e := #v[], s := #v[1,3,5,11], w := #v[]}
+    entities :=
+      pipeline 1 6 ++
+      pipeline 3 6 ++
+      beltline 5 .N 6 ++
+      [
+        pipeToGround 2 0 .W, pipeToGround 7 0 .E, pipe 8 0,
+        pipeToGround 4 5 .W, pipeToGround 8 5 .E, pipe 9 5,
+        inserter 6 1 .W, pole 6 4,
+        fabricator 7 1 .electromagneticPlant .electrolyte,
+      ] ++
+      pipeline 11 6
   }
 
+-- Special case, because the plant's pipes come out in weird spots
+def electromagneticScienceStation : Station .electromagneticSciencePack :=
+  {
+    width := 14, height := 6,
+    name := ".electromagneticSciencePack"
+    interface := {n := #v[1,3,5,6,13], e := #v[], s := #v[1,3,5,6,13], w := #v[]}
+    entities :=
+      pipeline 1 6 ++
+      pipeline 3 6 ++
+      beltline 5 .N 6 ++
+      beltline 6 .N 6 ++
+      [
+        pipeToGround 2 0 .W, pipeToGround 8 0 .E, pipe 9 0,
+        pipeToGround 4 5 .W, pipeToGround 9 5 .E, pipe 10 5,
+        inserter 7 1 .W, longInserter 7 2 .W, pole 7 4,
+        fabricator 8 1 .electromagneticPlant .electromagneticSciencePack,
+        inserter 12 1 .W, pole 12 4,
+      ] ++
+      beltline 13 .S 6
+  }
 
+-- Special case, because of 4 solid inputs
+private def supercapacitorStation : Station .supercapacitor :=
+  let height := 4
+  let entities : List Entity :=
+    pipeline (x:=1) height ++
+    beltline (x:=3) .N height ++
+    beltline (x:=4) .N height ++
+    [
+      beltUp 5 0 .N,
+      longInserter 5 1 .W,
+      beltDown 5 2 .N,
+      belt 5 3 .N,
 
--- TODO all of these are broken for some reason or another
--- #eval (IO.print ((station RecipeName.supercapacitor).toAscii))  -- 4 inputs
--- #eval (IO.print ((station RecipeName.electrolyte).toAscii))     -- 2 input fluids
--- #eval (IO.print ((station RecipeName.electromagneticSciencePack).toAscii))  -- 2 input fluids
+      inserter 6 0 .W,
+      longInserter 6 1 .W,
+      pipeToGround 2 2 .W, pipeToGround 6 2 .E,
+      pole 6 3,
 
+      fabricator 7 0 .electromagneticPlant .supercapacitor,
 
+      longInserter 11 0 .W,
+      inserter 11 1 .E,
+      pole 11 3,
+    ] ++
+    beltline (x:=12) .N height ++
+    beltline (x:=13) .S height
+
+  {
+    width:= 14, height:=height, entities := entities
+    interface := {
+      n := #v[1,3,4,5,12,13]
+      e := #v[]
+      s := #v[1,3,4,5,12,13]
+      w := #v[]
+    }
+    name := ".supercapacitor"
+  }
 
 def station (process:Process) : Station process.recipe :=
   match process.recipe with
   | .flyingRobotFrame => flyingRobotFrameStation
+  | .electrolyte => electrolyteStation
+  | .electromagneticSciencePack => electromagneticScienceStation
+  | .supercapacitor => supercapacitorStation
   | .rail => railStation
   | recipe => stationWithoutOverride {process with recipe := recipe}

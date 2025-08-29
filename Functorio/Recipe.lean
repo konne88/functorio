@@ -5738,7 +5738,7 @@ namespace Fabricator
 @[simp]
 def details : Fabricator -> FabricatorDetails
 | .assemblingMachine1 => {
-  name := "assemblingMachine1"
+  name := "assembling-machine1"
   speedup := 1/2
   productivity := 0
   moduleSlots := 0
@@ -5755,7 +5755,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .assemblingMachine2 => {
-  name := "assemblingMachine2"
+  name := "assembling-machine2"
   speedup := 3/4
   productivity := 0
   moduleSlots := 2
@@ -5790,7 +5790,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .assemblingMachine3 => {
-  name := "assemblingMachine3"
+  name := "assembling-machine3"
   speedup := 5/4
   productivity := 0
   moduleSlots := 4
@@ -5861,7 +5861,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .captiveBiterSpawner => {
-  name := "captiveBiterSpawner"
+  name := "captive-biter-spawner"
   speedup := 1
   productivity := 0
   moduleSlots := 0
@@ -5887,7 +5887,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .chemicalPlant => {
-  name := "chemicalPlant"
+  name := "chemical-plant"
   speedup := 1
   productivity := 0
   moduleSlots := 3
@@ -5935,7 +5935,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .cryogenicPlant => {
-  name := "cryogenicPlant"
+  name := "cryogenic-plant"
   speedup := 2
   productivity := 0
   moduleSlots := 8
@@ -5980,7 +5980,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .electricFurnace => {
-  name := "electricFurnace"
+  name := "electric-furnace"
   speedup := 2
   productivity := 0
   moduleSlots := 2
@@ -5993,7 +5993,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .electromagneticPlant => {
-  name := "electromagneticPlant"
+  name := "electromagnetic-plant"
   speedup := 2
   productivity := 1/2
   moduleSlots := 5
@@ -6065,7 +6065,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .oilRefinery => {
-  name := "oilRefinery"
+  name := "oil-refinery"
   speedup := 1
   productivity := 0
   moduleSlots := 3
@@ -6117,7 +6117,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .rocketSilo => {
-  name := "rocketSilo"
+  name := "rocket-silo"
   speedup := 1
   productivity := 0
   moduleSlots := 4
@@ -6130,7 +6130,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .steelFurnace => {
-  name := "steelFurnace"
+  name := "steel-furnace"
   speedup := 2
   productivity := 0
   moduleSlots := 0
@@ -6143,7 +6143,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .stoneFurnace => {
-  name := "stoneFurnace"
+  name := "stone-furnace"
   speedup := 1
   productivity := 0
   moduleSlots := 0

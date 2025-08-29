@@ -2,28 +2,28 @@ import Functorio.AssemblyStation
 import Functorio.Ascii
 
 #guard (station RecipeName.ironPlate).toAscii ==s!"
-  ^     v
-  ↑⇨***⇨↓
-  ↑ *F* ↓
-  ↑⚡***⚡↓
-  ^     v
+ ^     v
+ ↑⇨***⇨↓
+ ↑ *F* ↓
+ ↑⚡***⚡↓
+ ^     v
 "
 
 -- TODO: It would be prettier if all inputs were on the left
 #guard (station RecipeName.electronicCircuit).toAscii == s!"
-  ^     ^v
-  ↑⇨***⇦↑↓
-  ↑ *A*↠↑↓
-  ↑⚡***⚡↑↓
-  ^     ^v
+ ^     ^v
+ ↑⇨***⇦↑↓
+ ↑ *A*↠↑↓
+ ↑⚡***⚡↑↓
+ ^     ^v
 "
 
 #guard (station RecipeName.advancedCircuit).toAscii == s!"
-  ^^     ^v
-  ↑↑⇨***⇦↑↓
-  ↑↑↠*A*↠↑↓
-  ↑↑⚡***⚡↑↓
-  ^^     ^v
+ ^^     ^v
+ ↑↑⇨***⇦↑↓
+ ↑↑↠*A*↠↑↓
+ ↑↑⚡***⚡↑↓
+ ^^     ^v
 "
 
 #guard (station RecipeName.superconductor).toAscii == s!"
@@ -41,12 +41,43 @@ import Functorio.Ascii
 -- #eval (IO.print ((station RecipeName.electromagneticSciencePack).toAscii))  -- 2 input fluids
 
 #guard (station { recipe := .accumulator, fabricator := .electromagneticPlant }).toAscii == s!"
-  ^      ^v
-  ↑⇨****⇦↑↓
-  ↑ ****↠↑↓
-  ↑ **E* ↑↓
-  ↑⚡****⚡↑↓
-  ^      ^v
+ ^      ^v
+ ↑⇨****⇦↑↓
+ ↑ ****↠↑↓
+ ↑ **E* ↑↓
+ ↑⚡****⚡↑↓
+ ^      ^v
+"
+
+#guard (station RecipeName.supercapacitor).toAscii == s!"
+  ^ ^^^      ^v
+  | ↑↑↥⇨****↠↑↓
+  | ↑↑↠↠****⇦↑↓
+  |┤↑↑⤒├**E* ↑↓
+  | ↑↑↑⚡****⚡↑↓
+  ^ ^^^      ^v
+"
+
+#guard (station RecipeName.electromagneticSciencePack).toAscii == s!"
+  ^ ^ ^^      v
+  |┤| ↑↑ ├|   ↓
+  | | ↑↑⇨****⇨↓
+  | | ↑↑↠**** ↓
+  | | ↑↑ **E* ↓
+  | | ↑↑⚡****⚡↓
+  | |┤↑↑  ├|  ↓
+  ^ ^ ^^      v
+"
+
+#guard (station RecipeName.electrolyte).toAscii == s!"
+  ^ ^ ^     v
+  |┤| ↑ ├|  |
+  | | ↑⇨****|
+  | | ↑ ****|
+  | | ↑ **E*|
+  | | ↑⚡****|
+  | |┤↑  ├| |
+  ^ ^ ^     v
 "
 
 #guard (station RecipeName.flyingRobotFrame).toAscii == s!"
@@ -136,15 +167,15 @@ import Functorio.Ascii
 
 -- TODO: need power for inserters
 #guard (station RecipeName.rocketPart).toAscii == s!"
-  ^           ^^
-  ↑⇨*********⇦↑↑
-  ↑ *********↞↑↑
-  ↑ ********* ↑↑
-  ↑ ********* ↑↑
-  ↑ ****L**** ↑↑
-  ↑ ********* ↑↑
-  ↑ ********* ↑↑
-  ↑ ********* ↑↑
-  ↑⚡*********⚡↑↑
-  ^           ^^
+ ^           ^^
+ ↑⇨*********⇦↑↑
+ ↑ *********↞↑↑
+ ↑ ********* ↑↑
+ ↑ ********* ↑↑
+ ↑ ****L**** ↑↑
+ ↑ ********* ↑↑
+ ↑ ********* ↑↑
+ ↑ ********* ↑↑
+ ↑⚡*********⚡↑↑
+ ^           ^^
 "
