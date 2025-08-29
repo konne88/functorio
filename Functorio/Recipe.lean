@@ -5738,7 +5738,7 @@ namespace Fabricator
 @[simp]
 def details : Fabricator -> FabricatorDetails
 | .assemblingMachine1 => {
-  name := "assembling-machine1"
+  name := "assembling-machine-1"
   speedup := 1/2
   productivity := 0
   moduleSlots := 0
@@ -5755,7 +5755,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .assemblingMachine2 => {
-  name := "assembling-machine2"
+  name := "assembling-machine-2"
   speedup := 3/4
   productivity := 0
   moduleSlots := 2
@@ -5790,7 +5790,7 @@ def details : Fabricator -> FabricatorDetails
   ]
 }
 | .assemblingMachine3 => {
-  name := "assembling-machine3"
+  name := "assembling-machine-3"
   speedup := 5/4
   productivity := 0
   moduleSlots := 4

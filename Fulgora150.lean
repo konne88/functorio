@@ -40,9 +40,9 @@ def fulgora150 := bus do
   let copper <- input .copperPlate 48
   let stone <- input .stone 366
   let holmiumOre <- input .holmiumOre 252
-  let heavyOil <- input .heavyOil 3600
   let greenCircuit <- input .electronicCircuit 288
   let ice <- input .ice 120
+  let heavyOil <- input .heavyOil 3600
 
   let (stone0, stone1) <- split stone
   let (battery0, battery1) <- split battery

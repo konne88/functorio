@@ -425,7 +425,7 @@ def electrolyteStation : Station .electrolyte :=
         pipeToGround 2 0 .W, pipeToGround 7 0 .E, pipe 8 0,
         pipeToGround 4 5 .W, pipeToGround 8 5 .E, pipe 9 5,
         inserter 6 1 .W, pole 6 4,
-        fabricator 7 1 .electromagneticPlant .electrolyte,
+        fabricator 7 1 .electromagneticPlant .electrolyte .E,
       ] ++
       pipeline 11 6
   }
