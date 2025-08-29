@@ -1,7 +1,7 @@
 import Functorio.AssemblyLine
 import Functorio.Ascii
 
-#guard (assemblyLine .advancedCircuit 3).toAscii == s!"
+#guard (assemblyLine RecipeName.advancedCircuit 3).toAscii == s!"
 
 
  ↑↑⇨***⇦↑↓

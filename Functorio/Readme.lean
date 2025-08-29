@@ -62,7 +62,7 @@ def gearFactory1 :=
   station RecipeName.ironGearWheel
 
 def gearFactory3 :=
-  assemblyLine .ironGearWheel 3
+  assemblyLine RecipeName.ironGearWheel 3
 
 def readme :=
   columnList [

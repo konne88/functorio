@@ -125,14 +125,14 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
 
 def maxRoboportLogisticsDistance := 46
 
-def assemblyLine [Config] (recipeName:RecipeName) (stations:Nat) : Factory [] [] (stationInterface recipeName) [] :=
+def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stationInterface process.recipe) [] :=
   Id.run do
-    let output := recipeName.getRecipe.outputs[0]!
-    let stationOutput := inputThroughput recipeName 1 output.fst
-    let station := station recipeName
-    let mut factories : Array (Factory (stationInterface recipeName) [] (stationInterface recipeName) []) := #[
+    let output := process.recipe.getRecipe.outputs[0]!
+    let stationOutput := inputThroughput process.recipe 1 output.fst
+    let station := station process
+    let mut factories : Array (Factory (stationInterface process.recipe) [] (stationInterface process.recipe) []) := #[
       bigPoleInsert station.interface.s,
-      providerChestInsert recipeName station.interface.s,
+      providerChestInsert process.recipe station.interface.s,
       roboportInsert station.interface.s
     ]
     let mut outputSinceBalance : Fraction := 0
@@ -192,7 +192,7 @@ def processBusAssemblyLineArguments
 
 def busAssemblyLine [config:Config] (process: Process) (stations:Nat) : BusAssemblyLineType process stations :=
   processBusAssemblyLineArguments process stations fun inputs => do
-    let factory := assemblyLine process.recipe stations
+    let factory := assemblyLine process stations
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
     let indexes <- busTapGeneric
       inputs
