@@ -86,7 +86,6 @@ namespace Test
 
 "
 
--- TODO: come up earlier
 #guard (bus do
   let iron <- inputs 5 .ironOre 2700
   busTapNoOutput [iron[4], iron[2]] (capN emptyFactoryH)
@@ -203,7 +202,6 @@ namespace Test
 
 "
 
--- TODO: bring belt up earlier
 #guard (bus do
   let iron <- inputs 5 .ironOre 2700
   let _gear : BusLane .coal 100 <- busTap [iron[1], iron[3]] (capN emptyFactoryH)
@@ -263,7 +261,6 @@ namespace Test
 
 "
 
--- TODO: belt should come back up earlier
 #guard (bus do
   let iron <- inputs 4 .ironOre 2700
   let water <- input .water 1000
@@ -281,7 +278,6 @@ namespace Test
 
 "
 
--- TODO: pipe should be longer
 #guard (bus do
   let iron <- inputs 5 .ironOre 2700
   let petrol <- input .petroleumGas 1

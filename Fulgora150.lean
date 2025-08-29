@@ -28,7 +28,7 @@ def makeSupercapacitor : Electrolyte 720 -> Holmium 144 -> Superconductor 144 ->
   busAssemblyLine RecipeName.supercapacitor 6
 
 def makeAccumulator : Iron 144 -> Battery 360 -> Bus (Accumulator 108) :=
-  busAssemblyLine { recipeName := .accumulator, fabricator := .electromagneticPlant } 6
+  busAssemblyLine { recipe := .accumulator, fabricator := .electromagneticPlant } 6
 
 def makeElectromagneticScience : Electrolyte 2700 -> HolmiumSolution 2700 -> Supercapacitor 108 -> Accumulator 108 -> Bus (ElectromagneticScience 162) :=
   busAssemblyLine RecipeName.electromagneticSciencePack 9

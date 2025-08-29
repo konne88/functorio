@@ -401,6 +401,29 @@ def railStation : Station .rail :=
     ]
   }
 
+def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, .E)] := {
+
+}
+
+-- Special case, because it needs extra inserters to handle the speed.
+def electrolyteStation : Station .electrolyte :=
+  let factory := pipesOnSideStation RecipeName.electrolyte
+  -- Needs two output inserters to keep up with the production rate.
+  {factory with
+    entities := factory.entities.append [
+      longInserter 6 0 .W
+    ]
+  }
+
+
+
+-- TODO all of these are broken for some reason or another
+-- #eval (IO.print ((station RecipeName.supercapacitor).toAscii))  -- 4 inputs
+-- #eval (IO.print ((station RecipeName.electrolyte).toAscii))     -- 2 input fluids
+-- #eval (IO.print ((station RecipeName.electromagneticSciencePack).toAscii))  -- 2 input fluids
+
+
+
 def station (process:Process) : Station process.recipe :=
   match process.recipe with
   | .flyingRobotFrame => flyingRobotFrameStation
