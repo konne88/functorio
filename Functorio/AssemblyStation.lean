@@ -445,7 +445,7 @@ def electromagneticScienceStation : Station .electromagneticSciencePack :=
         pipeToGround 2 0 .W, pipeToGround 8 0 .E, pipe 9 0,
         pipeToGround 4 5 .W, pipeToGround 9 5 .E, pipe 10 5,
         inserter 7 1 .W, longInserter 7 2 .W, pole 7 4,
-        fabricator 8 1 .electromagneticPlant .electromagneticSciencePack,
+        fabricator 8 1 .electromagneticPlant .electromagneticSciencePack .E,
         inserter 12 1 .W, pole 12 4,
       ] ++
       beltline 13 .S 6
