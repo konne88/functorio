@@ -22,31 +22,39 @@ def outputThroughput (process:Process) (stations:Nat) (ingredient:Ingredient) (i
 
 def expressBeltHalfThroughput := expressBeltThroughput / 2
 
-def findGap (offsets : Array Nat) (gap:Nat) := Id.run do
+def findGap (offsets : Array Nat) (minGap:Nat) := Id.run do
   let mut leftBound := 0
   for offset in offsets do
-    if offset - leftBound >= gap then
-      return leftBound
+    let gap := offset - leftBound
+    if gap >= minGap then
+      return (leftBound, gap)
     leftBound := offset + 1
 
-  error! s!"Expected there to be a gap of {gap}"
+  error! s!"Couldn't find a gap of {minGap}"
 
 def bigPoleInsert [config:Config] {interface} (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   if !config.generateBigPoles then emptyFactoryH offsets else
 
   let factory := (emptyFactoryH offsets).expand .S 2
+  let (gapStart, gapWidth) := (findGap offsets.toArray 2)
+
   {
     factory with
-    entities := factory.entities ++ [bigPole (findGap offsets.toArray 2) 0]
+    entities := factory.entities ++ [bigPole (gapStart + (gapWidth - 2) / 2) 0]
   }
 
 def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   if !config.generateRoboports then emptyFactoryH offsets else
 
   let factory := (emptyFactoryH offsets).expand .S 4
+    let (gapStart, gapWidth) := (findGap offsets.toArray 2)
+
   {
     factory with
-    entities := factory.entities ++ [roboport (findGap offsets.toArray 4) 0]
+    entities :=
+      factory.entities ++
+      [roboport (gapStart + (gapWidth - 4) / 2) 0] ++
+      if gapWidth > 4 then [pole (gapStart + gapWidth - 1) 3] else []
   }
 
 def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
@@ -73,7 +81,7 @@ def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (off
 def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let factory := (emptyFactoryH offsets).expand .S 4
 
-  let x := findGap offsets.toArray 5
+  let (x,_) := findGap offsets.toArray 5
   let balancer : List Entity := [
     belt (x+2) 0 .S,
     belt (x+3) 0 .W,
