@@ -166,8 +166,7 @@ def circuitFactory (copper: Vector (Copper 2700) 4) (iron: Vector (Iron 2700) 2)
   let greenForRed <- greenCircuitFullBeltFactory copper0 copper[1] iron[0]
   let greenForBlue <- greenCircuitFullBeltFactory copper1 copper[2] iron[1]
 
-  -- Right around here, the pipes on the bus are so long that they need pumps.
-  pipePumps
+  pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
   -- red
   let (greenForRed0, greenForRed) <- split greenForRed
@@ -184,15 +183,49 @@ def circuitFactory (copper: Vector (Copper 2700) 4) (iron: Vector (Iron 2700) 2)
 
   return (greenOut, redOut.less, blueOut.less)
 
+def advancedOilProcessingFactory : Water 19200 -> CrudeOil 38400 -> Bus (HeavyOil 9600 × LightOil 17280 × Petrolium 21120) :=
+  busAssemblyLine RecipeName.advancedOilProcessing 32
+
+def heavyOilCrackingFactory : Water 6300 -> HeavyOil 8400 ->Bus (LightOil 6300) :=
+  busAssemblyLine RecipeName.heavyOilCracking 7
+
+def lightOilCrackingFactory :  Water 23400 -> LightOil 23400 ->Bus (Petrolium 15600) :=
+  busAssemblyLine RecipeName.lightOilCracking 26
+
+def lubricantFactory : HeavyOil 1200 -> Bus (Lubricant 1200) :=
+  busAssemblyLine RecipeName.lubricant 2
+
+def oilFactory (water:Water 48900) (crude:CrudeOil 38400) : Bus (Petrolium 36000 × Lubricant 900) := do
+  let (water0, rest) <- split (left:=19200) water
+  let (water1, water2) <- split (left:=6300) rest
+
+  let (heavy, light0, petrol0) <- advancedOilProcessingFactory water0 crude
+  let (heavy0, heavy1) <- split (left:=1200) heavy
+
+  let light1 <- heavyOilCrackingFactory water1 heavy1
+  let light <- merge light0 light1
+
+  let petrol1 <- lightOilCrackingFactory water2 light.less
+  let petrol <- merge petrol0 petrol1
+
+  let lube <- lubricantFactory heavy0
+
+  return (petrol.less, lube.less)
+
 def nauvisFactory := bus do
   let copperOre <- inputs 6 .copperOre 2700
   let ironOre <- inputs 8 .ironOre 2700
   let stone0 <- input .stone 2700
   let stone1 <- input .stone 750
   let coal <- input .coal 2190
-  let water <- input .water 13200
-  let lubricant <- input .lubricant 900
-  let petrol <- input .petroleumGas 36000
+  let water <- input .water 62100
+  let crudeOil <- input .crudeOil 38400
+
+  let (water0, water) <- split (left:=48900) water
+  let (water1, water2) <- split (left:=7200) water
+
+  let (petrol, lubricant) <- oilFactory water0 crudeOil
+  let (petrol0, petrol1) <- split (left:=7200) petrol
 
   let copper <- copperFactory copperOre
   let (copper0, rest) <- split (left:=150) copper[0]
@@ -223,15 +256,15 @@ def nauvisFactory := bus do
   let steel5 : Steel 300 := rest.less
 
   let (coal0, coal1) <- split (left:=1440) coal
-  let (water0, water1) <- split (left:=7200) water
-  let (petrol0, petrol1) <- split (left:=7200) petrol
 
-  let sulfur <- sulfurFactory water0 petrol0
+  let sulfur <- sulfurFactory water1 petrol0
   let (sulfur0, sulfur1) <- split sulfur
-  let acid <- acidFactory water1 sulfur0 iron0
+  let acid <- acidFactory water2 sulfur0 iron0
   let (acid0, acid1) <- split (left:=525) acid
 
   let (plastic0, plastic1) <- plasticFactory petrol1 coal0
+
+--  pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
   let (greenCircuit, redCircuit, blueCircuit) <-
     circuitFactory (copper.extract 1 5) (iron.extract 6 8) plastic0 acid0
