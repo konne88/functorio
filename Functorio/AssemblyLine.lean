@@ -69,7 +69,7 @@ def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (off
   {
     factory with
     entities := (eraseRectangle (outputOffset - 1) 0 1 3 factory.entities) ++ chest ++
-      if (recipe.inputs.filter (fun input => !input.snd.isLiquid)).length <= 2 then [pole (outputOffset - 3) 1]
+      if ((recipe.inputs ++ recipe.outputs).filter (fun input => !input.snd.isLiquid)).length <= 2 then [pole (outputOffset - 3) 1]
       else [pole (outputOffset - 4) 1,
             beltUp (outputOffset - 1) 0 .N,
             beltDown (outputOffset - 1) 2 .N]
