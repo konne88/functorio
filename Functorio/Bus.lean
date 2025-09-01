@@ -405,6 +405,29 @@ def laneAccess (type:AccessType) (config:LaneConfigs) (ingredient:Ingredient) (y
     | .put =>
       beltAccessPut x yIndex
 
+def bringDownAllLanes {w h} (lanes:LaneConfigs) (x:Nat) (matrix:Matrix w h) : Nat × Matrix w h := Id.run do
+  let mut x := x
+  let mut matrix := matrix
+
+  let entities x :=
+    lanes.available.map fun (lane, y) =>
+      if lane.ingredient.isLiquid then pipeToGround x y .W else beltDown x y .E
+  matrix := matrix.applyEntities (entities x)
+
+  return (x+1, matrix)
+
+def bringUpAllLanes {w h} (lanes:LaneConfigs) (x:Nat) (matrix:Matrix w h) : Nat × Matrix w h := Id.run do
+  let mut x := x
+  let mut matrix := matrix
+
+  let entities x :=
+    lanes.available.map fun (lane, y) =>
+      if lane.ingredient.isLiquid then pipeToGround x y .E else beltUp x y .E
+  while !matrix.canApplyEntities (entities x) do x := x + 1
+  matrix := matrix.applyEntities (entities x)
+
+  return (x+1, matrix)
+
 def busTapGeneric
   (inputs:List BusLane')
   (outputs:List Ingredient)
@@ -423,12 +446,7 @@ def busTapGeneric
   let mut previousWasLiquid := false
   let mut x := 0
 
-  -- Bring down all lanes
-  let entities x :=
-    lanes.available.map fun (lane, y) =>
-      if lane.ingredient.isLiquid then pipeToGround x y .W else beltDown x y .E
-  matrix := matrix.applyEntities (entities x)
-  x := x + 1
+  (x, matrix) := bringDownAllLanes lanes x matrix
 
   -- Handle all inputs
   for input in inputs do
@@ -446,10 +464,15 @@ def busTapGeneric
   -- Handle all outputs
   let mut outputLanes : Array Nat := #[]
   for ingredient in outputs do
+    if previousWasLiquid && ingredient.isLiquid then x := x + 1  -- Gap between pipes so they don't connect.
+
+    if x > 8 then
+      (x, matrix) := bringUpAllLanes lanes x matrix
+      (x, matrix) := bringDownAllLanes lanes x matrix
+
     let (index, newLanes) := lanes.allocLane ingredient
     lanes := newLanes
 
-    if previousWasLiquid && ingredient.isLiquid then x := x + 1  -- Gap between pipes so they don't connect.
     let entities x := laneAccess .put lanes ingredient index x
     while !matrix.canApplyEntities (entities x) do x := x + 1
     matrix := matrix.applyEntities (entities x)
@@ -459,15 +482,10 @@ def busTapGeneric
     outputLanes := outputLanes.push index
     x := x + 1
 
-  -- Bring down all lanes
-  let entities x :=
-    lanes.available.map fun (lane, y) =>
-      if lane.ingredient.isLiquid then pipeToGround x y .E else beltUp x y .E
-  while !matrix.canApplyEntities (entities x) do x := x + 1
-  matrix := matrix.applyEntities (entities x)
+  (x, matrix) := bringUpAllLanes lanes x matrix
 
   let tapFactory : Factory (busTapInterface inputs outputs) (busInterface lanes) [] (busInterface state.output) := {
-    width:= x + 1
+    width:= x
     height:= max state.output.height lanes.height
     entities := matrix.reduceUndergroundEntities.toEntities
     interface := {
@@ -518,9 +536,7 @@ def split {i left input} (l:BusLane i input) (right := input - left) (_:left + r
 @[simp]
 def expressBeltThroughput : Throughput := 45 * 60  -- 2700
 
-def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltThroughput := by decide) : Bus (BusLane i (a + b)) :=
-  if i.isLiquid then error! s!"merging liquids is not yet implemented {reprStr i}" else
-
+def mergeSolid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)) :=
   busTap [l.toBusLane',l'.toBusLane'] {
     entities:=[
       belt 1 0 .E,
@@ -546,6 +562,23 @@ def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ ex
     }
     name := s!"merge {reprStr i}"
   }
+
+def mergeLiquid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)) :=
+  busTap [l.toBusLane',l'.toBusLane'] {
+    entities:= (List.range 5).map (pipe . 0)
+    width:=5,
+    height:=1,
+    interface:={
+      n := #v[]
+      e := #v[]
+      s := #v[0,2,4]
+      w := #v[]
+    }
+    name := s!"merge {reprStr i}"
+  }
+
+def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltThroughput := by decide) : Bus (BusLane i (a + b)) :=
+  if i.isLiquid then mergeLiquid l l' else mergeSolid l l'
 
 def bigPoleFactory : Factory [] [] [] [] := {
   entities := [bigPole 0 0]

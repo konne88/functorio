@@ -94,7 +94,7 @@ def fabricatorConfig : Fabricator -> FabricatorConfig
 }
 | .oilRefinery => {
   direction := .E
-  mirror := true
+  mirror := false
   inputOffsets := [1,3]
   outputOffsets := [0,2,4]
 }

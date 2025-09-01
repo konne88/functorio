@@ -68,6 +68,36 @@ import Functorio.Ascii
 
 "
 
+#guard (bus do
+  let _ <- input .copperPlate 4
+  let water <- input .water 600
+  let crude <- input .crudeOil 1200
+  let _ <- busAssemblyLine RecipeName.advancedOilProcessing 1 water crude
+).toAscii == s!"
+
+
+  | | *****|| | |
+  |┤|├***** | | |
+  | | **O**┤|├| |
+  | ||***** | | |
+  | | *****┤| |├|
+  | |   ⚡   | | |
+  | | ||||||| | |
+  | | |       | |
+  | | | ||||||| |
+  | | | |       |
+  | | | |   |||||
+  | | | |   |
+>⇥| | | |↦→⇥|↦→→→→>
+>|| | |┤|├|┤|├||||>
+    |   |   |
+>||||   |||┤|├||||>
+            |
+            ||||||>
+
+"
+
+
 instance : Config where
   generateBigPoles := true
   generateRoboports := true
