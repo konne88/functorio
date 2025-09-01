@@ -1,6 +1,6 @@
 # Functorio
 
-Functorio lets you build your Factorio factories in the Lean programming language; giving you conveniences like type safety, functions, recursion, version history, libraries, etc. 
+Functorio lets you build your Factorio factories in the Lean programming language; giving you conveniences like type safety, functions, recursion, version history, libraries, etc.
 
 For example, here's a simple factory that generates 150 red science per minute.
 
@@ -23,16 +23,20 @@ In addition to making it easy to write factories, Functiorio also makes it safe!
 
 ![](figures/red-science-stats.png)
 
-[Here](Nauvis150.lean)'s a factory that is a bit more complicated, producing 150 science per minute for all the sciences on Nauvis, and here's a video walkthrough of the factory:
-
-[![](figures/nauvis150-play.png)](https://youtu.be/HK3KwjN-Dtc)
-
-To get started download the [github repo](https://github.com/konne88/factorio2) and open it in
-VSCode. The github repo contains a devcontainer so VSCode will automatically install all necessary dependencies and you can just run:
+To get started download the [github repo](https://github.com/konne88/functorio) and open it in
+VSCode. The github repo contains a devcontainer so VSCode will automatically install all necessary dependencies and you can just run to get the blueprint:
 
 ```bash
-./red-science-150.sh > blueprint.txt
+./red-science-150.sh
 ```
+
+Here's a video to help you get started:
+
+[![](figures/quickstart-play.png)](https://youtu.be/NCp2bw8X4V8)
+
+Once you're comfortable playing with Functorio, [here](Nauvis150.lean)'s a factory that is a bit more complicated, producing 150 science per minute for all the sciences on Nauvis, and here's a video walkthrough of the factory:
+
+[![](figures/nauvis150-play.png)](https://youtu.be/HK3KwjN-Dtc)
 
 This will print a blueprint that you can import directly into Factorio.
 
@@ -41,7 +45,7 @@ pull requests, file github issues, email me, etc. Anything you think is interest
 
 I'm not the first person to have looked into the connection between Factorio and programming languages. Bartosz Milewski gave a [talk](https://www.youtube.com/watch?v=A46KQtriYuM) and wrote a great [blog post](https://bartoszmilewski.com/2021/02/16/functorio/) about the connection; and also came up with the name Functorio in his post.
 
-The following sections describe Functorio's features in more detail. At the end of this post you'll see how to build 
+The following sections describe Functorio's features in more detail. At the end of this post you'll see how to build
 a factory that generates 150 of all the Nauvis sciences (red, green, blue, yellow, purple, black) per minute.
 
 # Buses
@@ -49,7 +53,7 @@ a factory that generates 150 of all the Nauvis sciences (red, green, blue, yello
 A `bus` lets you connect multiple factories in a conventient a safe way. Here is an example bus that makes gears from iron ore. You just specify how the resources should flow,
 and the `bus` function creates the required bus entities (belts, pipes, etc) to realize that intention. The way factories get connected resembles the [main bus](https://wiki.factorio.com/tutorial:main_bus) pattern, hence the name.
 
-Here's a simple gear bus example: 
+Here's a simple gear bus example:
 
 ```lean
 def gearFactory := bus do
@@ -60,16 +64,16 @@ def gearFactory := bus do
 
 ![](figures/gear-bus.png)
 
-The variables on a bus (e.g. `ironOre`, `iron`, `gear`) represent the lanes of the bus, and have the type `BusLane ingredient throughput`. 
-For example `ironOre` has the type `BusLane .ironOre 100` which means this lane carries 100 iron ore per minute. The library also 
+The variables on a bus (e.g. `ironOre`, `iron`, `gear`) represent the lanes of the bus, and have the type `BusLane ingredient throughput`.
+For example `ironOre` has the type `BusLane .ironOre 100` which means this lane carries 100 iron ore per minute. The library also
 provides shorter name for the types, e.g. `IronOre 100` is a synonym for `BusLane .ironOre 100`.
-A bus lane can be consumed by passing it into a factory, e.g. `makeIron ironOre`. 
+A bus lane can be consumed by passing it into a factory, e.g. `makeIron ironOre`.
 New lanes can be returned by factories, for example the `makeGear` factory creates the new `gear` lane.
 
-The `input` command creates a new bus lane that is expected to be filled outside the factory. This is useful to provide the raw 
+The `input` command creates a new bus lane that is expected to be filled outside the factory. This is useful to provide the raw
 ingredients for your factory. All inputs must be declared at the beginning of the bus, before any factories are used.
 
-Bus lanes must only ever be consumed once. It is invalid to pass the same lane into two factories. If this is desired, the lane 
+Bus lanes must only ever be consumed once. It is invalid to pass the same lane into two factories. If this is desired, the lane
 must first be split into two lanes, using the `split (left:=x) (right:=y)` function. Here is an example:
 
 ```lean
@@ -120,10 +124,10 @@ def makeBelt iron gear :=
 
 # Factories
 
-A `Factory` is a collection of entities (assemblers, belts, inserters, etc) placed within a rectangle, 
-and has interfaces on all sides of that rectangle (north, east, south and west). 
+A `Factory` is a collection of entities (assemblers, belts, inserters, etc) placed within a rectangle,
+and has interfaces on all sides of that rectangle (north, east, south and west).
 For the below example, the north and south interface are the same: two belts, one iron belt facing north and one gear belt facing south.
-The east and west interfaces are empty. 
+The east and west interfaces are empty.
 
 ![](figures/factory-type.png)
 
@@ -132,7 +136,7 @@ west interfaces. Each interface specifies the resource type and travel direction
 Thus the above factory's type is:
 
 ```lean
-gearFactory : Factory 
+gearFactory : Factory
   [(.iron, .N), (.ironGearWheel, .S)]  -- north interfaces
   []                                   -- east interfaces
   [(.iron, .N), (.ironGearWheel, .S)]  -- south interfaces
@@ -153,7 +157,7 @@ column gearFactory gearFactory
 
 ![](figures/two-column.png)
 
-There is also a `columnList` command, which connects all the factories from the given list. 
+There is also a `columnList` command, which connects all the factories from the given list.
 To create a column of 10 gear factories, you would write:
 
 ```lean
@@ -200,7 +204,7 @@ capS inserterFactory
 
 # Assembly Lines
 
-Functorio comes with a builtin set of factories to assemble all the recipes required for red, green, blue, purple, yellow, and black science (contributions for more recipes are very welcome!). 
+Functorio comes with a builtin set of factories to assemble all the recipes required for red, green, blue, purple, yellow, and black science (contributions for more recipes are very welcome!).
 These factories are designed so that they can be replicated many times into an assembly line.
 
 To get just a single assembler for a certain recipe, you can use the `station` function (because it's one station of a larger assembly line):
@@ -219,7 +223,7 @@ assemblyLine .ironGearWheel 3
 
 ![](figures/gear-assembly-line.png)
 
-Calling `assemblyLine` is similar to just replicating the station multiple times, but the `assemblyLine` command 
+Calling `assemblyLine` is similar to just replicating the station multiple times, but the `assemblyLine` command
 will also automatically insert output load balancers, roboports, passive provider chests, and big electric poles if desired.
 
 To get a factory that can be attached to a bus, call:
@@ -262,7 +266,7 @@ You can use the `factory.unsafeCastFactory` to change the interface of your fact
 
 Lean isn't all that great a printing types. For example, Lean will print the type of
 `busAssemblyLine .processingUnit 14` as `BusAssemblyLineType (getRecipe .processingUnit) 14`.
-This is really quite useless. If you want to know what that type expands to, you can run 
+This is really quite useless. If you want to know what that type expands to, you can run
 the following code, and see the simplified type in Lean's InfoView.
 
 ```lean
@@ -291,5 +295,5 @@ This library is still in early alpha. Let's make it better together! Expect bugs
 For any problems, please reach out on [discord](https://discord.gg/UGEcqxpSMn), file a ticket on github or contact me via email.
 If you have a Lean problem, there are many really helpful people in this [chat](https://leanprover.zulipchat.com/).
 
-There are still a lot of things that need modeling: e.g. other kinds of belts and inserters, 
+There are still a lot of things that need modeling: e.g. other kinds of belts and inserters,
 modules, beaconized factories, quality, rails, etc. I'm happy to take contributions!
