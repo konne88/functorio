@@ -516,9 +516,9 @@ def split {i left input} (l:BusLane i input) (right := input - left) (_:left + r
     )
 
 @[simp]
-def expressBeltTroughput : Throughput := 45 * 60  -- 2700
+def expressBeltThroughput : Throughput := 45 * 60  -- 2700
 
-def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltTroughput := by decide) : Bus (BusLane i (a + b)) :=
+def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltThroughput := by decide) : Bus (BusLane i (a + b)) :=
   if i.isLiquid then error! s!"merging liquids is not yet implemented {reprStr i}" else
 
   busTap [l.toBusLane',l'.toBusLane'] {

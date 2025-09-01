@@ -1,16 +1,16 @@
 import Functorio
 
 def makeIron : IronOre 300 -> Bus (Iron 300) :=
-  busAssemblyLine .ironPlate 8
+  busAssemblyLine RecipeName.ironPlate 8
 
 def makeCopper : CopperOre 150 -> Bus (Copper 150) :=
-  busAssemblyLine .copperPlate 4
+  busAssemblyLine RecipeName.copperPlate 4
 
 def makeGear : Iron 300 -> Bus (Gear 150) :=
-  busAssemblyLine .ironGearWheel 1
+  busAssemblyLine RecipeName.ironGearWheel 1
 
 def makeRedScience : Copper 150 -> Gear 150 -> Bus (RedScience 150) :=
-  busAssemblyLine .automationSciencePack 10
+  busAssemblyLine RecipeName.automationSciencePack 10
 
 def redScience := bus do
   let ironOre <- input .ironOre 300

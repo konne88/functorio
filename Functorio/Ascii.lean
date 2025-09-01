@@ -64,16 +64,23 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .bigPole => '↯'
 
   | .splitter _ _ => 'S'
-  | .assembler _ _ => 'A'
-  | .furnace => 'F'
-  | .chemicalPlant _ _ _ => 'C'
-  | .refinery _ _ _ => 'O' -- O is for Oil-refinery
+  | .fabricator .assemblingMachine3 _ _ _ => 'A'
+  | .fabricator .electricFurnace _ _ _ => 'F'
+  | .fabricator .stoneFurnace _ _ _ => 'F'
+  | .fabricator .steelFurnace _ _ _ => 'F'
+  | .fabricator .electromagneticPlant _ _ _ => 'E'
+  | .fabricator .biochamber _ _ _ => 'B'
+  | .fabricator .chemicalPlant _ _ _ => 'C'
+  | .fabricator .oilRefinery _ _ _ => 'O'
+  | .fabricator .rocketSilo _ _ _ => 'L'  -- L is for Launch-site
+
   | .roboport => 'R'
   | .pump _ => 'P'
   | .passiveProviderChest _ => '🄿'
-  | .rocketSilo => 'L'  -- L is for Launch-site
 
   | .refinedConcrete => .none
+
+  | _ => '?'
 
 private def set {w h} (v:Vector (Vector Char w) h) (x y:Nat) (c:Char) : Vector (Vector Char w) h :=
   -- Mark overlapping entities with !

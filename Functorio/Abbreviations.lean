@@ -62,6 +62,14 @@ def LithiumBrine := BusLane .lithiumBrine
 def Fluorine := BusLane .fluorine
 def SolidFuel := BusLane .solidFuel
 def Ammonia := BusLane .ammonia
-def Holmium := BusLane .holmiumPlate
 def IcePlatform := BusLane .icePlatform
 def AmmoniacalSolution := BusLane .ammoniacalSolution
+
+def Electrolyte := BusLane .electrolyte
+def HolmiumOre := BusLane .holmiumOre
+def Holmium := BusLane .holmiumPlate
+def HolmiumSolution := BusLane .holmiumSolution
+def Superconductor := BusLane .superconductor
+def Supercapacitor := BusLane .supercapacitor
+def Accumulator := BusLane .accumulator
+def ElectromagneticScience := BusLane .electromagneticSciencePack

@@ -19,9 +19,18 @@ def toVector {T} (l:List T) : Vector T (l.length) :=
 def castToVector! {T} [Inhabited T] [Repr T] {n} (l:List T) : Vector T n :=
   match decEq l.length n with
   | isTrue _ => cast (by subst_eqs; simp) l.toVector
-  | isFalse _ => error! s!"unsafeCastListToVector failed for {reprStr l}"
+  | isFalse _ => error! s!"castToVector! failed for {reprStr l}"
 
 end List
+
+namespace Array
+
+def toVector! {T} [Inhabited T] [Repr T] {n} (l:Array T) : Vector T n :=
+  match decEq l.size n with
+  | isTrue _ => cast (by subst_eqs; simp) l.toVector
+  | isFalse _ => error! s!"toVector! failed for {reprStr l}"
+
+end Array
 
 namespace Vector
 

@@ -176,7 +176,7 @@ for building_name in sorted(building_names):
     productivity = building.get('effect_receiver', {}).get("base_effect", {}).get("productivity", 0)
 
     lean_code.append(f"| .{to_camel_case(building['name'])} => {{")
-    lean_code.append(f'  name := "{to_camel_case(building["name"])}"')
+    lean_code.append(f'  name := "{building["name"]}"')
     lean_code.append(f"  speedup := {float_to_fraction(building['crafting_speed'])}")
     lean_code.append(f"  productivity := {float_to_fraction(productivity)}")
     lean_code.append(f"  moduleSlots := {building.get('module_slots', 0)}")
