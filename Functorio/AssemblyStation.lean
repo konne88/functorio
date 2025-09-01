@@ -394,13 +394,15 @@ private def flyingRobotFrameStation : Station .flyingRobotFrame :=
     name := "flyingRobotFrame"
   }
 
--- Special case, because it needs extra inserters to handle the speed.
+-- Special case, needs two output inserters to keep up with the production rate.
 def railStation : Station .rail :=
-  let factory := pipesOnSideStation RecipeName.rail
-  -- Needs two output inserters to keep up with the production rate.
+  let factory := (pipesOnSideStation RecipeName.rail).expand .S 1
+  let removedLeftPole := eraseRectangle 2 2 1 1 factory.entities
+  let removedPoles := eraseRectangle 6 2 1 1 removedLeftPole
   {factory with
-    entities := factory.entities.append [
-      longInserter 6 0 .W
+    entities := removedPoles.append [
+      longInserter 6 2 .W,
+      pole 4 3
     ]
   }
 

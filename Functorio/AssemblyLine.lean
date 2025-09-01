@@ -48,12 +48,6 @@ def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl i
     entities := factory.entities ++ [roboport (2 + firstOffsetWithGap offsets.toArray 4) 0]
   }
 
-def eraseRectangle (x y width height:Nat) (es:List Entity) : List Entity :=
-  es.filter fun e => !(
-    x <= e.x && e.x < x + width &&
-    y <= e.y && e.y < y + height
-  )
-
 def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let recipe := recipeName.getRecipe
   if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
@@ -65,7 +59,7 @@ def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (off
     inserter (outputOffset - 1) 1 .E
   ]
 
-  let factory := (emptyFactoryH offsets).expand .S 4
+  let factory := (emptyFactoryH offsets).expand .S 3
   {
     factory with
     entities := (eraseRectangle (outputOffset - 1) 0 1 3 factory.entities) ++ chest ++

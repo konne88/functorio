@@ -101,3 +101,9 @@ def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {
 }
 
 end Entity
+
+def eraseRectangle (x y width height:Nat) (es:List Entity) : List Entity :=
+  es.filter fun e => !(
+    x <= e.x && e.x < x + width &&
+    y <= e.y && e.y < y + height
+  )
