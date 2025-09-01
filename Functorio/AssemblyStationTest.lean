@@ -145,16 +145,15 @@ import Functorio.Ascii
   ^ ^     v
 "
 
--- TODO: need power
 #guard (station RecipeName.heavyOilCracking).toAscii == s!"
   ^ ^     v
   |┤|├***||
   | | *C* |
   | ||*** |
+  | |  ⚡  |
   ^ ^     v
 "
 
--- TODO: need power
 #guard (station RecipeName.advancedOilProcessing).toAscii == s!"
   ^ ^       v v v
   | | *****|| | |
@@ -162,6 +161,7 @@ import Functorio.Ascii
   | | **O**┤|├| |
   | ||***** | | |
   | | *****┤| |├|
+  | |   ⚡   | | |
   ^ ^       v v v
 "
 

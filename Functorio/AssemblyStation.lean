@@ -246,7 +246,11 @@ def pipesOnSideStation (process:Process) : Factory
   let leftAccess := leftAccessor station.interface.w station.height leftNS
   let rightAccess := rightAccessor station.interface.e station.height rightNS
 
-  unsafeFactoryCast (row3 leftAccess station rightAccess)
+  if ns.length == 0
+  then
+    let factory := station.expand .S 1
+    unsafeFactoryCast {factory with entities := factory.entities.append [pole (factory.width/2) (factory.height - 1)]}
+  else unsafeFactoryCast (row3 leftAccess station rightAccess)
 
 private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
 : Factory (ingredients.map (.,.N)) (ingredients.map (.,.E)) (ingredients.map (.,.N)) []
