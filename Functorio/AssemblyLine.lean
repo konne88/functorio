@@ -22,11 +22,12 @@ def outputThroughput (process:Process) (stations:Nat) (ingredient:Ingredient) (i
 
 def expressBeltHalfThroughput := expressBeltThroughput / 2
 
-def firstOffsetWithGap (offsets : Array Nat) (gap:Nat) := Id.run do
-  for (offset, i) in offsets.zipIdx do
-    let nextOffset := offsets[i + 1]?.getD 0
-    if nextOffset - offset >= gap then
-      return offset
+def findGap (offsets : Array Nat) (gap:Nat) := Id.run do
+  let mut leftBound := 0
+  for offset in offsets do
+    if offset - leftBound >= gap then
+      return leftBound
+    leftBound := offset + 1
 
   error! s!"Expected there to be a gap of {gap}"
 
@@ -36,7 +37,7 @@ def bigPoleInsert [config:Config] {interface} (offsets : Vector InterfaceImpl in
   let factory := (emptyFactoryH offsets).expand .S 2
   {
     factory with
-    entities := factory.entities ++ [bigPole (3 + firstOffsetWithGap offsets.toArray 4) 0]
+    entities := factory.entities ++ [bigPole (findGap offsets.toArray 2) 0]
   }
 
 def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
@@ -45,7 +46,7 @@ def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl i
   let factory := (emptyFactoryH offsets).expand .S 4
   {
     factory with
-    entities := factory.entities ++ [roboport (2 + firstOffsetWithGap offsets.toArray 4) 0]
+    entities := factory.entities ++ [roboport (findGap offsets.toArray 4) 0]
   }
 
 def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
@@ -72,7 +73,7 @@ def providerChestInsert [config:Config] {interface} (recipeName:RecipeName) (off
 def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let factory := (emptyFactoryH offsets).expand .S 4
 
-  let x := 1 + firstOffsetWithGap offsets.toArray 5
+  let x := findGap offsets.toArray 5
   let balancer : List Entity := [
     belt (x+2) 0 .S,
     belt (x+3) 0 .W,
@@ -109,7 +110,7 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
     match outputOffset - x with
     | 5 => adapter
     | 6 => adapter ++ avoider
-    | _ => error! s!"Couldn't generate outputBalancerInsert for {reprStr interface}"
+    | _ => error! s!"Couldn't generate outputBalancerInsert for {reprStr interface}, x:= {x}, outputOffset := {outputOffset}"
 
   {
     factory with
