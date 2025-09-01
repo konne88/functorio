@@ -88,12 +88,12 @@ import Functorio.Ascii
  ^^^     ^v
 "
 
--- TODO: this is currently broken
 #guard (station RecipeName.rail).toAscii == s!"
  ^^     ^v
- ↑↑⇨***!↑↓
+ ↑↑⇨***⇦↑↓
  ↑↑↠*A*↠↑↓
- ↑↑⚡***⚡↑↓
+ ↑↑ ***↠↑↓
+ ↑↑  ⚡  ↑↓
  ^^     ^v
 "
 
@@ -165,13 +165,12 @@ import Functorio.Ascii
   ^ ^       v v v
 "
 
--- TODO: need power for inserters
 #guard (station RecipeName.rocketPart).toAscii == s!"
  ^           ^^
  ↑⇨*********⇦↑↑
  ↑ *********↞↑↑
  ↑ ********* ↑↑
- ↑ ********* ↑↑
+ ↑⚡*********⚡↑↑
  ↑ ****L**** ↑↑
  ↑ ********* ↑↑
  ↑ ********* ↑↑

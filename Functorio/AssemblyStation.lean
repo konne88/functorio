@@ -406,6 +406,15 @@ def railStation : Station .rail :=
     ]
   }
 
+-- Special case, needs more powerpoles to covert the huge size of the building
+def rocketPart : Station .rocketPart :=
+  let factory := pipesOnSideStation RecipeName.rocketPart
+  {factory with
+    entities := factory.entities.append [
+      pole 1 3, pole 11 3,
+    ]
+  }
+
 def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, .E)] := {
   width := 4, height := 1
   entities := [pipe x 0, pipeToGround (x-1) 0 .E]
@@ -498,4 +507,5 @@ def station (process:Process) : Station process.recipe :=
   | .electromagneticSciencePack => electromagneticScienceStation
   | .supercapacitor => supercapacitorStation
   | .rail => railStation
+  | .rocketPart => rocketPart
   | recipe => stationWithoutOverride {process with recipe := recipe}

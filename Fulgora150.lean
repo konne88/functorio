@@ -3,7 +3,7 @@ import Functorio
 instance : Config where
   generateBigPoles := true
   generateRoboports := true
-  providerChestCapacity := 10
+  providerChestCapacity := 3
   adapterMinHeight := 3
 
 def makeWater : Ice 120 -> Bus (Water 2400) :=
