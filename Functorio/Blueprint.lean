@@ -7,7 +7,7 @@ import Functorio.Factory
 open Lean
 open Lean (Json)
 
-private def coppperWire := 5
+private def copperWire := 5
 
 private structure BlueprintInner where
   entities: List Json
@@ -117,16 +117,113 @@ def neededForBootStrap (e:Entity) : Bool :=
   | .pole | .bigPole | .roboport => true
   | _ => false
 
+
+inductive PoleType where
+  | medium
+  | big
+  deriving Inhabited, DecidableEq
+
+structure CellData where
+  type : PoleType
+  connected : Bool
+  id : Nat
+
+abbrev Cell := Option CellData
+
+abbrev Matrix w h := Vector (Vector Cell h) w
+
+namespace Matrix
+
+def empty {w h} (a:Cell) : Matrix w h := Vector.replicate w (Vector.replicate h a)
+
+def modifyCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell -> Cell) : Matrix w h :=
+  matrix.modify x fun column => column.modify y cell
+
+def setCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell) : Matrix w h :=
+  modifyCell matrix x y fun _ => cell
+
+def markConnected {w h} (x y:Nat) (matrix:Matrix w h ) : Matrix w h :=
+  matrix.modifyCell x y (fun cell =>
+    match cell with
+    | .none => error! s!"Trying to connect cell that's not there {x} {y}"
+    | .some cell => .some {cell with connected := true}
+  )
+
+def getCell {w h} (matrix:Matrix w h) (x y : Nat) : Cell :=
+  let column := matrix[x]?
+  match column with
+  | .none => .none
+  | .some column =>
+    let cell := column[y]?
+    match cell with
+    | .none => .none
+    | .some cell => cell
+
+end Matrix
+
+def entityToCell (pole: Entity) (id:Nat): CellData :=
+  let type : PoleType := match pole.type with
+    | .bigPole => .big
+    | .pole => .medium
+    | _ => impossible! s!"Trying to create wire between entities that aren't poles {reprStr pole}"
+
+  {type:=type,id:=id,connected:=false}
+
+abbrev Wire := List Nat
+
+def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData) (matrix: Matrix w h) (wires:Array Wire): Matrix w h × Array Wire := Id.run do
+  match remainingPoles with
+  | 0 => impossible! s!"Ran out of poles {remainingPoles}"
+  | remainingPoles + 1 =>
+    let mut matrix := matrix
+    let mut wires := wires
+
+    matrix := matrix.markConnected nodeX nodeY
+
+    for distance in List.range' 1 (if node.type == .medium then 5 else 16) do
+      for dx in List.range distance do
+        let signs : List (Int × Int) := [(1,1), (1,-1), (-1,1), (-1,-1)]
+        for (signX,signY) in signs do
+          let x := nodeX + (dx * signX)
+          let y := nodeY + ((distance - dx) * signY)
+
+          if x < 0 || y < 0 then continue
+
+          let neighbor := matrix.getCell x.toNat y.toNat
+          match neighbor with
+          | .none => continue
+          | .some neighbor =>
+            if neighbor.connected then continue
+            if neighbor.type == .medium && distance >= 5 then continue
+
+            wires := wires.push [node.id, copperWire, neighbor.id, copperWire]
+            let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNat y.toNat neighbor matrix wires
+            matrix := newMatrix
+            wires := newWires
+
+    return (matrix, wires)
+
+def generateWires (width height:Nat) (poles: List (Entity × Nat)) : List Wire := Id.run do
+  let mut matrix : Matrix width height := Matrix.empty .none
+  let mut wires : Array Wire := #[]
+
+  for (pole, id) in poles do
+    matrix := matrix.setCell pole.x pole.y (entityToCell pole id)
+
+  if poles.isEmpty then [] else
+  let (root, id) := poles[0]!
+
+  let (_, newWires) := generateWiresRec poles.length root.x root.y (entityToCell root id) matrix wires
+  wires := newWires
+
+  return wires.toList
+
 def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : String :=
   let entities := (factory.entities.filter (fun e =>
     !isTile e && (!bootstrap || neededForBootStrap e))).zipIdx
   let tiles := factory.entities.filter isTile
   let poles := entities.filter (fun (e,_) => e.type == .pole || e.type == .bigPole)
-  let wires := poles.flatMap (fun (a,aIdx) => poles.flatMap (fun (b,bIdx) =>
-    if aIdx < bIdx && withinDistance a b then [[
-      aIdx, coppperWire, bIdx, coppperWire
-    ]] else []
-  ))
+  let wires := generateWires factory.width factory.height poles
 
   let blueprint : Blueprint := {
     blueprint := {
