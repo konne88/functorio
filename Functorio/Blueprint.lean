@@ -121,12 +121,13 @@ def neededForBootStrap (e:Entity) : Bool :=
 inductive PoleType where
   | medium
   | big
-  deriving Inhabited, DecidableEq
+  deriving Inhabited, DecidableEq, Repr
 
 structure CellData where
   type : PoleType
   connected : Bool
   id : Nat
+  deriving Inhabited, Repr
 
 abbrev Cell := Option CellData
 
@@ -171,7 +172,26 @@ def entityToCell (pole: Entity) (id:Nat): CellData :=
 
 abbrev Wire := List Nat
 
+
+def poleArea (maxDistance:Nat) : Array (Int32 × Int32 × Int32) := Id.run do
+  let mut result := #[]
+
+  for distance in List.range' 1 maxDistance do
+    for dx in List.range (distance + 1) do
+      let signs : List (Int32 × Int32) := [(1,1), (1,-1), (-1,1), (-1,-1)]
+      for (signX,signY) in signs do
+        result := result.push (distance.toInt32, dx * signX, (distance - dx) * signY)
+
+  return result
+
+def mediumPoleArea : Array (Int32 × Int32 × Int32) := poleArea 5
+
+def bigPoleArea : Array (Int32 × Int32 × Int32) := poleArea 15
+
 def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData) (matrix: Matrix w h) (wires:Array Wire): Matrix w h × Array Wire := Id.run do
+
+  dbg_trace s!"{reprStr (nodeX, nodeY, node)}"
+
   match remainingPoles with
   | 0 => impossible! s!"Ran out of poles {remainingPoles}"
   | remainingPoles + 1 =>
@@ -180,24 +200,29 @@ def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData
 
     matrix := matrix.markConnected nodeX nodeY
 
-    for distance in List.range' 1 (if node.type == .medium then 5 else 16) do
-      for dx in List.range distance do
-        let signs : List (Int × Int) := [(1,1), (1,-1), (-1,1), (-1,-1)]
-        for (signX,signY) in signs do
-          let x := nodeX + (dx * signX)
-          let y := nodeY + ((distance - dx) * signY)
+    for (distance, dx, dy) in (if node.type == .medium then mediumPoleArea else bigPoleArea) do
+        let x := nodeX + dx
+        let y := nodeY + dy
+
+        dbg_trace s!"d:{distance} dx:{dx} x:{x} y:{y}"
 
           if x < 0 || y < 0 then continue
 
-          let neighbor := matrix.getCell x.toNat y.toNat
+          dbg_trace s!"not out of bounds {x} {y}"
+
+          let neighbor := matrix.getCell x.toNatClampNeg y.toNatClampNeg
           match neighbor with
           | .none => continue
           | .some neighbor =>
+
+            dbg_trace s!"found buddy {reprStr neighbor}"
+
+
             if neighbor.connected then continue
             if neighbor.type == .medium && distance >= 5 then continue
 
             wires := wires.push [node.id, copperWire, neighbor.id, copperWire]
-            let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNat y.toNat neighbor matrix wires
+            let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNatClampNeg y.toNatClampNeg neighbor matrix wires
             matrix := newMatrix
             wires := newWires
 
