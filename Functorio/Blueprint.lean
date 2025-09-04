@@ -7,6 +7,8 @@ import Functorio.Factory
 open Lean
 open Lean (Json)
 
+namespace Blueprint
+
 private def copperWire := 5
 
 private structure BlueprintInner where
@@ -106,8 +108,6 @@ private def distance (a b : Entity) : Nat :=
   ((Int.ofNat a.x) - (Int.ofNat b.x)).natAbs +
   ((Int.ofNat a.y) - (Int.ofNat b.y)).natAbs
 
-namespace Factory
-
 def withinDistance (a b:Entity) :=
   let d := distance a b
   d <= 9 || (a.type == .bigPole && b.type == .bigPole && d <= 30)
@@ -170,8 +170,7 @@ def entityToCell (pole: Entity) (id:Nat): CellData :=
 
   {type:=type,id:=id,connected:=false}
 
-abbrev Wire := List Nat
-
+abbrev Wire := Nat × Nat
 
 def poleArea (maxDistance:Nat) : Array (Int32 × Int32 × Int32) := Id.run do
   let mut result := #[]
@@ -184,14 +183,17 @@ def poleArea (maxDistance:Nat) : Array (Int32 × Int32 × Int32) := Id.run do
 
   return result
 
-def mediumPoleArea : Array (Int32 × Int32 × Int32) := poleArea 5
+-- There are 8 tiles between the poles.
+def mediumPoleMaxDistance := 9
 
-def bigPoleArea : Array (Int32 × Int32 × Int32) := poleArea 15
+-- There are 30 tiles between the poles, but keep in mind that entities are 2 wide.
+def bigPoleMaxDistance := 32
+
+def mediumPoleArea : Array (Int32 × Int32 × Int32) := poleArea mediumPoleMaxDistance
+
+def bigPoleArea : Array (Int32 × Int32 × Int32) := poleArea bigPoleMaxDistance
 
 def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData) (matrix: Matrix w h) (wires:Array Wire): Matrix w h × Array Wire := Id.run do
-
-  dbg_trace s!"{reprStr (nodeX, nodeY, node)}"
-
   match remainingPoles with
   | 0 => impossible! s!"Ran out of poles {remainingPoles}"
   | remainingPoles + 1 =>
@@ -204,27 +206,18 @@ def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData
         let x := nodeX + dx
         let y := nodeY + dy
 
-        dbg_trace s!"d:{distance} dx:{dx} x:{x} y:{y}"
+        if x < 0 || y < 0 then continue
+        let neighbor := matrix.getCell x.toNatClampNeg y.toNatClampNeg
+        match neighbor with
+        | .none => continue
+        | .some neighbor =>
+          if neighbor.connected then continue
+          if neighbor.type == .medium && distance > mediumPoleMaxDistance then continue
 
-          if x < 0 || y < 0 then continue
-
-          dbg_trace s!"not out of bounds {x} {y}"
-
-          let neighbor := matrix.getCell x.toNatClampNeg y.toNatClampNeg
-          match neighbor with
-          | .none => continue
-          | .some neighbor =>
-
-            dbg_trace s!"found buddy {reprStr neighbor}"
-
-
-            if neighbor.connected then continue
-            if neighbor.type == .medium && distance >= 5 then continue
-
-            wires := wires.push [node.id, copperWire, neighbor.id, copperWire]
-            let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNatClampNeg y.toNatClampNeg neighbor matrix wires
-            matrix := newMatrix
-            wires := newWires
+          wires := wires.push (node.id, neighbor.id)
+          let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNatClampNeg y.toNatClampNeg neighbor matrix wires
+          matrix := newMatrix
+          wires := newWires
 
     return (matrix, wires)
 
@@ -243,9 +236,15 @@ def generateWires (width height:Nat) (poles: List (Entity × Nat)) : List Wire :
 
   return wires.toList
 
+end Blueprint
+
+namespace Factory
+
+open Blueprint
+
 def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : String :=
   let entities := (factory.entities.filter (fun e =>
-    !isTile e && (!bootstrap || neededForBootStrap e))).zipIdx
+    !isTile e && (!bootstrap || Blueprint.neededForBootStrap e))).zipIdx
   let tiles := factory.entities.filter isTile
   let poles := entities.filter (fun (e,_) => e.type == .pole || e.type == .bigPole)
   let wires := generateWires factory.width factory.height poles
@@ -254,7 +253,7 @@ def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : Strin
     blueprint := {
       entities:=entities.map (fun (e,idx) => entityToJson idx e),
       tiles:=tiles.map tileToJson,
-      wires:= wires,
+      wires:= wires.map fun (x,y) => [x, copperWire, y, copperWire],
       item:="blueprint",
       version:= 562949957025792
     }
