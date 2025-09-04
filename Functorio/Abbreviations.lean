@@ -52,7 +52,6 @@ def BlueScience := BusLane .chemicalSciencePack
 def PurpleScience := BusLane .productionSciencePack
 def YellowScience := BusLane .utilitySciencePack
 
-def CryogenicScience := BusLane .cryogenicSciencePack
 def HotFluoroketone := BusLane .fluoroketoneHot
 def ColdFluoroketone := BusLane .fluoroketoneCold
 def Ice := BusLane .ice
@@ -64,6 +63,7 @@ def SolidFuel := BusLane .solidFuel
 def Ammonia := BusLane .ammonia
 def IcePlatform := BusLane .icePlatform
 def AmmoniacalSolution := BusLane .ammoniacalSolution
+def CryogenicScience := BusLane .cryogenicSciencePack
 
 def Electrolyte := BusLane .electrolyte
 def HolmiumOre := BusLane .holmiumOre
