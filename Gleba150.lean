@@ -14,20 +14,39 @@ abbrev Spoilage := BusLane .spoilage
 abbrev YumakoMash := BusLane .yumakoMash
 abbrev IronBacteria := BusLane .ironBacteria
 abbrev CopperBacteria := BusLane .copperBacteria
+abbrev Nutrients := BusLane .nutrients
 
 -- def makeBioflux :=
 
+
+-- One unit of nutrients will power a biochamber for 4 seconds.
+
+def makeNutrients : Bioflux 300 -> Bus (Nutrients 2700) :=
+  busAssemblyLine RecipeName.nutrientsFromBioflux 1
+
+-- def makePentapodEggs' : Water 6720 -> PentapodEgg 112 -> Nutrients 3360 -> Bus (PentapodEgg 336) :=
+--   busAssemblyLine RecipeName.pentapodEgg 14
+
+-- def makePentapodEggs'' : Water 3360 -> PentapodEgg 56 -> Nutrients 1680 -> Bus (PentapodEgg 168) :=
+--   busAssemblyLine RecipeName.pentapodEgg 7
+
+def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients0 : Nutrients 2700) (nutrients1 : Nutrients 720) : Bus (PentapodEgg 336) := do
+  let (water0, water1) <- split water
+  let (eggs0, eggs1) <- split eggs
+  let eggs0 <- busAssemblyLine RecipeName.pentapodEgg 11 water0 eggs0 nutrients0.less
+  let eggs1 <- busAssemblyLine RecipeName.pentapodEgg 3 water1 eggs1 nutrients1
+  merge eggs0 eggs1
+
 def makeAgriculturalScience : Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
-    busAssemblyLine RecipeName.agriculturalSciencePack 7
+  busAssemblyLine RecipeName.agriculturalSciencePack 7
 
 
-
-def x : BusAssemblyLineType RecipeName.copperBacteriaCultivation 2 :=
+def x : BusAssemblyLineType RecipeName.pentapodEgg 3 :=
   by simp!
 
 
-def y : BusAssemblyLineType RecipeName.copperBacteria 2 :=
-  by simp!
+-- def y : BusAssemblyLineType RecipeName.copperBacteria 2 :=
+--   by simp!
 
 
 
@@ -115,27 +134,44 @@ def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
   busAssemblyLine RecipeName.rocketPart 1
 
+
+
+
 -- output:
 -- science
 -- bioflux
 -- carbon fiber
 -- rocket fuel (for energy)
 def glebaFactory := bus do
-  let water <- input .water 6720
-  let (water0, water1) <- split water
+  let water <- input .water 13440
+  let (water0, water) <- split water
+  let (water1, water2) <- split (right:=6720) water
 
-  let bioflux <- input .bioflux 648
+  let eggs <- input .pentapodEgg 112
+
   let jelly <- input .jelly 2160
   let (jelly0, jelly1) <- split jelly
 
-  -- let spoilage <- input .spoilage 900
   let mash <- input .yumakoMash 960
   let (mash0, mash1) <- split mash
 
+  let bioflux <- input .bioflux 1458 -- 858
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux) <- split bioflux
   let (bioflux2, bioflux) <- split bioflux
-  let (bioflux3, bioflux4) <- split bioflux
+  let (bioflux3, bioflux) <- split bioflux
+  let (bioflux4, bioflux) <- split bioflux
+  let (bioflux5, bioflux) <- split bioflux
+  let (bioflux6, bioflux7) <- split bioflux
+
+  -- let nutrients <- input .nutrients 3360
+  let nutrients0 <- makeNutrients bioflux6
+  let nutrients1 <- makeNutrients bioflux7
+
+  let eggs <- makePentapodEggs water2 eggs nutrients0 nutrients1.less
+  let (eggs, _) <- split (right:=126) eggs
+
+  let _ <- makeAgriculturalScience bioflux5 eggs
 
   let (copperOre, spoilage0) <- makeBacteriaCopper mash0 bioflux4
   let (ironOre, spoilage1) <- makeBacteriaIron jelly0 bioflux3
