@@ -5,25 +5,25 @@ import Functorio.Bus
 namespace Readme
 
 def makeIron : IronOre 300 -> Bus (Iron 300) :=
-  busAssemblyLine RecipeName.ironPlate 8
+  busAssemblyLine (recipe .ironPlate) 8
 
 def makeCopper : CopperOre 150 -> Bus (Copper 150) :=
-  busAssemblyLine RecipeName.copperPlate 4
+  busAssemblyLine (recipe .copperPlate) 4
 
 def makeGear : Iron 300 -> Bus (Gear 150) :=
-  busAssemblyLine RecipeName.ironGearWheel 1
+  busAssemblyLine (recipe .ironGearWheel) 1
 
 def makeRedScience : Copper 150 -> Gear 150 -> Bus (RedScience 150) :=
-  busAssemblyLine RecipeName.automationSciencePack 10
+  busAssemblyLine (recipe .automationSciencePack) 10
 
 def makeSteel : Iron 2700 -> Bus (Steel 540) :=
-  busAssemblyLine RecipeName.steelPlate 72
+  busAssemblyLine (recipe .steelPlate) 72
 
 def makeBelt : Iron 150 -> Gear 150 -> Bus (YellowBelt 300):=
-  busAssemblyLine RecipeName.transportBelt 1
+  busAssemblyLine (recipe .transportBelt) 1
 
 def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 ->Bus (Acid 3000) :=
-  busAssemblyLine RecipeName.sulfuricAcid 1
+  busAssemblyLine (recipe .sulfuricAcid) 1
 
 def redScience := bus do
   let ironOre <- input .ironOre 300
@@ -59,10 +59,10 @@ def acidFactory := bus do
   let _ <- makeAcid water sulfur iron
 
 def gearFactory1 :=
-  station RecipeName.ironGearWheel
+  station (recipe .ironGearWheel)
 
 def gearFactory3 :=
-  assemblyLine RecipeName.ironGearWheel 3
+  assemblyLine (recipe .ironGearWheel) 3
 
 def readme :=
   columnList [

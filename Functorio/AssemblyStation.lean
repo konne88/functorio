@@ -9,15 +9,23 @@ structure Process where
   -- fabricatorOk : fabricator.handlesCategory recipeName.getRecipe.category := by decide
   deriving Repr, DecidableEq
 
-namespace RecipeName
+namespace Process
 
-def inputIngredients (r:RecipeName) : List Ingredient :=
-  r.getRecipe.inputs.map (Prod.snd)
+def getRecipe (process:Process) : Recipe :=
+  let original := process.recipe.getRecipe
+  if process.fabricator != .biochamber
+  then original
+  else { original with
+    inputs := [( original.time / 4 , Ingredient.nutrients )] ++ original.inputs
+  }
 
-def outputIngredients (r:RecipeName) : List Ingredient :=
-  r.getRecipe.outputs.map (Prod.snd)
+def inputIngredients (process:Process) : List Ingredient :=
+  process.getRecipe.inputs.map (Prod.snd)
 
-end RecipeName
+def outputIngredients (process:Process) : List Ingredient :=
+  process.getRecipe.outputs.map (Prod.snd)
+
+end Process
 
 @[simp]
 def defaultCategoryFabricator : RecipeCategory -> Fabricator
@@ -51,11 +59,16 @@ def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .recyclingOrHandCrafting
 | .recycling => .recycler
 
-instance : Coe RecipeName Process where
-  coe recipe := {
-    recipe := recipe,
-    fabricator := defaultCategoryFabricator recipe.getRecipe.category,
-  }
+def recipe (recipe:RecipeName) : Process := {
+  recipe := recipe,
+  fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+}
+
+-- instance : Coe RecipeName Process where
+--   coe recipe := {
+--     recipe := recipe,
+--     fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+--   }
 
 structure FabricatorConfig where
   direction : Direction
@@ -346,13 +359,13 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool := false)
     name := s!"pipesOut {reprStr ingredients}"
   }
 
-def stationInterface (recipe:RecipeName) : List InterfaceV :=
-  recipe.inputIngredients.map (., .N) ++
-  recipe.outputIngredients.map (., .S)
+def stationInterface (process:Process) : List InterfaceV :=
+  process.inputIngredients.map (., .N) ++
+  process.outputIngredients.map (., .S)
 
-abbrev Station recipe := Factory (stationInterface recipe) [] (stationInterface recipe) []
+abbrev Station process := Factory (stationInterface process) [] (stationInterface process) []
 
-def stationWithoutOverride (process:Process) : Station process.recipe :=
+def stationWithoutOverride (process:Process) : Station process :=
   let station := pipesOnSideStation process
 
   let ns := interfaceNS process.recipe
@@ -364,7 +377,7 @@ def stationWithoutOverride (process:Process) : Station process.recipe :=
     (pipesOut (liquidOutputs process.recipe) (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
-private def flyingRobotFrameStation : Station .flyingRobotFrame :=
+private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
   let height := 3
   let entities : List Entity :=
     beltline (x:=0) .N height ++
@@ -399,8 +412,8 @@ private def flyingRobotFrameStation : Station .flyingRobotFrame :=
   }
 
 -- Special case, needs two output inserters to keep up with the production rate.
-def railStation : Station .rail :=
-  let factory := (pipesOnSideStation RecipeName.rail).expand .S 1
+def railStation : Station (recipe .rail) :=
+  let factory := (pipesOnSideStation (recipe .rail)).expand .S 1
   let removedLeftPole := eraseRectangle 2 2 1 1 factory.entities
   let removedPoles := eraseRectangle 6 2 1 1 removedLeftPole
   {factory with
@@ -411,8 +424,8 @@ def railStation : Station .rail :=
   }
 
 -- Special case, needs more powerpoles to covert the huge size of the building
-def rocketPart : Station .rocketPart :=
-  let factory := pipesOnSideStation RecipeName.rocketPart
+def rocketPart : Station (recipe .rocketPart) :=
+  let factory := pipesOnSideStation (recipe .rocketPart)
   {factory with
     entities := factory.entities.append [
       pole 1 3, pole 11 3,
@@ -427,7 +440,7 @@ def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, 
 }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electrolyteStation : Station .electrolyte :=
+def electrolyteStation : Station (recipe .electrolyte) :=
   {
     width := 13, height := 6,
     name := ".electrolyte"
@@ -446,7 +459,7 @@ def electrolyteStation : Station .electrolyte :=
   }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electromagneticScienceStation : Station .electromagneticSciencePack :=
+def electromagneticScienceStation : Station (recipe .electromagneticSciencePack) :=
   {
     width := 14, height := 6,
     name := ".electromagneticSciencePack"
@@ -467,7 +480,7 @@ def electromagneticScienceStation : Station .electromagneticSciencePack :=
   }
 
 -- Special case, because of 4 solid inputs
-private def supercapacitorStation : Station .supercapacitor :=
+private def supercapacitorStation : Station (recipe .supercapacitor) :=
   let height := 4
   let entities : List Entity :=
     pipeline (x:=1) height ++
@@ -504,12 +517,12 @@ private def supercapacitorStation : Station .supercapacitor :=
     name := ".supercapacitor"
   }
 
-def station (process:Process) : Station process.recipe :=
+def station (process:Process) : Station process :=
   match process.recipe with
-  | .flyingRobotFrame => flyingRobotFrameStation
-  | .electrolyte => electrolyteStation
-  | .electromagneticSciencePack => electromagneticScienceStation
-  | .supercapacitor => supercapacitorStation
-  | .rail => railStation
-  | .rocketPart => rocketPart
-  | recipe => stationWithoutOverride {process with recipe := recipe}
+  | .flyingRobotFrame => unsafeFactoryCast flyingRobotFrameStation
+  | .electrolyte => unsafeFactoryCast electrolyteStation
+  | .electromagneticSciencePack => unsafeFactoryCast electromagneticScienceStation
+  | .supercapacitor => unsafeFactoryCast supercapacitorStation
+  | .rail => unsafeFactoryCast railStation
+  | .rocketPart => unsafeFactoryCast rocketPart
+  | _ => stationWithoutOverride process
