@@ -1,4 +1,5 @@
 import Functorio
+import Functorio.AssemblyLine
 
 instance : Config where
   generateBigPoles := true
@@ -162,10 +163,23 @@ def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bu
 def makeJelly : Jellynut 480 -> Bus (JellynutSeed (72/5) × Jelly 2700) :=
   busAssemblyLine (recipe .jellynutProcessing) 4
 
-def makeMash : Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoMash 2700) :=
+def makeMash : Nutrients 240 -> Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoMash 2700) :=
   busAssemblyLine (recipe .yumakoProcessing) 8
 
-def makeMash' : Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
+def adfs : BusAssemblyLineType (recipe RecipeName.yumakoProcessing) 8 :=
+  by
+  simp!
+
+
+  -- unfold BusAssemblyLineType
+  -- simp!
+
+
+
+
+
+
+def makeMash' : Nutrients 45 -> Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
   busAssemblyLine (recipe .yumakoProcessing) 3
 
 

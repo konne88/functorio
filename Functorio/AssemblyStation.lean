@@ -11,6 +11,7 @@ structure Process where
 
 namespace Process
 
+@[simp]
 def getRecipe (process:Process) : Recipe :=
   let original := process.recipe.getRecipe
   if process.fabricator != .biochamber
@@ -19,9 +20,11 @@ def getRecipe (process:Process) : Recipe :=
     inputs := [( original.time / 4 , Ingredient.nutrients )] ++ original.inputs
   }
 
+@[simp]
 def inputIngredients (process:Process) : List Ingredient :=
   process.getRecipe.inputs.map (Prod.snd)
 
+@[simp]
 def outputIngredients (process:Process) : List Ingredient :=
   process.getRecipe.outputs.map (Prod.snd)
 
@@ -59,6 +62,7 @@ def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .recyclingOrHandCrafting
 | .recycling => .recycler
 
+@[simp]
 def recipe (recipe:RecipeName) : Process := {
   recipe := recipe,
   fabricator := defaultCategoryFabricator recipe.getRecipe.category,
