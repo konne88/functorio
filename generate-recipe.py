@@ -65,7 +65,12 @@ lean_code.append("def isLiquid : Ingredient -> Bool")
 for fluid in sorted(list(fluids)):
     lean_code.append(f"| .{to_camel_case(fluid)} => true")
 lean_code.append(f"| _ => false\n")
-lean_code.append("end Ingredient")
+
+lean_code.append("def name : Ingredient -> String")
+for ingredient in ingredients:
+    lean_code.append(f'| .{to_camel_case(ingredient)} => "{ingredient}"')
+
+lean_code.append("\nend Ingredient")
 
 # Static Recipe structure
 lean_code.append("""

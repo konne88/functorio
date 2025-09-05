@@ -50,15 +50,15 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .pipeToGround .S => '┬'
   | .pipeToGround .W => '┤'
 
-  | .inserter .N => '⇩'
-  | .inserter .E => '⇦'
-  | .inserter .S => '⇧'
-  | .inserter .W => '⇨'
+  | .inserter .N _ => '⇩'
+  | .inserter .E _ => '⇦'
+  | .inserter .S _ => '⇧'
+  | .inserter .W _ => '⇨'
 
-  | .longInserter .N => '↡'
-  | .longInserter .E => '↞'
-  | .longInserter .S => '↟'
-  | .longInserter .W => '↠'
+  | .longInserter .N _ => '↡'
+  | .longInserter .E _ => '↞'
+  | .longInserter .S _ => '↟'
+  | .longInserter .W _ => '↠'
 
   | .pole => '⚡'
   | .bigPole => '↯'

@@ -34,8 +34,8 @@ private def entityName (e:Entity) : String :=
   | .pipe => "pipe"
   | .pipeToGround _ => "pipe-to-ground"
   | .pump _ => "pump"
-  | .inserter _ => "bulk-inserter"
-  | .longInserter _ => "long-handed-inserter"
+  | .inserter _ _ => "bulk-inserter"
+  | .longInserter _ _ => "long-handed-inserter"
   | .pole => "medium-electric-pole"
   | .bigPole => "big-electric-pole"
   | .roboport => "roboport"
@@ -46,15 +46,26 @@ private def entityName (e:Entity) : String :=
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
   | .belt d | .beltDown d | .beltUp d | .splitter d _
-  | .pipeToGround d | .pump d | .inserter d | .longInserter d
+  | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
   | .fabricator _ _ d _ => d
   | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
   | .refinedConcrete => .none
 
 private def entityProps (e:Entity) : List (String × Json):=
   match e.type with
-  | .belt _ | .pipe | .pipeToGround _ | .pump _ | .inserter _
-  | .longInserter _ | .pole | .bigPole | .roboport | .refinedConcrete => []
+  | .belt _ | .pipe | .pipeToGround _ | .pump _
+  | .pole | .bigPole | .roboport | .refinedConcrete => []
+  | .inserter _ filter | .longInserter _ filter => [
+    ("use_filters", !filter.isEmpty),
+    ("filters", Json.arr (filter.mapIdx (fun i ingredient =>
+      Json.mkObj [
+        ("index", s!"{i + 1}"),
+        ("name", ingredient.name),
+        ("quality", "normal"),
+        ("comparator", "="),
+      ]
+    )).toArray)
+  ]
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]
   | .passiveProviderChest capacity => match capacity with | .none => [] | .some capacity => [("bar", capacity)]

@@ -183,7 +183,7 @@ structure Access where
   ingredient: Ingredient
 
 -- factoryDir = direction in which the factory lies
-def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : List InterfaceV) (factoryDir: DirectionH) : List Entity :=
+def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : List InterfaceV) (factoryDir: DirectionH) (numSolidOutputs:Nat) : List Entity :=
   Id.run do
     let mut entities : Vector (Option EntityType) height := Vector.replicate height .none
 
@@ -193,13 +193,14 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
     for y in ewOffsets do
       entities := entities.set! y (.some (.pipeToGround factoryDir))
 
-    for ((_, dir), i) in ns.zipIdx do
+    for ((ingredient, dir), i) in ns.zipIdx do
       for y in List.range height do
         if entities[y]! == .none then
           let inserterDir := match dir with | .N => inputInserterDir | .S => outputInserterDir
+          let filter := if dir == .S && numSolidOutputs > 1 then [ingredient] else []
           match i with
-          | 0 => entities := entities.set! y (.some (.inserter inserterDir))
-          | 1 => entities := entities.set! y (.some (.longInserter inserterDir))
+          | 0 => entities := entities.set! y (.some (.inserter inserterDir filter))
+          | 1 => entities := entities.set! y (.some (.longInserter inserterDir filter))
           | _ => error! s!"More than 2 belt inputs/outputs per side are not supported, belt index = {i}"
           break
 
@@ -211,7 +212,7 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
     return entities.toList.zipIdx.flatMap fun (type, y) =>
       match type with | .none => [] | .some type => [{x:=x, y:=y, type:=type}]
 
-def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) : Factory ns ew ns ew :=
+def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) (numSolidOutputs:Nat): Factory ns ew ns ew :=
   match ns with
   | [] => emptyFactoryV ewOffsets
   | _ =>
@@ -226,11 +227,11 @@ def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) 
       }
       name := "rightAccessor"
       entities :=
-        accessEntities 0 height ewOffsets.toList ns .W ++
+        accessEntities 0 height ewOffsets.toList ns .W numSolidOutputs ++
         (ns.zipIdx.flatMap fun ((_, dir), i) => beltline (i + 1) dir height)
     }
 
-def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) : Factory ns ew ns ew :=
+def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) (numSolidOutputs:Nat): Factory ns ew ns ew :=
   match ns with
   | [] => emptyFactoryV ewOffsets
   | _ =>
@@ -245,7 +246,7 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
       }
       name := "leftAccessor"
       entities :=
-        accessEntities ns.length height ewOffsets.toList ns .E ++
+        accessEntities ns.length height ewOffsets.toList ns .E numSolidOutputs ++
         (ns.zipIdx.flatMap fun ((_, dir), i) => beltline i dir height)
     }
 
@@ -262,8 +263,8 @@ def pipesOnSideStation (process:Process) : Factory
   let station := plainStation process
   let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
-  let leftAccess := leftAccessor station.interface.w station.height leftNS
-  let rightAccess := rightAccessor station.interface.e station.height rightNS
+  let leftAccess := leftAccessor station.interface.w station.height leftNS process.solidOutputs.length
+  let rightAccess := rightAccessor station.interface.e station.height rightNS process.solidOutputs.length
 
   -- in these cases, there might not be enough space for poles right next to the fabricator
   -- if ns.length == 0--  || process.inputIngredients.length + process.outputIngredients.length >= station.height * 2 - 1

@@ -16,8 +16,8 @@ inductive EntityType
   | pipe
   | pipeToGround (direction:Direction)
   | pump (direction:Direction)
-  | inserter (direction:Direction)
-  | longInserter (direction:Direction)
+  | inserter (direction:Direction) (filter:List Ingredient)
+  | longInserter (direction:Direction) (filter:List Ingredient)
   | pole
   | bigPole
   | fabricator (fabricator:Fabricator) (recipe:RecipeName) (direction:Direction) (mirror:Bool)
@@ -46,9 +46,9 @@ def pipeToGround x y d := ({x:=x,y:=y,type:=.pipeToGround d} : Entity)
 
 def pump x y d := ({x:=x,y:=y,type:=.pump d} : Entity)
 
-def inserter x y d := ({x:=x,y:=y,type:=.inserter d} : Entity)
+def inserter x y d (filter:=[]) := ({x:=x,y:=y,type:=.inserter d filter} : Entity)
 
-def longInserter x y d := ({x:=x,y:=y,type:=.longInserter d} : Entity)
+def longInserter x y d (filter:=[]) := ({x:=x,y:=y,type:=.longInserter d filter} : Entity)
 
 def pole x y := ({x:=x,y:=y,type:=.pole} : Entity)
 
@@ -76,7 +76,7 @@ namespace Entity
 
 def width (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ | .longInserter _
+  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
   | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
@@ -86,8 +86,8 @@ def width (e:Entity) : Nat :=
 
 def height (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _
-  | .longInserter _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
+  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
+  | .longInserter _ _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
   | .pump dir => if dir == .N || dir == .S then 2 else 1
