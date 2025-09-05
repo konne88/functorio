@@ -13,11 +13,11 @@ import Functorio.AssemblyStation
 -- Item's per minute
 @[simp]
 def inputThroughput (process:Process) (stations:Nat) (items:Fraction) : Fraction :=
-  stations * items * process.fabricator.speedup * 60 / process.recipe.getRecipe.time
+  stations * items * process.fabricator.speedup * 60 / process.getRecipe.time
 
 @[simp]
 def outputThroughput (process:Process) (stations:Nat) (ingredient:Ingredient) (items:Fraction) : Fraction :=
-  let t := stations * items * process.fabricator.speedup * (1 + process.fabricator.productivity) * 60 / process.recipe.getRecipe.time
+  let t := stations * items * process.fabricator.speedup * (1 + process.fabricator.productivity) * 60 / process.getRecipe.time
   if ingredient.isLiquid then t else min expressBeltThroughput t
 
 def expressBeltHalfThroughput := expressBeltThroughput / 2
@@ -130,7 +130,7 @@ def maxRoboportLogisticsDistance := 46
 
 def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stationInterface process) [] :=
   Id.run do
-    let output := process.recipe.getRecipe.outputs[0]!
+    let output := process.getRecipe.outputs[0]!
     let stationOutput := inputThroughput process 1 output.fst
     let station := station process
     let mut factories : Array (Factory (stationInterface process) [] (stationInterface process) []) := #[
@@ -171,10 +171,10 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
 
 @[simp]
 def BusAssemblyLineReturn (process:Process) (stations:Nat) : Type :=
-  Bus (tupleType process.recipe.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (outputThroughput process stations ingredient items))
+  Bus (tupleType process.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (outputThroughput process stations ingredient items))
 
 @[simp]
-def BusAssemblyLineType (process:Process) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := process.recipe.getRecipe.inputs): Type :=
+def BusAssemblyLineType (process:Process) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
   match remainingInputs with
   | [] => BusAssemblyLineReturn process stations
   | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process stations items) -> BusAssemblyLineType process stations inputs
@@ -183,7 +183,7 @@ def processBusAssemblyLineArguments
   (process:Process)
   (stations:Nat)
   (processor: List BusLane' -> BusAssemblyLineReturn process stations)
-  (remainingInputs: List (Fraction × Ingredient) := process.recipe.getRecipe.inputs)
+  (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs)
   (args: List BusLane' := [])
 : BusAssemblyLineType process stations remainingInputs := by
   revert args
@@ -199,7 +199,7 @@ def busAssemblyLine [config:Config] (process: Process) (stations:Nat) : BusAssem
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
     let indexes <- busTapGeneric
       inputs
-      (process.recipe.getRecipe.outputs.map Prod.snd)
+      (process.getRecipe.outputs.map Prod.snd)
       (unsafeFactoryCast namedFactory)
       (adapterMinHeight := config.adapterMinHeight)
     return tuple (fun (_, _) i => {index:=indexes[i]!})

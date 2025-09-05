@@ -23,8 +23,8 @@ abbrev YumakoSeed := BusLane .yumakoSeed
 -- 378
 
 def makeBioflux (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160) := do
-  let bioflux0 : Bioflux 1080 <- busAssemblyLine RecipeName.bioflux 9 mash[0] jelly[0]
-  let bioflux1 : Bioflux 1080 <- busAssemblyLine RecipeName.bioflux 9 mash[1] jelly[1]
+  let bioflux0 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 mash[0] jelly[0]
+  let bioflux1 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 mash[1] jelly[1]
   let bioflux <- merge bioflux0 bioflux1
   return bioflux.less
 
@@ -32,48 +32,48 @@ def makeBioflux (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) 
 
 
 
---  busAssemblyLine RecipeName.bioflux 1
+--  busAssemblyLine (recipe .bioflux) 1
 
 
 
 -- One unit of nutrients will power a biochamber for 4 seconds.
 
 def makeNutrients : Bioflux 300 -> Bus (Nutrients 2700) :=
-  busAssemblyLine RecipeName.nutrientsFromBioflux 1
+  busAssemblyLine (recipe .nutrientsFromBioflux) 1
 
 -- def makePentapodEggs' : Water 6720 -> PentapodEgg 112 -> Nutrients 3360 -> Bus (PentapodEgg 336) :=
---   busAssemblyLine RecipeName.pentapodEgg 14
+--   busAssemblyLine (recipe .pentapodEgg) 14
 
 -- def makePentapodEggs'' : Water 3360 -> PentapodEgg 56 -> Nutrients 1680 -> Bus (PentapodEgg 168) :=
---   busAssemblyLine RecipeName.pentapodEgg 7
+--   busAssemblyLine (recipe .pentapodEgg) 7
 
 def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients0 : Nutrients 2700) (nutrients1 : Nutrients 720) : Bus (PentapodEgg 336) := do
   let (water0, water1) <- split water
   let (eggs0, eggs1) <- split eggs
-  let eggs0 <- busAssemblyLine RecipeName.pentapodEgg 11 water0 eggs0 nutrients0.less
-  let eggs1 <- busAssemblyLine RecipeName.pentapodEgg 3 water1 eggs1 nutrients1
+  let eggs0 <- busAssemblyLine (recipe .pentapodEgg) 11 water0 eggs0 nutrients0.less
+  let eggs1 <- busAssemblyLine (recipe .pentapodEgg) 3 water1 eggs1 nutrients1
   merge eggs0 eggs1
 
 def makeAgriculturalScience : Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
-  busAssemblyLine RecipeName.agriculturalSciencePack 7
+  busAssemblyLine (recipe .agriculturalSciencePack) 7
 
 
--- def y : BusAssemblyLineType RecipeName.copperBacteria 2 :=
+-- def y : BusAssemblyLineType (recipe .copperBacteria) 2 :=
 --   by simp!
 
 
 
 def cultivateCopperBacteria0 : YumakoMash 720 -> Bus (CopperBacteria 36 × Spoilage 360):=
-  busAssemblyLine RecipeName.copperBacteria 2
+  busAssemblyLine (recipe .copperBacteria) 2
 
 def cultivateCopperBacteria1 : CopperBacteria 30 -> Bioflux 30 -> Bus (CopperBacteria 180):=
-  busAssemblyLine RecipeName.copperBacteriaCultivation 1
+  busAssemblyLine (recipe .copperBacteriaCultivation) 1
 
 def cultivateCopperBacteria2 : CopperBacteria 60 -> Bioflux 60 -> Bus (CopperBacteria 360):=
-  busAssemblyLine RecipeName.copperBacteriaCultivation 2
+  busAssemblyLine (recipe .copperBacteriaCultivation) 2
 
 def cultivateCopperBacteria3 : CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
-  busAssemblyLine RecipeName.copperBacteriaCultivation 9
+  busAssemblyLine (recipe .copperBacteriaCultivation) 9
 
 def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
   let factory := capN emptyFactoryH
@@ -90,13 +90,13 @@ def makeBacteriaCopper (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (Copper
   return (ore.less, spoilage)
 
 def cultivateIronBacteria0 : Jelly 1440 -> Bus (IronBacteria 36 × Spoilage 1440):=
-  busAssemblyLine RecipeName.ironBacteria 2
+  busAssemblyLine (recipe .ironBacteria) 2
 
 def cultivateIronBacteria1 : IronBacteria 30 -> Bioflux 30 -> Bus (IronBacteria 180):=
-  busAssemblyLine RecipeName.ironBacteriaCultivation 1
+  busAssemblyLine (recipe .ironBacteriaCultivation) 1
 
 def cultivateIronBacteria2 : IronBacteria 150 -> Bioflux 150 -> Bus (IronBacteria 900):=
-  busAssemblyLine RecipeName.ironBacteriaCultivation 5
+  busAssemblyLine (recipe .ironBacteriaCultivation) 5
 
 def ironSpoilingChamber {n} (bacteria:IronBacteria n) : Bus (IronOre n) :=
   let factory := capN emptyFactoryH
@@ -118,55 +118,55 @@ def makeBacteriaIron (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900
   return (ore, spoilage)
 
 def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
-  busAssemblyLine RecipeName.lowDensityStructure 4
+  busAssemblyLine (recipe .lowDensityStructure) 4
 
 def makeBioSulfur : Spoilage 900 -> Bioflux 180 -> Bus (Sulfur 540) :=
-  busAssemblyLine RecipeName.biosulfur 3
+  busAssemblyLine (recipe .biosulfur) 3
 
 def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 -> Bus (Acid 3000) :=
-  busAssemblyLine RecipeName.sulfuricAcid 1
+  busAssemblyLine (recipe .sulfuricAcid) 1
 
 def makeCopper : CopperOre 1500 -> Bus (Copper 1500) :=
-  busAssemblyLine RecipeName.copperPlate 40
+  busAssemblyLine (recipe .copperPlate) 40
 
 def makeIron : IronOre 900 -> Bus (Iron 900) :=
-  busAssemblyLine RecipeName.ironPlate 24
+  busAssemblyLine (recipe .ironPlate) 24
 
 def makeSteel : Iron 225 -> Bus (Steel 45) :=
-  busAssemblyLine RecipeName.steelPlate 6
+  busAssemblyLine (recipe .steelPlate) 6
 
 def makeBioPlastic : Bioflux 60 -> YumakoMash 240 -> Bus (Plastic 270) :=
-  busAssemblyLine RecipeName.bioplastic 1
+  busAssemblyLine (recipe .bioplastic) 1
 
 def makeBioRocketFuel : Water 720 -> Jelly 720 -> Bioflux 48 -> Bus (RocketFuel 36) :=
-  busAssemblyLine RecipeName.rocketFuelFromJelly 2
+  busAssemblyLine (recipe .rocketFuelFromJelly) 2
 
 def makeCable : Copper 1050 -> Bus (Cable 2100) :=
-  busAssemblyLine RecipeName.copperCable 7
+  busAssemblyLine (recipe .copperCable) 7
 
 def makeGreenCircuit : Iron 600 -> Cable 1800 -> Bus (GreenCircuit 600) :=
-  busAssemblyLine RecipeName.electronicCircuit 4
+  busAssemblyLine (recipe .electronicCircuit) 4
 
 def makeRedCircuit : GreenCircuit 100 -> Plastic 100 -> Cable 200 -> Bus (RedCircuit 50) :=
-  busAssemblyLine RecipeName.advancedCircuit 4
+  busAssemblyLine (recipe .advancedCircuit) 4
 
 def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (BlueCircuit (45/2)) :=
-  busAssemblyLine RecipeName.processingUnit 3
+  busAssemblyLine (recipe .processingUnit) 3
 
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
-  busAssemblyLine RecipeName.rocketPart 1
+  busAssemblyLine (recipe .rocketPart) 1
 
--- def x : BusAssemblyLineType RecipeName.yumakoProcessing 3 :=
+-- def x : BusAssemblyLineType (recipe .yumakoProcessing) 3 :=
 --   by simp!
 
 def makeJelly : Jellynut 480 -> Bus (JellynutSeed (72/5) × Jelly 2700) :=
-  busAssemblyLine RecipeName.jellynutProcessing 4
+  busAssemblyLine (recipe .jellynutProcessing) 4
 
 def makeMash : Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoMash 2700) :=
-  busAssemblyLine RecipeName.yumakoProcessing 8
+  busAssemblyLine (recipe .yumakoProcessing) 8
 
 def makeMash' : Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
-  busAssemblyLine RecipeName.yumakoProcessing 3
+  busAssemblyLine (recipe .yumakoProcessing) 3
 
 
 -- abbrev Yumako := BusLane .yumako

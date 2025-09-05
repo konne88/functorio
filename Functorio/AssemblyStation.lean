@@ -130,25 +130,25 @@ def fabricatorConfig : Fabricator -> FabricatorConfig
   outputOffsets := [1]
 }
 
-def liquidInputs (recipe:RecipeName) : List Ingredient :=
-  (recipe.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
+def liquidInputs (process:Process) : List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
 
-def liquidOutputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
+def liquidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
 
-def solidInputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
+def solidInputs (process:Process): List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
 
-def solidOutputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
+def solidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
 
-def interfaceE (recipe:RecipeName) : List InterfaceH :=
-  (liquidOutputs recipe).map (.,.E)
+def interfaceE (process:Process) : List InterfaceH :=
+  (liquidOutputs process).map (.,.E)
 
-def interfaceW (recipe:RecipeName) : List InterfaceH :=
-  (liquidInputs recipe).map (.,.E)
+def interfaceW (process:Process) : List InterfaceH :=
+  (liquidInputs process).map (.,.E)
 
-def plainStation (process:Process) : Factory [] (interfaceE process.recipe) [] (interfaceW process.recipe) :=
+def plainStation (process:Process) : Factory [] (interfaceE process) [] (interfaceW process) :=
   let details := fabricatorConfig process.fabricator
   {
     entities := [
@@ -158,11 +158,11 @@ def plainStation (process:Process) : Factory [] (interfaceE process.recipe) [] (
     height := process.fabricator.height
     interface := {
       n := #v[]
-      e := (details.outputOffsets.splitAt (liquidOutputs process.recipe).length).fst.castToVector!
+      e := (details.outputOffsets.splitAt (liquidOutputs process).length).fst.castToVector!
       s := #v[]
-      w := (details.inputOffsets.splitAt (liquidInputs process.recipe).length).fst.castToVector!
+      w := (details.inputOffsets.splitAt (liquidInputs process).length).fst.castToVector!
     }
-    name := reprStr process.recipe.getRecipe.name
+    name := reprStr process.getRecipe.name
   }
 
 private def beltline (x:Nat) (dir:Direction) (height:Nat) : List Entity :=
@@ -244,17 +244,17 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
     }
 
 
-def interfaceNS (recipe:RecipeName) : List InterfaceV :=
-  (solidInputs recipe).map (.,.N) ++ (solidOutputs recipe).map (.,.S)
+def interfaceNS (process:Process) : List InterfaceV :=
+  (solidInputs process).map (.,.N) ++ (solidOutputs process).map (.,.S)
 
 def pipesOnSideStation (process:Process) : Factory
-  (interfaceNS process.recipe)
-  (interfaceE process.recipe)
-  (interfaceNS process.recipe)
-  (interfaceW process.recipe)
+  (interfaceNS process)
+  (interfaceE process)
+  (interfaceNS process)
+  (interfaceW process)
 :=
   let station := plainStation process
-  let ns := interfaceNS process.recipe
+  let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
   let leftAccess := leftAccessor station.interface.w station.height leftNS
   let rightAccess := rightAccessor station.interface.e station.height rightNS
@@ -368,13 +368,13 @@ abbrev Station process := Factory (stationInterface process) [] (stationInterfac
 def stationWithoutOverride (process:Process) : Station process :=
   let station := pipesOnSideStation process
 
-  let ns := interfaceNS process.recipe
+  let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
 
   unsafeFactoryCast (row3
-    (pipesIn (liquidInputs process.recipe) (underground:=!leftNS.isEmpty))
+    (pipesIn (liquidInputs process) (underground:=!leftNS.isEmpty))
     station
-    (pipesOut (liquidOutputs process.recipe) (underground:=!rightNS.isEmpty)))
+    (pipesOut (liquidOutputs process) (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
 private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
