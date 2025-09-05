@@ -75,8 +75,9 @@ def cultivateCopperBacteria2 : CopperBacteria 60 -> Bioflux 60 -> Bus (CopperBac
 def cultivateCopperBacteria3 : CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
   busAssemblyLine RecipeName.copperBacteriaCultivation 9
 
-def copperSpoilingChamber {n} : CopperBacteria n -> Bus (CopperOre n) :=
-  sorry
+def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
+  let factory := capN emptyFactoryH
+  busTap [bacteria] factory
 
 def makeBacteriaCopper (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360) := do
   let (bioflux0, bioflux) <- split bioflux
@@ -97,8 +98,16 @@ def cultivateIronBacteria1 : IronBacteria 30 -> Bioflux 30 -> Bus (IronBacteria 
 def cultivateIronBacteria2 : IronBacteria 150 -> Bioflux 150 -> Bus (IronBacteria 900):=
   busAssemblyLine RecipeName.ironBacteriaCultivation 5
 
-def ironSpoilingChamber {n} : IronBacteria n -> Bus (IronOre n) :=
-  sorry
+def ironSpoilingChamber {n} (bacteria:IronBacteria n) : Bus (IronOre n) :=
+  let factory := capN emptyFactoryH
+  busTap [bacteria] factory
+
+-- def busTap
+--   {outputIngredient} {outputThroughput} (inputs:List BusLane')
+--   (factory:Factory [] [] (busTapInterface inputs [outputIngredient]) [])
+--   (adapterMinHeight:=0)
+-- : Bus (BusLane outputIngredient outputThroughput) := do
+
 
 def makeBacteriaIron (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440) := do
   let (bioflux0, bioflux1) <- split bioflux
@@ -164,10 +173,11 @@ def makeMash' : Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
 -- abbrev YumakoSeed := BusLane .yumakoSeed
 
 -- output:
--- science (yes)
--- bioflux (yes)
+-- science | done
+-- bioflux | done
 -- carbon fiber
 -- rocket fuel (for energy)
+
 def glebaFactory := bus do
   let water <- input .water 13440
   let yumako <- input .yumako 2700
@@ -186,23 +196,12 @@ def glebaFactory := bus do
 
   let (yumako0, yumako) <- split yumako
   let (yumako1, yumako2) <- split yumako
-  let (_, mash) <- makeMash' yumako0 -- input .yumakoMash 960
+  let (_, mash) <- makeMash' yumako0
   let (mash0, mash1) <- split mash
-  let (_, mash2) <- makeMash yumako1 -- input .yumakoMash 2700
-  let (_, mash3) <- makeMash yumako2.less --  input .yumakoMash 2700
-
--- def makeJelly : Jellynut 480 -> Bus (JellynutSeed (72/5) × Jelly 2700) :=
---   busAssemblyLine RecipeName.jellynutProcessing 4
-
--- def makeMash : Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoMash 2700) :=
---   busAssemblyLine RecipeName.yumakoProcessing 8
-
-
-
+  let (_, mash2) <- makeMash yumako1
+  let (_, mash3) <- makeMash yumako2.less
 
   let bioflux <- makeBioflux #v[mash2, mash3] #v[jelly2.less, jelly3.less]
-
---  let bioflux <- input .bioflux 1458 -- 858
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux) <- split bioflux
   let (bioflux2, bioflux) <- split bioflux
@@ -212,7 +211,7 @@ def glebaFactory := bus do
   let (bioflux6, bioflux7) <- split bioflux
 
   let nutrients0 <- makeNutrients bioflux6
-  let nutrients1 <- makeNutrients bioflux7
+  let nutrients1 <- makeNutrients bioflux7.less
 
   let eggs <- makePentapodEggs water2 eggs nutrients0 nutrients1.less
   let (eggs, _) <- split (right:=126) eggs
@@ -244,7 +243,7 @@ def glebaFactory := bus do
   let redCircuit <- makeRedCircuit greenCircuit0 plastic1.less cable1.less
   let blueCircuit <- makeBlueCircuit acid.less greenCircuit1.less redCircuit.less
 
-  makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
+  let _ <- makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
 
 def main : IO Unit :=
   IO.println (glebaFactory.toBlueprint) --  (bootstrap := true))
