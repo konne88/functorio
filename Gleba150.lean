@@ -12,22 +12,77 @@ abbrev PentapodEgg := BusLane .pentapodEgg
 abbrev Jelly := BusLane .jelly
 abbrev Spoilage := BusLane .spoilage
 abbrev YumakoMash := BusLane .yumakoMash
+abbrev IronBacteria := BusLane .ironBacteria
+abbrev CopperBacteria := BusLane .copperBacteria
 
-def makeBioflux :=
+-- def makeBioflux :=
 
 def makeAgriculturalScience : Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
     busAssemblyLine RecipeName.agriculturalSciencePack 7
 
 
 
+def x : BusAssemblyLineType RecipeName.copperBacteriaCultivation 2 :=
+  by simp!
 
-def makeLowDensityStructure : Copper 400 -> Steel 40 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
+
+def y : BusAssemblyLineType RecipeName.copperBacteria 2 :=
+  by simp!
+
+
+
+def cultivateCopperBacteria0 : YumakoMash 720 -> Bus (CopperBacteria 36 × Spoilage 360):=
+  busAssemblyLine RecipeName.copperBacteria 2
+
+def cultivateCopperBacteria1 : CopperBacteria 30 -> Bioflux 30 -> Bus (CopperBacteria 180):=
+  busAssemblyLine RecipeName.copperBacteriaCultivation 1
+
+def cultivateCopperBacteria2 : CopperBacteria 60 -> Bioflux 60 -> Bus (CopperBacteria 360):=
+  busAssemblyLine RecipeName.copperBacteriaCultivation 2
+
+def cultivateCopperBacteria3 : CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
+  busAssemblyLine RecipeName.copperBacteriaCultivation 9
+
+def copperSpoilingChamber {n} : CopperBacteria n -> Bus (CopperOre n) :=
+  sorry
+
+def makeBacteriaCopper (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360) := do
+  let (bioflux0, bioflux) <- split bioflux
+  let (bioflux1, bioflux2) <- split bioflux
+  let (bacteria0, spoilage) <- cultivateCopperBacteria0 mash
+  let bacteria1 <- cultivateCopperBacteria1 bacteria0.less bioflux0
+  let bacteria2 <- cultivateCopperBacteria2 bacteria1.less bioflux1
+  let bacteria3 <- cultivateCopperBacteria3 bacteria2.less bioflux2
+  let ore <- copperSpoilingChamber bacteria3
+  return (ore.less, spoilage)
+
+def cultivateIronBacteria0 : Jelly 1440 -> Bus (IronBacteria 36 × Spoilage 1440):=
+  busAssemblyLine RecipeName.ironBacteria 2
+
+def cultivateIronBacteria1 : IronBacteria 30 -> Bioflux 30 -> Bus (IronBacteria 180):=
+  busAssemblyLine RecipeName.ironBacteriaCultivation 1
+
+def cultivateIronBacteria2 : IronBacteria 150 -> Bioflux 150 -> Bus (IronBacteria 900):=
+  busAssemblyLine RecipeName.ironBacteriaCultivation 5
+
+def ironSpoilingChamber {n} : IronBacteria n -> Bus (IronOre n) :=
+  sorry
+
+def makeBacteriaIron (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440) := do
+  let (bioflux0, bioflux1) <- split bioflux
+  let (bacteria0, spoilage) <- cultivateIronBacteria0 jelly
+  let bacteria1 <- cultivateIronBacteria1 bacteria0.less bioflux0
+  let bacteria2 <- cultivateIronBacteria2 bacteria1.less bioflux1
+  let ore <- ironSpoilingChamber bacteria2
+  return (ore, spoilage)
+
+def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
   busAssemblyLine RecipeName.lowDensityStructure 4
 
 def makeBioSulfur : Spoilage 900 -> Bioflux 180 -> Bus (Sulfur 540) :=
   busAssemblyLine RecipeName.biosulfur 3
 
-def makeAcid : Water 6000 -> Iron 60 -> Sulfur 300 -> Bus (Acid 3000) :=
+def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 -> Bus (Acid 3000) :=
   busAssemblyLine RecipeName.sulfuricAcid 1
 
 def makeCopper : CopperOre 1500 -> Bus (Copper 1500) :=
@@ -38,10 +93,6 @@ def makeIron : IronOre 900 -> Bus (Iron 900) :=
 
 def makeSteel : Iron 225 -> Bus (Steel 45) :=
   busAssemblyLine RecipeName.steelPlate 6
-
-def x : BusAssemblyLineType RecipeName.bioplastic 1 :=
-  by simp!
-
 
 def makeBioPlastic : Bioflux 60 -> YumakoMash 240 -> Bus (Plastic 270) :=
   busAssemblyLine RecipeName.bioplastic 1
@@ -68,21 +119,27 @@ def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bu
 -- science
 -- bioflux
 -- carbon fiber
--- rocket fuel
+-- rocket fuel (for energy)
 def glebaFactory := bus do
-  let bioflux <- input .bioflux 288
-  let jelly <- input .jelly 720
-  let spoilage <- input .spoilage 900
-  let yumakoMash <- input .yumakoMash 240
-
-  let copperOre <- input .copperOre 1500
-  let ironOre <- input .ironOre 900
-
   let water <- input .water 6720
   let (water0, water1) <- split water
 
+  let bioflux <- input .bioflux 648
+  let jelly <- input .jelly 2160
+  let (jelly0, jelly1) <- split jelly
+
+  -- let spoilage <- input .spoilage 900
+  let mash <- input .yumakoMash 960
+  let (mash0, mash1) <- split mash
+
   let (bioflux0, bioflux) <- split bioflux
-  let (bioflux1, bioflux2) <- split bioflux
+  let (bioflux1, bioflux) <- split bioflux
+  let (bioflux2, bioflux) <- split bioflux
+  let (bioflux3, bioflux4) <- split bioflux
+
+  let (copperOre, spoilage0) <- makeBacteriaCopper mash0 bioflux4
+  let (ironOre, spoilage1) <- makeBacteriaIron jelly0 bioflux3
+  let spoilage <- merge spoilage0 spoilage1
 
   let copper <- makeCopper copperOre
   let iron <- makeIron ironOre
@@ -91,13 +148,13 @@ def glebaFactory := bus do
   let (copper0, copper1) <- split copper
   let steel <- makeSteel iron0
 
-  let sulfur <- makeBioSulfur spoilage bioflux0
-  let acid <- makeAcid water0 iron1 sulfur.less
-  let rocketFuel <- makeBioRocketFuel water1 jelly bioflux1
-  let plastic <- makeBioPlastic bioflux2 yumakoMash
+  let sulfur <- makeBioSulfur spoilage.less bioflux0
+  let acid <- makeAcid water0 sulfur.less iron1
+  let rocketFuel <- makeBioRocketFuel water1 jelly1 bioflux1
+  let plastic <- makeBioPlastic bioflux2 mash1
   let (plastic0, plastic1) <- split plastic
 
-  let lowDensityStruct <- makeLowDensityStructure copper0 steel.less plastic0
+  let lowDensityStruct <- makeLowDensityStructure steel.less copper0 plastic0
   let cable <- makeCable copper1.less
   let (cable0, cable1) <- split cable
   let greenCircuit <- makeGreenCircuit iron2.less cable0
