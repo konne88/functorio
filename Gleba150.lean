@@ -179,10 +179,10 @@ def makeMash' : Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
 -- rocket fuel (for energy)
 
 def glebaFactory := bus do
-  let water <- input .water 13440
   let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440
   let eggs <- input .pentapodEgg 112
+  let water <- input .water 13440
 
   let (water0, water) <- split water
   let (water1, water2) <- split (right:=6720) water
