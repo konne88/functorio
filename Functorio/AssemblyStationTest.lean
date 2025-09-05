@@ -142,9 +142,8 @@ import Functorio.Ascii
 #guard (station (recipe .heavyOilCracking)).toAscii == s!"
   ^ ^     v
   |┤|├***||
-  | | *C* |
+  | |⚡*C* |
   | ||*** |
-  | |  ⚡  |
   ^ ^     v
 "
 
@@ -152,10 +151,9 @@ import Functorio.Ascii
   ^ ^       v v v
   | | *****|| | |
   |┤|├***** | | |
-  | | **O**┤|├| |
+  | |⚡**O**┤|├| |
   | ||***** | | |
   | | *****┤| |├|
-  | |   ⚡   | | |
   ^ ^       v v v
 "
 
@@ -171,4 +169,12 @@ import Functorio.Ascii
  ↑ ********* ↑↑
  ↑⚡*********⚡↑↑
  ^           ^^
+"
+
+#guard (station (recipe .pentapodEgg)).toAscii == s!"
+  ^ ^^     ^v
+  |┤↑↑├***⇦↑↓
+  |⚡↑↑⇨*B*↠↑↓
+  | ↑↑↠***⚡↑↓
+  ^ ^^     ^v
 "

@@ -203,8 +203,7 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
           | _ => error! s!"More than 2 belt inputs/outputs per side are not supported, belt index = {i}"
           break
 
-    for i in List.range height do
-      let y := height - i - 1
+    for y in (List.range height).reverse do
       if entities[y]! == .none then
         entities := entities.set! y (.some .pole)
         break
@@ -266,18 +265,23 @@ def pipesOnSideStation (process:Process) : Factory
   let leftAccess := leftAccessor station.interface.w station.height leftNS
   let rightAccess := rightAccessor station.interface.e station.height rightNS
 
-  if ns.length == 0
-  then
-    let factory := station.expand .S 1
-    unsafeFactoryCast {factory with entities := factory.entities.append [pole (factory.width/2) (factory.height - 1)]}
-  else unsafeFactoryCast (row3 leftAccess station rightAccess)
+  -- in these cases, there might not be enough space for poles right next to the fabricator
+  -- if ns.length == 0--  || process.inputIngredients.length + process.outputIngredients.length >= station.height * 2 - 1
+  -- then
+  --   let factory := station.expand .S 1
+  --   unsafeFactoryCast {factory with
+  --     entities := factory.entities.append [pole (factory.width/2) (factory.height - 1)]
+  --   }
+  -- else
 
-private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
+  unsafeFactoryCast (row3 leftAccess station rightAccess)
+
+private def pipesIn (ingredients:List Ingredient) (underground:Bool := false) (powerPole:Bool := false)
 : Factory (ingredients.map (.,.N)) (ingredients.map (.,.E)) (ingredients.map (.,.N)) []
 :=
   let pipes := ingredients.length
   let width := if pipes == 0 then 0 else pipes * 2 + 1
-  let height := pipes * 2 - 1
+  let height := if powerPole then max 2 (pipes * 2 - 1) else pipes * 2 - 1
 
   let pipelines : List Entity :=
     (List.range pipes).flatMap fun i =>
@@ -303,13 +307,16 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
       then []
       else [pipeToGround x y .E]
 
+  let power : List Entity :=
+    if powerPole then [pole (width-1) 1] else []
+
   let interfaceNS := ingredients.toVector.mapIdx fun i _ => (i * 2 + 1 : InterfaceImpl)
   let interfaceE := ingredients.toVector.mapIdx fun i _ => (i * 2 : InterfaceImpl)
 
   {
     width := width
     height := height
-    entities := pipelines ++ goDown ++ comeUp
+    entities := pipelines ++ goDown ++ comeUp ++ power
     interface := {
       n := cast (by simp) interfaceNS
       e := cast (by simp) interfaceE
@@ -374,12 +381,15 @@ abbrev Station process := Factory (stationInterface process) [] (stationInterfac
 
 def stationWithoutOverride (process:Process) : Station process :=
   let station := pipesOnSideStation process
+  let height := process.fabricator.height
 
   let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
 
   unsafeFactoryCast (row3
-    (pipesIn process.liquidInputs (underground:=!leftNS.isEmpty))
+    (pipesIn process.liquidInputs (underground:=!leftNS.isEmpty) (powerPole:=
+      ns.length == 0 ||
+      process.liquidInputs.length + leftNS.length >= height))
     station
     (pipesOut process.liquidOutputs (underground:=!rightNS.isEmpty)))
 
