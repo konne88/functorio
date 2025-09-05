@@ -202,7 +202,10 @@ def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData
 
     matrix := matrix.markConnected nodeX nodeY
 
-    for (distance, dx, dy) in (if node.type == .medium then mediumPoleArea else bigPoleArea) do
+    -- Connect to big poles first, then medium poles
+    for type in [PoleType.big, PoleType.medium] do
+      -- Connect to low distance poles first
+      for (distance, dx, dy) in (if node.type == .medium then mediumPoleArea else bigPoleArea) do
         let x := nodeX + dx
         let y := nodeY + dy
 
@@ -212,6 +215,7 @@ def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData
         | .none => continue
         | .some neighbor =>
           if neighbor.connected then continue
+          if neighbor.type != type then continue
           if neighbor.type == .medium && distance > mediumPoleMaxDistance then continue
 
           wires := wires.push (node.id, neighbor.id)
