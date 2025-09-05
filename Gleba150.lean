@@ -40,11 +40,24 @@ def makeBioflux (nutrients:Nutrients 270) (mash:Vector (YumakoMash 2700) 2) (jel
 
 -- One unit of nutrients will power a biochamber for 4 seconds.
 
--- def y : BusAssemblyLineType (recipe .nutrientsFromBioflux) (3/4) :=
---   by simp!
+-- TODO: why do I need the "by exact" here?
+def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := by exact
+  (busAssemblyLine (recipe .nutrientsFromBioflux) (3/4))
 
-def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) :=
-  busAssemblyLine (recipe .nutrientsFromBioflux) (3/4)
+  -- by
+
+  -- refine (let x := busAssemblyLine (recipe .nutrientsFromBioflux) (3/4); ?_)
+
+  -- exact x
+
+
+
+
+
+
+-- Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) :=
+
+--  busAssemblyLine (recipe .nutrientsFromBioflux) (3/4)
 
 -- def makePentapodEggs' : Water 6720 -> PentapodEgg 112 -> Nutrients 3360 -> Bus (PentapodEgg 336) :=
 --   busAssemblyLine (recipe .pentapodEgg) 14
@@ -231,7 +244,7 @@ do
 
   let _ <- makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
 
-def glebaFactory := do
+def glebaFactory := bus do
   let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440 -- 1350 would be perfect
   let eggs <- input .pentapodEgg 112
