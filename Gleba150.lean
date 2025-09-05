@@ -16,7 +16,24 @@ abbrev IronBacteria := BusLane .ironBacteria
 abbrev CopperBacteria := BusLane .copperBacteria
 abbrev Nutrients := BusLane .nutrients
 
--- def makeBioflux :=
+def x : BusAssemblyLineType RecipeName.bioflux 9 :=
+  by simp!
+
+
+-- 378
+
+def makeBioflux (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160) := do
+  let bioflux0 : Bioflux 1080 <- busAssemblyLine RecipeName.bioflux 9 mash[0] jelly[0]
+  let bioflux1 : Bioflux 1080 <- busAssemblyLine RecipeName.bioflux 9 mash[1] jelly[1]
+  let bioflux <- merge bioflux0 bioflux1
+  return bioflux.less
+
+--  return bioflux
+
+
+
+--  busAssemblyLine RecipeName.bioflux 1
+
 
 
 -- One unit of nutrients will power a biochamber for 4 seconds.
@@ -39,10 +56,6 @@ def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients0 : Nut
 
 def makeAgriculturalScience : Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
   busAssemblyLine RecipeName.agriculturalSciencePack 7
-
-
-def x : BusAssemblyLineType RecipeName.pentapodEgg 3 :=
-  by simp!
 
 
 -- def y : BusAssemblyLineType RecipeName.copperBacteria 2 :=
@@ -151,11 +164,17 @@ def glebaFactory := bus do
 
   let jelly <- input .jelly 2160
   let (jelly0, jelly1) <- split jelly
+  let jelly2 <- input .jelly 2160
+  let jelly3 <- input .jelly 2160
 
   let mash <- input .yumakoMash 960
   let (mash0, mash1) <- split mash
+  let mash2 <- input .yumakoMash 2700
+  let mash3 <- input .yumakoMash 2700
 
-  let bioflux <- input .bioflux 1458 -- 858
+  let bioflux <- makeBioflux #v[mash2, mash3] #v[jelly2, jelly3]
+
+--  let bioflux <- input .bioflux 1458 -- 858
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux) <- split bioflux
   let (bioflux2, bioflux) <- split bioflux
@@ -164,7 +183,6 @@ def glebaFactory := bus do
   let (bioflux5, bioflux) <- split bioflux
   let (bioflux6, bioflux7) <- split bioflux
 
-  -- let nutrients <- input .nutrients 3360
   let nutrients0 <- makeNutrients bioflux6
   let nutrients1 <- makeNutrients bioflux7
 
