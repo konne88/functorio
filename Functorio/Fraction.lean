@@ -15,6 +15,11 @@ def den (f:Fraction) : Nat := f.snd
 @[simp]
 def mk (n m:Nat) : Fraction := (n,m)
 
+def roundUp (f:Fraction) : Nat :=
+  if f.den == 1
+  then f.num
+  else (f.num / f.den) + 1
+
 end Fraction
 
 instance : ToString Fraction where

@@ -14,11 +14,26 @@ namespace Process
 @[simp]
 def getRecipe (process:Process) : Recipe :=
   let original := process.recipe.getRecipe
-  if process.fabricator != .biochamber
-  then original
-  else { original with
-    inputs := [( original.time / 4 , Ingredient.nutrients )] ++ original.inputs
+  if process.fabricator != .biochamber then original else
+  let nutrientInput := [( original.time / process.fabricator.speedup / 4 , Ingredient.nutrients )]
+  let liquidInputs := original.inputs.filter fun input => input.snd.isLiquid
+  let solidInputs := original.inputs.filter fun input => !input.snd.isLiquid
+
+  { original with
+    inputs := liquidInputs ++ nutrientInput ++ solidInputs
   }
+
+def liquidInputs (process:Process) : List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
+
+def liquidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
+
+def solidInputs (process:Process): List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
+
+def solidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
 
 @[simp]
 def inputIngredients (process:Process) : List Ingredient :=
@@ -134,23 +149,11 @@ def fabricatorConfig : Fabricator -> FabricatorConfig
   outputOffsets := [1]
 }
 
-def liquidInputs (process:Process) : List Ingredient :=
-  (process.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
-
-def liquidOutputs (process:Process): List Ingredient :=
-  (process.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
-
-def solidInputs (process:Process): List Ingredient :=
-  (process.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
-
-def solidOutputs (process:Process): List Ingredient :=
-  (process.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
-
 def interfaceE (process:Process) : List InterfaceH :=
-  (liquidOutputs process).map (.,.E)
+  process.liquidOutputs.map (.,.E)
 
 def interfaceW (process:Process) : List InterfaceH :=
-  (liquidInputs process).map (.,.E)
+  process.liquidInputs.map (.,.E)
 
 def plainStation (process:Process) : Factory [] (interfaceE process) [] (interfaceW process) :=
   let details := fabricatorConfig process.fabricator
@@ -162,9 +165,9 @@ def plainStation (process:Process) : Factory [] (interfaceE process) [] (interfa
     height := process.fabricator.height
     interface := {
       n := #v[]
-      e := (details.outputOffsets.splitAt (liquidOutputs process).length).fst.castToVector!
+      e := (details.outputOffsets.splitAt process.liquidOutputs.length).fst.castToVector!
       s := #v[]
-      w := (details.inputOffsets.splitAt (liquidInputs process).length).fst.castToVector!
+      w := (details.inputOffsets.splitAt process.liquidInputs.length).fst.castToVector!
     }
     name := reprStr process.getRecipe.name
   }
@@ -249,7 +252,7 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
 
 
 def interfaceNS (process:Process) : List InterfaceV :=
-  (solidInputs process).map (.,.N) ++ (solidOutputs process).map (.,.S)
+  process.solidInputs.map (.,.N) ++ process.solidOutputs.map (.,.S)
 
 def pipesOnSideStation (process:Process) : Factory
   (interfaceNS process)
@@ -376,9 +379,9 @@ def stationWithoutOverride (process:Process) : Station process :=
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
 
   unsafeFactoryCast (row3
-    (pipesIn (liquidInputs process) (underground:=!leftNS.isEmpty))
+    (pipesIn process.liquidInputs (underground:=!leftNS.isEmpty))
     station
-    (pipesOut (liquidOutputs process) (underground:=!rightNS.isEmpty)))
+    (pipesOut process.liquidOutputs (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
 private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=

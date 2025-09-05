@@ -12,11 +12,11 @@ import Functorio.AssemblyStation
 
 -- Item's per minute
 @[simp]
-def inputThroughput (process:Process) (stations:Nat) (items:Fraction) : Fraction :=
+def inputThroughput (process:Process) (stations:Fraction) (items:Fraction) : Fraction :=
   stations * items * process.fabricator.speedup * 60 / process.getRecipe.time
 
 @[simp]
-def outputThroughput (process:Process) (stations:Nat) (ingredient:Ingredient) (items:Fraction) : Fraction :=
+def outputThroughput (process:Process) (stations:Fraction) (ingredient:Ingredient) (items:Fraction) : Fraction :=
   let t := stations * items * process.fabricator.speedup * (1 + process.fabricator.productivity) * 60 / process.getRecipe.time
   if ingredient.isLiquid then t else min expressBeltThroughput t
 
@@ -170,18 +170,18 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
   | t::_::_ => (value t index, tuple value (index + 1))
 
 @[simp]
-def BusAssemblyLineReturn (process:Process) (stations:Nat) : Type :=
+def BusAssemblyLineReturn (process:Process) (stations:Fraction) : Type :=
   Bus (tupleType process.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (outputThroughput process stations ingredient items))
 
 @[simp]
-def BusAssemblyLineType (process:Process) (stations:Nat) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
+def BusAssemblyLineType (process:Process) (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
   match remainingInputs with
   | [] => BusAssemblyLineReturn process stations
   | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process stations items) -> BusAssemblyLineType process stations inputs
 
 def processBusAssemblyLineArguments
   (process:Process)
-  (stations:Nat)
+  (stations:Fraction)
   (processor: List BusLane' -> BusAssemblyLineReturn process stations)
   (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs)
   (args: List BusLane' := [])
@@ -193,9 +193,9 @@ def processBusAssemblyLineArguments
     processBusAssemblyLineArguments process stations processor inputs (args ++ [arg.toBusLane'])
   )
 
-def busAssemblyLine [config:Config] (process: Process) (stations:Nat) : BusAssemblyLineType process stations :=
+def busAssemblyLine [config:Config] (process: Process) (stations:Fraction) : BusAssemblyLineType process stations :=
   processBusAssemblyLineArguments process stations fun inputs => do
-    let factory := assemblyLine process stations
+    let factory := assemblyLine process stations.roundUp
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
     let indexes <- busTapGeneric
       inputs
