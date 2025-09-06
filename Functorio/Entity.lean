@@ -21,6 +21,7 @@ inductive EntityType
   | pole
   | bigPole
   | fabricator (fabricator:Fabricator) (recipe:RecipeName) (direction:Direction) (mirror:Bool)
+  | heatingTower
   | roboport
   | passiveProviderChest (capacity:Option Nat)
   | refinedConcrete
@@ -56,6 +57,8 @@ def bigPole x y := ({x:=x,y:=y,type:=.bigPole} : Entity)
 
 def fabricator x y f r (d := Direction.N) (mirror:=false) := ({x:=x,y:=y,type:=.fabricator f r d mirror} : Entity)
 
+def heatingTower x y := ({x:=x,y:=y,type:=.heatingTower} : Entity)
+
 def assembler r x y (d := Direction.W) := fabricator x y .assemblingMachine3 r d
 
 def furnace r x y := fabricator x y .electricFurnace r
@@ -81,6 +84,7 @@ def width (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
   | .pump dir => if dir == .N || dir == .S then 1 else 2
+  | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ _ _ => f.width
 
@@ -91,6 +95,7 @@ def height (e:Entity) : Nat :=
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
   | .pump dir => if dir == .N || dir == .S then 2 else 1
+  | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ _ _ => f.height
 

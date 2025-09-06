@@ -126,6 +126,10 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
                 balancer ++ connector
   }
 
+def inputDestructionCap (process:Process) : Factory [] [] (stationInterface process) [] :=
+  process.solidInputs
+
+
 def maxRoboportLogisticsDistance := 46
 
 def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stationInterface process) [] :=

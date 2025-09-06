@@ -17,23 +17,23 @@ with open('data-raw-dump.json', 'r') as f:
 
 buildings_data = data['assembling-machine'] | data['furnace'] | data['rocket-silo']
 recipes_data = data['recipe']
+ingredients_data = data['item'] | data['ammo'] | data['fluid'] | data['item-with-entity-data'] | data['tool'] | data['capsule'] | data['gun'] | data['module'] | data['armor']
 
-# Collect all unique ingredients and recipe names
-ingredients = set()
-fluids = set()
-categories = set()
 recipe_names = [key for key in recipes_data.keys() if key != "recipe-unknown"]
 building_names = list(buildings_data.keys())
+ingredient_names = set()
+categories = set() 
 
-for recipe in recipes_data.values():
+for name in recipe_names:
+    recipe = recipes_data[name]
     categories.add(recipe.get('category', 'crafting'))
+
     for ingredient in recipe.get('ingredients', []):
-        ingredients.add(ingredient['name'])
-        if ingredient['type'] == 'fluid':
-            fluids.add(ingredient['name'])
-    for product in recipe.get('results', []):
-        ingredients.add(product['name'])
-    
+        ingredient_names.add(ingredient['name'])
+
+    for ingredient in recipe.get('results', []):
+        ingredient_names.add(ingredient['name'])
+  
 for building in buildings_data.values():
     for category in building["crafting_categories"]:
         categories.add(category)
@@ -48,7 +48,7 @@ lean_code.append("import Functorio.Direction\n")
 
 # Ingredient inductive type
 lean_code.append("inductive Ingredient")
-for ingredient in sorted(list(ingredients)):
+for ingredient in sorted(ingredient_names):
     lean_code.append(f"  | {to_camel_case(ingredient)}")
 lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
 
@@ -61,13 +61,23 @@ lean_code.append("  deriving DecidableEq, Repr, Inhabited\n")
 # isLiquid function
 lean_code.append("namespace Ingredient\n")
 lean_code.append("def isLiquid : Ingredient -> Bool")
-for fluid in sorted(list(fluids)):
-    lean_code.append(f"| .{to_camel_case(fluid)} => true")
+for name in sorted(list(ingredient_names)):
+    if ingredients_data.get(name, {}).get('type') == 'fluid':
+        lean_code.append(f"| .{to_camel_case(name)} => true")
 lean_code.append(f"| _ => false\n")
 
+lean_code.append("def spoilResult : Ingredient -> Option Ingredient")
+for name in sorted(list(ingredient_names)):
+    try:
+        spoil_result = ingredients_data[name]['spoil_result']
+        lean_code.append(f"| .{to_camel_case(name)} => .some {to_camel_case(spoil_result)}")
+    except Exception:
+        continue
+lean_code.append(f"| _ => .none\n")
+
 lean_code.append("def name : Ingredient -> String")
-for ingredient in sorted(ingredients):
-    lean_code.append(f'| .{to_camel_case(ingredient)} => "{ingredient}"')
+for name in sorted(ingredient_names):
+    lean_code.append(f'| .{to_camel_case(name)} => "{name}"')
 
 lean_code.append("\nend Ingredient")
 

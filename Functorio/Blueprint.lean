@@ -41,6 +41,7 @@ private def entityName (e:Entity) : String :=
   | .roboport => "roboport"
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
+  | .heatingTower => "heating-tower"
   | .fabricator f _ _ _ => f.name
 
 private def entityDirection (e:Entity) : Option Direction :=
@@ -49,12 +50,12 @@ private def entityDirection (e:Entity) : Option Direction :=
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
   | .fabricator _ _ d _ => d
   | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
-  | .refinedConcrete => .none
+  | .heatingTower | .refinedConcrete => .none
 
 private def entityProps (e:Entity) : List (String × Json):=
   match e.type with
   | .belt _ | .pipe | .pipeToGround _ | .pump _
-  | .pole | .bigPole | .roboport | .refinedConcrete => []
+  | .pole | .bigPole | .roboport | .heatingTower | .refinedConcrete => []
   | .inserter _ filter | .longInserter _ filter => [
     ("use_filters", !filter.isEmpty),
     ("filters", Json.arr (filter.mapIdx (fun i ingredient =>

@@ -73,6 +73,7 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .fabricator .chemicalPlant _ _ _ => 'C'
   | .fabricator .oilRefinery _ _ _ => 'O'
   | .fabricator .rocketSilo _ _ _ => 'L'  -- L is for Launch-site
+  | .heatingTower => 'H'
 
   | .roboport => 'R'
   | .pump _ => 'P'

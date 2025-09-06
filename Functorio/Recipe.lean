@@ -393,8 +393,23 @@ def isLiquid : Ingredient -> Bool
 | .petroleumGas => true
 | .steam => true
 | .sulfuricAcid => true
+| .thrusterFuel => true
+| .thrusterOxidizer => true
 | .water => true
 | _ => false
+
+def spoilResult : Ingredient -> Option Ingredient
+| .agriculturalSciencePack => .some spoilage
+| .bioflux => .some spoilage
+| .copperBacteria => .some copperOre
+| .ironBacteria => .some ironOre
+| .jelly => .some spoilage
+| .jellynut => .some spoilage
+| .nutrients => .some spoilage
+| .rawFish => .some spoilage
+| .yumako => .some spoilage
+| .yumakoMash => .some spoilage
+| _ => .none
 
 def name : Ingredient -> String
 | .accumulator => "accumulator"
