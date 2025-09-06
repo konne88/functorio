@@ -22,11 +22,10 @@ recipes_data = data['recipe']
 ingredients = set()
 fluids = set()
 categories = set()
-recipe_names = list(recipes_data.keys())
+recipe_names = [key for key in recipes_data.keys() if key != "recipe-unknown"]
 building_names = list(buildings_data.keys())
 
 for recipe in recipes_data.values():
-    if recipe["name"] == "recipe-unknown": continue
     categories.add(recipe.get('category', 'crafting'))
     for ingredient in recipe.get('ingredients', []):
         ingredients.add(ingredient['name'])
@@ -67,7 +66,7 @@ for fluid in sorted(list(fluids)):
 lean_code.append(f"| _ => false\n")
 
 lean_code.append("def name : Ingredient -> String")
-for ingredient in ingredients:
+for ingredient in sorted(ingredients):
     lean_code.append(f'| .{to_camel_case(ingredient)} => "{ingredient}"')
 
 lean_code.append("\nend Ingredient")
@@ -133,9 +132,12 @@ for name in sorted(recipe_names):
     inputs = [i for i in inputs if i['type'] == 'fluid'] + \
              [i for i in inputs if i['type'] != 'fluid'] 
 
-    # sort solids before fluids    
-    outputs = [i for i in outputs if i['type'] != 'fluid'] + \
-              [i for i in outputs if i['type'] == 'fluid'] 
+    # large solid outputs come first
+    solidOutputs = [i for i in outputs if i['type'] != 'fluid']
+    solidOutputs.sort(reverse=True, key=lambda a: a['amount'])
+    liquidOutputs = [i for i in outputs if i['type'] == 'fluid']
+
+    outputs = solidOutputs + liquidOutputs
 
     # Rocket parts cannot be removed from the rocket silo.
     if name == "rocket-part":

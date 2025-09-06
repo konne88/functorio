@@ -178,3 +178,13 @@ import Functorio.Ascii
   | ↑↑↠***⚡↑↓
   ^ ^^     ^v
 "
+
+#guard (station (recipe .nutrientsFromBioflux)).toAscii == s!"
+ ^^     v
+ ↑↑⇨***⇨↓
+ ↑↑↠*B*⇨↓
+ ↑↑⚡***⇨↓
+ ↑↑ ⇩⇩⇩⚡↓
+ ↑↑ →→→→↓
+ ^^     v
+"

@@ -142,7 +142,7 @@ def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stat
     let mut distanceFromRoboport : Nat := 0
 
     for _ in List.range stations do
-      if !output.snd.isLiquid && outputSinceBalance + stationOutput > expressBeltHalfThroughput then
+      if !output.snd.isLiquid && outputSinceBalance + stationOutput > expressBeltHalfThroughput && outputSinceBalance != 0 then
         factories := factories.push (outputBalancerInsert station.interface.s)
         outputSinceBalance := 0
         distanceFromRoboport := distanceFromRoboport + 4

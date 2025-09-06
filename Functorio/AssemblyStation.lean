@@ -429,6 +429,46 @@ private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
     name := "flyingRobotFrame"
   }
 
+-- Special case, because it has incredible requirements on output speed
+private def nutrientsFromBiofluxStation : Station (recipe .nutrientsFromBioflux) :=
+  let height := 5
+  let entities : List Entity :=
+    beltline (x:=0) .N height ++
+    beltline (x:=1) .N height ++
+    [
+      inserter 2 0 .W,
+      longInserter 2 1 .W,
+      pole 2 2,
+
+      fabricator 3 0 .biochamber .nutrientsFromBioflux,
+
+      inserter 6 0 .W,
+      inserter 6 1 .W,
+      inserter 6 2 .W,
+
+      inserter 3 3 .N,
+      inserter 4 3 .N,
+      inserter 5 3 .N,
+      pole 6 3,
+
+      belt 3 4 .E,
+      belt 4 4 .E,
+      belt 5 4 .E,
+      belt 6 4 .E
+    ] ++
+    beltline (x:=7) .S height
+
+  {
+    width:= 8, height:=height, entities := entities
+    interface := {
+      n := #v[0,1,7]
+      e := #v[]
+      s := #v[0,1,7]
+      w := #v[]
+    }
+    name := "nutrientsFromBioflux"
+  }
+
 -- Special case, needs two output inserters to keep up with the production rate.
 def railStation : Station (recipe .rail) :=
   let factory := (pipesOnSideStation (recipe .rail)).expand .S 1
@@ -543,4 +583,5 @@ def station (process:Process) : Station process :=
   | .supercapacitor => unsafeFactoryCast supercapacitorStation
   | .rail => unsafeFactoryCast railStation
   | .rocketPart => unsafeFactoryCast rocketPart
+  | .nutrientsFromBioflux => unsafeFactoryCast nutrientsFromBiofluxStation
   | _ => stationWithoutOverride process
