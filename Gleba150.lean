@@ -111,7 +111,7 @@ def makeBacteriaCopper (nutrients:Nutrients 210) (mash:YumakoMash 720) (bioflux:
   let ore <- copperSpoilingChamber bacteria3
   return (ore.less, spoilage)
 
-def cultivateIronBacteria0 : Nutrients 30 -> Jelly 1440 -> Bus (IronBacteria 36 × Spoilage 1440):=
+def cultivateIronBacteria0 : Nutrients 30 -> Jelly 1440 -> Bus (Spoilage 1440 × IronBacteria 36):=
   busAssemblyLine (recipe .ironBacteria) 2
 
 def cultivateIronBacteria1 : Nutrients 15 -> IronBacteria 30 -> Bioflux 30 -> Bus (IronBacteria 180):=
@@ -136,7 +136,7 @@ def makeBacteriaIron (nutrients:Nutrients 120) (jelly:Jelly 1440) (bioflux:Biofl
   let (nutrients1, nutrients2) <- split nutrients
 
   let (bioflux0, bioflux1) <- split bioflux
-  let (bacteria0, spoilage) <- cultivateIronBacteria0 nutrients0 jelly
+  let (spoilage, bacteria0) <- cultivateIronBacteria0 nutrients0 jelly
   let bacteria1 <- cultivateIronBacteria1 nutrients1 bacteria0.less bioflux0
   let bacteria2 <- cultivateIronBacteria2 nutrients2 bacteria1.less bioflux1
   let ore <- ironSpoilingChamber bacteria2
@@ -184,10 +184,10 @@ def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bu
 -- def x : BusAssemblyLineType (recipe .yumakoProcessing) 3 :=
 --   by simp!
 
-def makeJelly : Nutrients 60 -> Jellynut 480 -> Bus (JellynutSeed (72/5) × Jelly 2700) :=
+def makeJelly : Nutrients 60 -> Jellynut 480 -> Bus (Jelly 2700 × JellynutSeed (72/5)) :=
   busAssemblyLine (recipe .jellynutProcessing) 4
 
-def makeMash : Nutrients 120 -> Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoMash 2700) :=
+def makeMash : Nutrients 120 -> Yumako 960 -> Bus (YumakoMash 2700 × YumakoSeed (144/5)) :=
   busAssemblyLine (recipe .yumakoProcessing) 8
 
 -- def adfs : BusAssemblyLineType (recipe .jellynutProcessing) 4 :=
@@ -203,7 +203,7 @@ def makeMash : Nutrients 120 -> Yumako 960 -> Bus (YumakoSeed (144/5) × YumakoM
 
 
 
-def makeMash' : Nutrients 45 -> Yumako 360 -> Bus (YumakoSeed (54/5) × YumakoMash 1080) :=
+def makeMash' : Nutrients 45 -> Yumako 360 -> Bus (YumakoMash 1080 × YumakoSeed (54/5)) :=
   busAssemblyLine (recipe .yumakoProcessing) 3
 
 
@@ -258,22 +258,28 @@ def glebaFactory := bus do
   let (jellynut0, jellynut) <- split jellynut
   let (jellynut1, jellynut2) <- split jellynut
   let (nutrients, bioChamberNutrients) <- split (left:=60) bioChamberNutrients
-  let (_, jelly) <- makeJelly nutrients jellynut0
+  let (jelly, jellySeed0) <- makeJelly nutrients jellynut0
   let (jelly0, jelly1) <- split jelly
   let (nutrients, bioChamberNutrients) <- split (left:=60) bioChamberNutrients
-  let (_, jelly2) <- makeJelly nutrients jellynut1
+  let (jelly2, jellySeed1) <- makeJelly nutrients jellynut1
   let (nutrients, bioChamberNutrients) <- split (left:=60) bioChamberNutrients
-  let (_, jelly3) <- makeJelly nutrients jellynut2
+  let (jelly3, jellySeed2) <- makeJelly nutrients jellynut2
+
+  let jellySeed <- merge jellySeed0 jellySeed1
+  let jellySeed <- merge jellySeed jellySeed2
 
   let (yumako0, yumako) <- split yumako
   let (yumako1, yumako2) <- split yumako
   let (nutrients, bioChamberNutrients) <- split (left:=45) bioChamberNutrients
-  let (_, mash) <- makeMash' nutrients yumako0
+  let (mash, yumakoSeed0) <- makeMash' nutrients yumako0
   let (mash0, mash1) <- split mash
   let (nutrients, bioChamberNutrients) <- split (left:=120) bioChamberNutrients
-  let (_, mash2) <- makeMash nutrients yumako1
+  let (mash2, yumakoSeed1) <- makeMash nutrients yumako1
   let (nutrients, bioChamberNutrients) <- split (left:=120) bioChamberNutrients
-  let (_, mash3) <- makeMash nutrients yumako2.less
+  let (mash3, yumakoSeed2) <- makeMash nutrients yumako2.less
+
+  let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
+  let yumakoSeed <- merge yumakoSeed yumakoSeed2
 
   let (nutrients, bioChamberNutrients) <- split (left:=270) bioChamberNutrients
   let bioflux <- makeBioflux nutrients #v[mash2, mash3] #v[jelly2.less, jelly3.less]
