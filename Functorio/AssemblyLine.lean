@@ -163,7 +163,7 @@ def destroySpoilage (process:Process) : Factory [] [] (spoilableInterface proces
       name := "destroySpoilage"
       entities :=
         [ heatingTower 0 0, pole 3 3 ] ++
-        spoilables.mapIdx fun x (ingredient,_) => inserter x 3 .S ingredient.spoilResult.toList
+        spoilables.mapIdx fun x (ingredient,_) => inserter x 3 .S [ingredient]
     }
 
   -- let interfaces := stationInterface process
