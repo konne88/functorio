@@ -3,7 +3,6 @@ import Functorio.Ascii
 
 #guard (assemblyLine (recipe .advancedCircuit) 3).toAscii == s!"
 
-
  ↑↑⇨***⇦↑↓
  ↑↑↠*A*↠↑↓
  ↑↑⚡***⚡↑↓
@@ -23,7 +22,6 @@ import Functorio.Ascii
   let _ <- busAssemblyLine (recipe .processingUnit) 1 acid.exact green red
 ).toAscii == s!"
 
-
   | ↑⇨***⇦↑↓
   |┤↑├*A*↠↑↓
   | ↑⚡***⚡↑↓
@@ -41,7 +39,6 @@ import Functorio.Ascii
   let copper <- input .copperPlate 750
   let _ <- busAssemblyLine (recipe .copperCable) 5 copper
 ).toAscii == s!"
-
 
  ↑⇨***⇨↓
  ↑ *A* ↓
@@ -75,7 +72,6 @@ import Functorio.Ascii
   let _ <- busAssemblyLine (recipe .advancedOilProcessing) 1 water crude
 ).toAscii == s!"
 
-
   | | *****|| | |
   |┤|├***** | | |
   | |⚡**O**┤|├| |
@@ -96,6 +92,52 @@ import Functorio.Ascii
 
 "
 
+#guard (bus do
+  let nutrients <- input .nutrients 15
+  let jellynut <- input .jellynut 120
+  let _ <- busAssemblyLine (recipe .jellynutProcessing) 1 nutrients jellynut
+).toAscii == s!"
+
+ ***
+ *H*
+ ***
+ ⇧⇧ ⚡
+ ↑↑⇨***⇨↓↓
+ ↑↑↠*B*↠↓↓
+ ↑↑⚡***⚡↓↓
+ ↑↑←↓←←←←↓
+ ↑←↑↓ ↓←←←
+  ↑↑↓ ↓
+>→↑↑→⇥↓↦→→>
+>→→↑  →→→→>
+
+"
+
+#guard (bus do
+  let water <- input .water 360
+  let nutrients <- input .nutrients 15
+  let jelly <- input .jelly 360
+  let bioflux <- input .bioflux 24
+  let _ <- busAssemblyLine (recipe .rocketFuelFromJelly) 1 water nutrients jelly bioflux
+).toAscii == s!"
+
+    ***
+    *H*
+    ***
+    ⇧⇧⇧⚡
+    ↑↑↑←←←←←
+  |┤↑↑├***⇦↑↓
+  |⚡↑↑⇨*B*↠↑↓
+  | ↑↑↠***⚡↑↓
+  |→↑↑→→→→→↑↓
+  |↑ ↑↑↓←←←←←
+  |↑ ↑↑↓
+>||↑ ↑↑→→→→→→>
+>→⇥↑↦↑↑
+>→→↑  ↑
+>→→→→→↑
+
+"
 
 instance : Config where
   generateBigPoles := true
@@ -107,7 +149,6 @@ instance : Config where
   let ice <- input .ice 60
   let _ <- busAssemblyLine (recipe .iceMelting) 1 ice
 ).toAscii == s!"
-
 
  ***┤↑├|
  *C*⇦↑ |
@@ -130,7 +171,6 @@ instance : Config where
   let ironOre <- input .ironOre 600
   let _ <- busAssemblyLine (recipe .ironPlate) 16 ironOre
 ).toAscii = s!"
-
 
  ↑⇨***⇨↓
  ↑ *F* ↓
@@ -207,7 +247,6 @@ instance : Config where
   let stick <- input .ironStick 750
   let _ <- busAssemblyLine (recipe .rail) 5 stone stick steel
 ).toAscii == s!"
-
 
  ↑↑⇨***⇦↑↓
  ↑↑↠*A*↠↑↓

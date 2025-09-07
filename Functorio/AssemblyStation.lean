@@ -197,7 +197,7 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
       for y in List.range height do
         if entities[y]! == .none then
           let inserterDir := match dir with | .N => inputInserterDir | .S => outputInserterDir
-          let filter := if dir == .S && numSolidOutputs > 1 then [ingredient] else []
+          let filter := if dir == .S && numSolidOutputs > 1 then [ingredient] ++ ingredient.spoilResult.toList else []
           match i with
           | 0 => entities := entities.set! y (.some (.inserter inserterDir filter))
           | 1 => entities := entities.set! y (.some (.longInserter inserterDir filter))

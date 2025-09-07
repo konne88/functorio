@@ -6517,5 +6517,5 @@ def fluidBoxes (f:Fabricator) := f.details.fluidBoxes
 
 def handlesCategory (f:Fabricator) (c:RecipeCategory) :=
   f.details.categories.contains c
-  
+
 end Fabricator

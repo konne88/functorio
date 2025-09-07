@@ -20,7 +20,6 @@ instance : Config where
   let _ <- busAssemblyLine (recipe .automationSciencePack) 1 copper gear.less
 ).toAscii == s!"
 
-
  ↑⇨***⇨↓↑⇨***⇦↑↓
  ↑ *A* ↓↑ *A*↠↑↓
  ↑⚡***⚡↓↑⚡***⚡↑↓
@@ -41,7 +40,6 @@ instance : Config where
   let sulfur <- busAssemblyLine (recipe .sulfur) 3 water0 petrol
   let _ <- busAssemblyLine (recipe .sulfuricAcid) 1 water1.exact sulfur.less iron
 ).toAscii == s!"
-
 
   |┤|├***⇨↓
   | | *C* ↓
@@ -82,7 +80,6 @@ instance : Config where
 
   let _ <- busAssemblyLine (recipe .logisticSciencePack) 1 inserter.less belt.less
 ).toAscii == s!"
-
 
  ↑⇨***⇨↓        ↑⇨***⇨↓
  ↑ *A* ↓        ↑ *A* ↓

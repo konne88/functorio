@@ -126,8 +126,73 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
                 balancer ++ connector
   }
 
-def inputDestructionCap (process:Process) : Factory [] [] (stationInterface process) [] :=
-  process.solidInputs
+def spoilableInterface (process:Process) : List InterfaceV :=
+  process.solidInputs.flatMap fun ingredient => ingredient.spoilResult.toList.map (.,.N)
+
+def capNonSpoilables (process:Process) (offsets:Vector Nat (stationInterface process).length) : Factory (spoilableInterface process) [] (stationInterface process) [] :=
+  let width := offsets[offsets.size - 1]!
+  let newOffsets := process.inputIngredients.zipIdx.flatMap fun (ingredient, i) =>
+    if ingredient.spoilResult.isSome then [offsets[i]!] else []
+
+  {
+    width := width,
+    height := 0,
+    entities := [],
+    interface := {
+      n := newOffsets.castToVector!
+      e := #v[]
+      s := offsets
+      w := #v[]
+    }
+    name := "capNonSpoilables"
+  }
+
+def destroySpoilage (process:Process) : Factory [] [] (spoilableInterface process) [] :=
+  match spoilableInterface process with
+  | [] => emptyFactoryV
+  | spoilables =>
+    {
+      width:= 4,
+      height:= 4,
+      interface := {
+        n := #v[]
+        e := #v[]
+        s := Vector.range spoilables.length
+        w := #v[]
+      }
+      name := "destroySpoilage"
+      entities :=
+        [ heatingTower 0 0, pole 3 3 ] ++
+        spoilables.mapIdx fun x (ingredient,_) => inserter x 3 .S ingredient.spoilResult.toList
+    }
+
+  -- let interfaces := stationInterface process
+  -- let mut offsets := #[]
+  -- for interface in interfaces do
+  --   offsets.append
+
+  -- {
+  --   width := ns.length + 1
+  --   height := 4
+  --   interface := {
+  --     n := #v[]
+  --     e := #v[]
+  --     s := (ns.mapIdx fun i _ => i + 1).castToVector!
+  --     w := #v[]
+  --   }
+  --   name := "rightAccessor"
+  --   entities :=
+  --     accessEntities 0 height ewOffsets.toList ns .W numSolidOutputs ++
+  --     (ns.zipIdx.flatMap fun ((_, dir), i) => beltline (i + 1) dir height)
+  -- }
+
+
+-- def stationInterface (process:Process) : List InterfaceV :=
+--   process.inputIngredients.map (., .N) ++
+--   process.outputIngredients.map (., .S)
+
+
+  -- process.solidInputs.map (fun input => input.spoilResult.isNone)
 
 
 def maxRoboportLogisticsDistance := 46
@@ -159,7 +224,7 @@ def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stat
       outputSinceBalance := outputSinceBalance + stationOutput
       distanceFromRoboport := distanceFromRoboport + station.height
 
-    capN (columnList factories.toList.reverse)
+    column3 (destroySpoilage process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
 
 def tupleType {T} (ts:List T) (type:T->Type) : Type :=
   match ts with
