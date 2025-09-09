@@ -170,34 +170,33 @@ def destroySpoilage (process:Process) : Factory [] [] (spoilableInterface proces
         spoilables.mapIdx fun x (ingredient,_) => inserter x 3 .S [ingredient]
     }
 
-  -- let interfaces := stationInterface process
-  -- let mut offsets := #[]
-  -- for interface in interfaces do
-  --   offsets.append
+def rateLimitInputs [Config] (process:Process) (stations:Nat) (offsets:Vector Nat (stationInterface process).length)
+: Factory (stationInterface process) [] (stationInterface process) [] :=
+  let interfaces := stationInterface process
+  let (x,_) := findGap offsets.toArray 2
 
-  -- {
-  --   width := ns.length + 1
-  --   height := 4
-  --   interface := {
-  --     n := #v[]
-  --     e := #v[]
-  --     s := (ns.mapIdx fun i _ => i + 1).castToVector!
-  --     w := #v[]
-  --   }
-  --   name := "rightAccessor"
-  --   entities :=
-  --     accessEntities 0 height ewOffsets.toList ns .W numSolidOutputs ++
-  --     (ns.zipIdx.flatMap fun ((_, dir), i) => beltline (i + 1) dir height)
-  -- }
+  let entities :=
+    interfaces.zipIdx.flatMap fun ((ingredient, dir), i) =>
+      let x := offsets[i]!
+      if ingredient.isLiquid
+      then [pipe x 0]
+      else [belt x 0 dir]
 
 
--- def stationInterface (process:Process) : List InterfaceV :=
---   process.inputIngredients.map (., .N) ++
---   process.outputIngredients.map (., .S)
 
-
-  -- process.solidInputs.map (fun input => input.spoilResult.isNone)
-
+  {
+    height := 1
+    width := offsets[offsets.size-1]!
+    entities := entities
+    wires := []
+    interface := {
+      n := offsets
+      e := #v[]
+      s := offsets
+      w := #v[]
+    }
+    name := "rateLimitInputs"
+  }
 
 def maxRoboportLogisticsDistance := 46
 

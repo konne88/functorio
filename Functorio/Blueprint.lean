@@ -48,17 +48,30 @@ private def entityName (e:Entity) : String :=
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
   | .heatingTower => "heating-tower"
+  | .deciderCombinator _ _ _ => "decider-combinator"
   | .fabricator f _ _ _ => f.name
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
   | .belt d | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
-  | .fabricator _ _ d _ => d
+  | .fabricator _ _ d _ | .deciderCombinator d _ _ => d
   | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
   | .heatingTower | .refinedConcrete => .none
 
-private def entityProps (e:Entity) : List (String × Json):=
+private def conditionToJson (c:Condition) : Json :=
+  Json.mkObj [
+    ("first_signal", ToJson.toJson c.firstSignal),
+    ("constant", c.constantValue)
+  ]
+
+private def outputToJson (o:Output) : Json :=
+  Json.mkObj [
+    ("signal", ToJson.toJson o.signal),
+    ("copy_count_from_input", o.copyCountFromInput)
+  ]
+
+private def entityProps (e:Entity) : List (String × Json) :=
   match e.type with
   | .belt _ | .pipe | .pipeToGround _ | .pump _
   | .pole | .bigPole | .roboport | .heatingTower | .refinedConcrete => []
@@ -72,6 +85,14 @@ private def entityProps (e:Entity) : List (String × Json):=
         ("comparator", "="),
       ]
     )).toArray)
+  ]
+  | .deciderCombinator _ conditions outputs => [
+    ("control_behavior", Json.mkObj [
+      ("decider_conditions", Json.mkObj [
+        ("conditions", Json.arr (conditions.map conditionToJson).toArray),
+        ("outputs", Json.arr (outputs.map outputToJson).toArray),
+      ])
+    ])
   ]
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]

@@ -8,6 +8,21 @@ import Functorio.Recipe
 open Lean
 open Lean (Json)
 
+structure Signal where
+  type: String
+  name: String
+  deriving DecidableEq, Inhabited, Repr, ToJson
+
+structure Condition where
+  firstSignal: Signal
+  constantValue: Nat
+  deriving DecidableEq, Inhabited, Repr
+
+structure Output where
+  signal: Signal
+  copyCountFromInput : Bool
+  deriving DecidableEq, Inhabited, Repr
+
 inductive EntityType
   | belt (dir:Direction)
   | beltDown (direction:Direction)
@@ -24,6 +39,7 @@ inductive EntityType
   | heatingTower
   | roboport
   | passiveProviderChest (capacity:Option Nat)
+  | deciderCombinator (direction:Direction) (conditions:List Condition) (outputs:List Output)
   | refinedConcrete
   deriving DecidableEq, Inhabited, Repr
 
@@ -83,7 +99,7 @@ def width (e:Entity) : Nat :=
   | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
-  | .pump dir => if dir == .N || dir == .S then 1 else 2
+  | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 1 else 2
   | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ _ _ => f.width
@@ -94,7 +110,7 @@ def height (e:Entity) : Nat :=
   | .longInserter _ _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
-  | .pump dir => if dir == .N || dir == .S then 2 else 1
+  | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 2 else 1
   | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ _ _ => f.height
