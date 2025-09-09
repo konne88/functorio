@@ -7,7 +7,13 @@ import Functorio.Factory
 open Lean
 open Lean (Json)
 
-private def coppperWire := 5
+def coppperWire := 5
+
+private def wireTypeNumber (type:WireType) : Nat :=
+  match type with
+  | .red => 1
+  | .green => 2
+  | .copper => coppperWire
 
 private structure BlueprintInner where
   entities: List Json
@@ -129,6 +135,10 @@ def neededForBootStrap (e:Entity) : Bool :=
   | .pole | .bigPole | .roboport => true
   | _ => false
 
+def wireToJson (wire:Wire) : List Nat :=
+  let typeNumber := wireTypeNumber wire.type
+  [wire.src, typeNumber, wire.dst, typeNumber]
+
 def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : String :=
   let entities := (factory.entities.filter (fun e =>
     !isTile e && (!bootstrap || neededForBootStrap e))).zipIdx
@@ -144,7 +154,7 @@ def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : Strin
     blueprint := {
       entities:=entities.map (fun (e,idx) => entityToJson idx e),
       tiles:=tiles.map tileToJson,
-      wires:= wires,
+      wires:= wires ++ factory.wires.map wireToJson,
       item:="blueprint",
       version:= 562949957025792
     }

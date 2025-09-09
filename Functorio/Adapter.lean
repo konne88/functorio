@@ -112,9 +112,10 @@ def adapterV {interface}
   let height := max neededHeight minHeight
   let (entities,_) := createAdapter interface top.toList bot.toList height
   {
-    width := width,
-    height:= height,
-    entities:= entities,
+    width := width
+    height:= height
+    entities:= entities
+    wires := []
     interface := {
       n := top
       e := Array.toVector #[]

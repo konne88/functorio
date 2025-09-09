@@ -13,6 +13,7 @@ private def expandS {n e s w} (distance:Nat) (f:Factory n e s w) : Factory n e s
     width := f.width,
     height:= f.height + distance,
     entities:= f.entities ++ expansion
+    wires := f.wires,
     interface := f.interface
     name := f.name
   }
@@ -24,9 +25,10 @@ private def expandN {n e s w} (distance:Nat) (f:Factory n e s w) : Factory n e s
       expansionEntity ingredient dir x y
 
   {
-    width := f.width,
-    height:= f.height + distance,
+    width := f.width
+    height:= f.height + distance
     entities:= f.entities.map (Entity.offsetPosition 0 distance) ++ expansion
+    wires := f.wires
     interface := {
       n := f.interface.n
       e := increaseOffset distance (f.interface.e)
@@ -46,6 +48,7 @@ private def expandE {n e s w} (distance:Nat) (f:Factory n e s w) : Factory n e s
     width := f.width + distance,
     height:= f.height,
     entities:= f.entities ++ expansion,
+    wires := f.wires
     interface := f.interface
     name := f.name
   }
@@ -60,6 +63,7 @@ private def expandW {n e s w} (distance:Nat) (f:Factory n e s w) : Factory n e s
     width := f.width + distance,
     height:= f.height,
     entities:= f.entities.map (Entity.offsetPosition distance 0) ++ expansion
+    wires := f.wires
     interface := {
       n := increaseOffset distance f.interface.n
       e := f.interface.e

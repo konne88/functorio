@@ -9,7 +9,6 @@ namespace Test
   busTapNoOutput [iron[9], iron[1]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑
 >⇥↥↑↦>
 >→→↑
@@ -29,7 +28,6 @@ namespace Test
   busTapNoOutput [iron[4], iron[1]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑
 >⇥↥↑↦>
 >→→↑
@@ -45,7 +43,6 @@ namespace Test
   busTapNoOutput [iron[0], iron[1], iron[2]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑↑
 >→↑↑↑
 >→→↑↑
@@ -60,7 +57,6 @@ namespace Test
   busTapNoOutput [iron[0], iron[2], iron[4]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑↑
 >→↑↑↑
 >→⇥↑↑↦>
@@ -74,7 +70,6 @@ namespace Test
   let iron <- inputs 5 .ironOre 2700
   busTapNoOutput [iron[4], iron[3]] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   ↑↑←
   ↑ ↑
@@ -91,7 +86,6 @@ namespace Test
   busTapNoOutput [iron[4], iron[2]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑
 >⇥↑↑↦>
 >⇥↥↑↦>
@@ -105,7 +99,6 @@ namespace Test
   let iron <- inputs 5 .ironOre 2700
   busTapNoOutput [iron[4], iron[0], iron[1], iron[2]] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   ↥↑↑↑
 >→→↑↑↑
@@ -122,7 +115,6 @@ namespace Test
   let _ <- inputs 5 .ironOre 2700
   busTapNoOutput [petrol, water] (capN (emptyFactoryH #v[0,2]))
 ).toAscii == s!"
-
 
   | |
 >|| |
@@ -141,7 +133,6 @@ namespace Test
   let water <- input .water 1
   busTapNoOutput [petrol, water] (capN (emptyFactoryH #v[0,2]))
 ).toAscii == s!"
-
 
   | |
 >⇥| |↦>
@@ -162,7 +153,6 @@ namespace Test
   busTapNoOutput [petrol, iron[2], water] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   |↑|
 >⇥|↑|↦>
 >⇥┴↑|↦>
@@ -180,7 +170,6 @@ namespace Test
   let _coal : BusLane .coal 100 <- busTap [iron[0]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↓
 >→↑→→>
 >→→→→>
@@ -191,7 +180,6 @@ namespace Test
   let iron <- inputs 5 .ironOre 2700
   let _coal : BusLane .coal 100  <- busTap [iron[2]] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   ↑↓
 >⇥↑↓↦>
@@ -207,7 +195,6 @@ namespace Test
   let _gear : BusLane .coal 100 <- busTap [iron[1], iron[3]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   ↑↑↓
 >⇥↑↑↓↦>
 >→↑↑→→>
@@ -221,7 +208,6 @@ namespace Test
   let iron <- inputs 5 .ironOre 2700
   let _water : BusLane .water 100 <- busTap [iron[2]] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   ↑|
 >⇥↑|↦>
@@ -238,7 +224,6 @@ namespace Test
   busTapNoOutput [iron0] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   *↑
 >→S→→>
 >→→→→>
@@ -251,7 +236,6 @@ namespace Test
   let (iron0, _) <- split iron[2] (left:=100)
   busTapNoOutput [iron0] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
    ↑
 >→⇥↑↦>
@@ -267,7 +251,6 @@ namespace Test
   let (iron0, _) <- split iron[2] (left:=100)
   busTapNoOutput [water, iron0] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   |↑
 >⇥┴↑↦>
@@ -285,7 +268,6 @@ namespace Test
   let (water0, _) <- split (left:=5) water
   busTapNoOutput [petrol, iron[2], water0] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   |↑|
 >⇥|↑|↦>
@@ -306,7 +288,6 @@ namespace Test
   let (water0, _) <- split (left:=5) water
   busTapNoOutput [petrol, iron[2], water0] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
   |↑|
 >⇥|↑|↦>
@@ -334,7 +315,6 @@ namespace Test
   busTapNoOutput [water0, iron1[0], iron1[1], iron0[0], iron0[1], iron0[2]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   |↑↑↑↑↑←
   |↑↑↑↑←↑
   |↑↑↑←↑↑
@@ -359,7 +339,6 @@ namespace Test
   busTapNoOutput [water0, iron1[0], iron1[1], iron0[0]] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   |↑↑↑←
   |↑↑←↑
   |↑ ↥↑
@@ -381,7 +360,6 @@ namespace Test
   busTapNoOutput [water, iron0, iron1] (capN emptyFactoryH)
 ).toAscii == s!"
 
-
   |↑↑
 >⇥┴↑↑↦>
 >⇥*↑↑↦>
@@ -400,7 +378,6 @@ namespace Test
   let (iron2, _) <- split iron[2] (left:=100)
   let _coal : BusLane .coal 4 <- busTap [iron0, iron1, iron2] (capN emptyFactoryH)
 ).toAscii == s!"
-
 
    ↑↑↑→→→→→→↓
    ↑↑↑←←←←  ↓

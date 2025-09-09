@@ -138,7 +138,8 @@ def capNonSpoilables (process:Process) (offsets:Vector Nat (stationInterface pro
 
   {
     width := width,
-    height := 0,
+    height := 0
+    wires := []
     entities := [],
     interface := {
       n := newOffsets.castToVector!
@@ -154,8 +155,9 @@ def destroySpoilage (process:Process) : Factory [] [] (spoilableInterface proces
   | [] => emptyFactoryV
   | spoilables =>
     {
-      width:= 4,
-      height:= 4,
+      width:= 4
+      height:= 4
+      wires := []
       interface := {
         n := #v[]
         e := #v[]

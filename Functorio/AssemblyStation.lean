@@ -161,6 +161,7 @@ def plainStation (process:Process) : Factory [] (interfaceE process) [] (interfa
     entities := [
       fabricator 0 0 process.fabricator process.recipe details.direction details.mirror
     ]
+    wires := []
     width := process.fabricator.width
     height := process.fabricator.height
     interface := {
@@ -219,6 +220,7 @@ def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) 
     {
       width := ns.length + 1
       height := height
+      wires := []
       interface := {
         n := (ns.mapIdx fun i _ => i + 1).castToVector!
         e := ewOffsets
@@ -238,6 +240,7 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
     {
       width := ns.length + 1
       height := height
+      wires := []
       interface := {
         n := (ns.mapIdx fun i _ => i).castToVector!
         e := ewOffsets
@@ -317,6 +320,7 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false) (p
   {
     width := width
     height := height
+    wires := []
     entities := pipelines ++ goDown ++ comeUp ++ power
     interface := {
       n := cast (by simp) interfaceNS
@@ -362,6 +366,7 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool := false)
   let interfaceW := ingredients.toVector.mapIdx fun i _ => (i * 2 : InterfaceImpl)
 
   {
+    wires := []
     width := width
     height := height
     entities := pipelines ++ goDown ++ comeUp
@@ -419,6 +424,7 @@ private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
     beltline (x:=9) .S height
 
   {
+    wires := []
     width:= 10, height:=height, entities := entities
     interface := {
       n := #v[0,1,2,8,9]
@@ -459,6 +465,7 @@ private def nutrientsFromBiofluxStation : Station (recipe .nutrientsFromBioflux)
     beltline (x:=7) .S height
 
   {
+    wires := []
     width:= 8, height:=height, entities := entities
     interface := {
       n := #v[0,1,7]
@@ -492,6 +499,7 @@ def rocketPart : Station (recipe .rocketPart) :=
 
 def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, .E)] := {
   width := 4, height := 1
+  wires := []
   entities := [pipe x 0, pipeToGround (x-1) 0 .E]
   name := "accessPipe"
   interface := {n := #v[], e := #v[], s := #v[], w := #v[0]}
@@ -500,6 +508,7 @@ def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, 
 -- Special case, because the plant's pipes come out in weird spots
 def electrolyteStation : Station (recipe .electrolyte) :=
   {
+    wires := []
     width := 13, height := 6,
     name := ".electrolyte"
     interface := {n := #v[1,3,5,11], e := #v[], s := #v[1,3,5,11], w := #v[]}
@@ -519,6 +528,7 @@ def electrolyteStation : Station (recipe .electrolyte) :=
 -- Special case, because the plant's pipes come out in weird spots
 def electromagneticScienceStation : Station (recipe .electromagneticSciencePack) :=
   {
+    wires := []
     width := 14, height := 6,
     name := ".electromagneticSciencePack"
     interface := {n := #v[1,3,5,6,13], e := #v[], s := #v[1,3,5,6,13], w := #v[]}
@@ -565,6 +575,7 @@ private def supercapacitorStation : Station (recipe .supercapacitor) :=
     beltline (x:=13) .S height
 
   {
+    wires := []
     width:= 14, height:=height, entities := entities
     interface := {
       n := #v[1,3,4,5,12,13]

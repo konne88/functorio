@@ -487,6 +487,7 @@ def busTapGeneric
   let tapFactory : Factory (busTapInterface inputs outputs) (busInterface lanes) [] (busInterface state.output) := {
     width:= x
     height:= max state.output.height lanes.height
+    wires := []
     entities := matrix.reduceUndergroundEntities.toEntities
     interface := {
       n := offsets.toList.castToVector!
@@ -552,6 +553,7 @@ def mergeSolid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)
       splitter 0 4 .N (outputPriority:="left"),
       beltUp 2 4 .S,
     ],
+    wires := []
     width:=3,
     height:=5,
     interface:={
@@ -568,6 +570,7 @@ def mergeLiquid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b
     entities:= (List.range 5).map (pipe . 0)
     width:=5,
     height:=1,
+    wires := []
     interface:={
       n := #v[]
       e := #v[]
@@ -584,6 +587,7 @@ def bigPoleFactory : Factory [] [] [] [] := {
   entities := [bigPole 0 0]
   width := 2, height := 2
   name := "bigPole"
+  wires := []
   interface := { n:= #v[], e:= #v[], s:= #v[], w:= #v[] }
 }
 
@@ -612,6 +616,7 @@ def pipePumps : Bus Unit :=
     let factory : Factory [] (busInterface config) [] (busInterface config) := {
       entities := entities
       width := 5
+      wires := []
       height := config.height
       name := "pipePumps"
       interface := {
