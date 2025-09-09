@@ -16,6 +16,7 @@ structure Signal where
 structure Condition where
   firstSignal: Signal
   constantValue: Nat
+  comparator: String
   deriving DecidableEq, Inhabited, Repr
 
 structure Output where
@@ -23,8 +24,12 @@ structure Output where
   copyCountFromInput : Bool
   deriving DecidableEq, Inhabited, Repr
 
+structure BeltControlBehavior where
+  circuitCondition: Option Condition
+  deriving DecidableEq, Inhabited, Repr
+
 inductive EntityType
-  | belt (dir:Direction)
+  | belt (dir:Direction) (behavior:BeltControlBehavior := {circuitCondition := .none})
   | beltDown (direction:Direction)
   | beltUp (direction:Direction)
   | splitter (direction:Direction) (outputPriority:Option String)
@@ -49,7 +54,8 @@ structure Entity where
   type : EntityType
   deriving DecidableEq, Inhabited, Repr
 
-def belt x y d := ({x:=x,y:=y,type:=.belt d} : Entity)
+def belt x y d (behavior : BeltControlBehavior := {circuitCondition := .none}) :=
+  ({x:=x,y:=y,type:=.belt d behavior} : Entity)
 
 def beltDown x y d := ({x:=x,y:=y,type:=.beltDown d} : Entity)
 
@@ -91,11 +97,14 @@ def passiveProviderChest x y (capacity : Option Nat := .none) := ({x:=x,y:=y,typ
 
 def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
 
+def deciderCombinator x y (direction:Direction) (conditions:List Condition) (outputs:List Output) :=
+  ({x:=x, y:=y, type:=.deciderCombinator direction conditions outputs} : Entity)
+
 namespace Entity
 
 def width (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
+  | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
   | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
@@ -106,7 +115,7 @@ def width (e:Entity) : Nat :=
 
 def height (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
+  | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
   | .longInserter _ _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2

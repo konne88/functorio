@@ -4,6 +4,7 @@ import Functorio.AssemblyLine
 instance : Config where
   generateBigPoles := true
   generateRoboports := true
+  generateInputRateLimiters := true
   providerChestCapacity := 0
   adapterMinHeight := 3
 

@@ -11,8 +11,10 @@ def coppperWire := 5
 
 private def wireTypeNumber (type:WireType) : Nat :=
   match type with
-  | .red => 1
-  | .green => 2
+  | .redInput => 1
+  | .greenInput => 2
+  | .redOutput => 3
+  | .greenOutput => 4
   | .copper => coppperWire
 
 private structure BlueprintInner where
@@ -34,7 +36,7 @@ private structure Position where
 
 private def entityName (e:Entity) : String :=
   match e.type with
-  | .belt _ => "express-transport-belt"
+  | .belt _ _ => "express-transport-belt"
   | .beltDown _ | .beltUp _ => "express-underground-belt"
   | .splitter _ _ => "express-splitter"
   | .pipe => "pipe"
@@ -53,7 +55,7 @@ private def entityName (e:Entity) : String :=
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
-  | .belt d | .beltDown d | .beltUp d | .splitter d _
+  | .belt d _ | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
   | .fabricator _ _ d _ | .deciderCombinator d _ _ => d
   | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
@@ -62,7 +64,8 @@ private def entityDirection (e:Entity) : Option Direction :=
 private def conditionToJson (c:Condition) : Json :=
   Json.mkObj [
     ("first_signal", ToJson.toJson c.firstSignal),
-    ("constant", c.constantValue)
+    ("constant", c.constantValue),
+    ("comparator", c.comparator)
   ]
 
 private def outputToJson (o:Output) : Json :=
@@ -73,7 +76,7 @@ private def outputToJson (o:Output) : Json :=
 
 private def entityProps (e:Entity) : List (String × Json) :=
   match e.type with
-  | .belt _ | .pipe | .pipeToGround _ | .pump _
+  | .pipe | .pipeToGround _ | .pump _
   | .pole | .bigPole | .roboport | .heatingTower | .refinedConcrete => []
   | .inserter _ filter | .longInserter _ filter => [
     ("use_filters", !filter.isEmpty),
@@ -93,6 +96,16 @@ private def entityProps (e:Entity) : List (String × Json) :=
         ("outputs", Json.arr (outputs.map outputToJson).toArray),
       ])
     ])
+  ]
+  | .belt _ behavior => [
+    ("control_behavior",
+      if behavior.circuitCondition.isNone
+      then Json.mkObj [("circuit_enabled", false)]
+      else Json.mkObj [
+        ("circuit_enabled", true),
+        ("circuit_condition", conditionToJson behavior.circuitCondition.get!)
+      ]
+    )
   ]
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]
@@ -157,8 +170,7 @@ def neededForBootStrap (e:Entity) : Bool :=
   | _ => false
 
 def wireToJson (wire:Wire) : List Nat :=
-  let typeNumber := wireTypeNumber wire.type
-  [wire.src, typeNumber, wire.dst, typeNumber]
+  [wire.src, wireTypeNumber wire.srcType, wire.dst, wireTypeNumber wire.dstType]
 
 def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : String :=
   let entities := (factory.entities.filter (fun e =>

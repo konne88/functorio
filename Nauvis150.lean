@@ -3,6 +3,7 @@ import Functorio
 instance : Config where
   generateBigPoles := true
   generateRoboports := true
+  generateInputRateLimiters := false
   providerChestCapacity := 3
   adapterMinHeight := 3
 

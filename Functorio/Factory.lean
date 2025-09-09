@@ -45,21 +45,24 @@ structure InterfaceImpls (n:List InterfaceV) (e:List InterfaceH) (s:List Interfa
   deriving Inhabited, Repr
 
 inductive WireType where
-  | red
-  | green
+  | redInput
+  | greenInput
+  | redOutput
+  | greenOutput
   | copper
   deriving DecidableEq, Inhabited, Repr
 
 structure Wire where
   src: Nat
+  srcType: WireType
   dst: Nat
-  type: WireType
+  dstType: WireType
   deriving DecidableEq, Inhabited, Repr
 
 namespace Wire
 
 def incrementLabels (wire:Wire) (n:Nat) : Wire :=
-  {src:=wire.src+n, dst:=wire.dst+n, type:=wire.type}
+  {src:=wire.src+n, dst:=wire.dst+n, srcType:=wire.srcType, dstType:=wire.dstType}
 
 end Wire
 
