@@ -61,7 +61,8 @@ def providerChestInsert [config:Config] {interface} (process:Process) (offsets :
   let recipe := process.getRecipe
   if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
 
-  let outputOffset := offsets[interface.length-1]!
+  let outputOffset :=
+    (offsets.zipIdx.filter fun (_, i) => interface[i]!.snd == .S)[0]!.fst
 
   let chest := [
     passiveProviderChest (outputOffset - 2) 1 (capacity:=config.providerChestCapacity),
@@ -104,7 +105,8 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
     belt (x+4) 3 .N,
   ]
 
-  let outputOffset := offsets[interface.length-1]!
+  let outputOffset :=
+    (offsets.zipIdx.filter fun (_, i) => interface[i]!.snd == .S)[0]!.fst
 
   let adapter :=
     let x := outputOffset
