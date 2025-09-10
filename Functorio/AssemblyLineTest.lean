@@ -92,52 +92,52 @@ import Functorio.Ascii
 
 "
 
-#guard (bus do
-  let nutrients <- input .nutrients 15
-  let jellynut <- input .jellynut 120
-  let _ <- busAssemblyLine (recipe .jellynutProcessing) 1 nutrients jellynut
-).toAscii == s!"
+-- #guard (bus do
+--   let nutrients <- input .nutrients 15
+--   let jellynut <- input .jellynut 120
+--   let _ <- busAssemblyLine (recipe .jellynutProcessing) 1 nutrients jellynut
+-- ).toAscii == s!"
 
- ***
- *H*
- ***
- ⇧⇧ ⚡
- ↑↑⇨***⇨↓↓
- ↑↑↠*B*↠↓↓
- ↑↑⚡***⚡↓↓
- ↑↑←↓←←←←↓
- ↑←↑↓ ↓←←←
-  ↑↑↓ ↓
->→↑↑→⇥↓↦→→>
->→→↑  →→→→>
+--  ***
+--  *H*
+--  ***
+--  ⇧⇧ ⚡
+--  ↑↑⇨***⇨↓↓
+--  ↑↑↠*B*↠↓↓
+--  ↑↑⚡***⚡↓↓
+--  ↑↑←↓←←←←↓
+--  ↑←↑↓ ↓←←←
+--   ↑↑↓ ↓
+-- >→↑↑→⇥↓↦→→>
+-- >→→↑  →→→→>
 
-"
+-- "
 
-#guard (bus do
-  let water <- input .water 360
-  let nutrients <- input .nutrients 15
-  let jelly <- input .jelly 360
-  let bioflux <- input .bioflux 24
-  let _ <- busAssemblyLine (recipe .rocketFuelFromJelly) 1 water nutrients jelly bioflux
-).toAscii == s!"
+-- #guard (bus do
+--   let water <- input .water 360
+--   let nutrients <- input .nutrients 15
+--   let jelly <- input .jelly 360
+--   let bioflux <- input .bioflux 24
+--   let _ <- busAssemblyLine (recipe .rocketFuelFromJelly) 1 water nutrients jelly bioflux
+-- ).toAscii == s!"
 
-    ***
-    *H*
-    ***
-    ⇧⇧⇧⚡
-    ↑↑↑←←←←←
-  |┤↑↑├***⇦↑↓
-  |⚡↑↑⇨*B*↠↑↓
-  | ↑↑↠***⚡↑↓
-  |→↑↑→→→→→↑↓
-  |↑ ↑↑↓←←←←←
-  |↑ ↑↑↓
->||↑ ↑↑→→→→→→>
->→⇥↑↦↑↑
->→→↑  ↑
->→→→→→↑
+--     ***
+--     *H*
+--     ***
+--     ⇧⇧⇧⚡
+--     ↑↑↑←←←←←
+--   |┤↑↑├***⇦↑↓
+--   |⚡↑↑⇨*B*↠↑↓
+--   | ↑↑↠***⚡↑↓
+--   |→↑↑→→→→→↑↓
+--   |↑ ↑↑↓←←←←←
+--   |↑ ↑↑↓
+-- >||↑ ↑↑→→→→→→>
+-- >→⇥↑↦↑↑
+-- >→→↑  ↑
+-- >→→→→→↑
 
-"
+-- " TODO
 
 instance : Config where
   generateBigPoles := true

@@ -170,6 +170,35 @@ def destroySpoilage (process:Process) : Factory [] [] (spoilableInterface proces
         spoilables.mapIdx fun x (ingredient,_) => inserter x 3 .S [ingredient]
     }
 
+def destroySpoilage' (process:Process) : Factory [] [] (spoilableInterface process) [] :=
+  match spoilableInterface process with
+  | [] => emptyFactoryV
+  | spoilables =>
+    {
+      width:= 10
+      height:= 3
+      wires := []
+      interface := {
+        n := #v[]
+        e := #v[]
+        s := Vector.range spoilables.length
+        w := #v[]
+      }
+      name := "destroySpoilage'"
+      entities :=
+        [
+          recyler 0 0 .E,
+          passiveProviderChest 4 0,
+          inserter 5 0 .W,
+          passiveProviderChest 5 1,
+          inserter 4 1 .E,
+          recyler 6 0 .W,
+          pole 3 2
+        ] ++
+        spoilables.mapIdx fun x (_,_) => inserter x 2 .S -- [ingredient]
+    }
+
+
 def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offsets:Vector Nat (stationInterface process).length)
 : Factory (stationInterface process) [] (stationInterface process) [] := Id.run do
   if !config.generateInputRateLimiters then return emptyFactoryH offsets
@@ -270,7 +299,7 @@ def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offs
         deciderCombinator x 2 .S [
           -- The combinator counts from 0 (inclusive) until constantValue (inclusive).
           -- {firstSignal:=signal, constantValue:=slots * 8 - 1, comparator:="<"}
-          {firstSignal:=signal, constantValue:=((ticksPerItem * 6) - 1).roundUp, comparator:="<"} -- TODO: should be round down
+          {firstSignal:=signal, constantValue:=((ticksPerItem * 8) - 1).roundUp, comparator:="<"} -- TODO: should be round down
         ] [
           {signal:=signal, copyCountFromInput:=false},
           {signal:=signal, copyCountFromInput:=true}
@@ -327,7 +356,7 @@ def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stat
       outputSinceBalance := outputSinceBalance + stationOutput
       distanceFromRoboport := distanceFromRoboport + station.height
 
-    column3 (destroySpoilage process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
+    column3 (destroySpoilage' process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
 
 def tupleType {T} (ts:List T) (type:T->Type) : Type :=
   match ts with

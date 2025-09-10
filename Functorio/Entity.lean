@@ -100,6 +100,8 @@ def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
 def deciderCombinator x y (direction:Direction) (conditions:List Condition) (outputs:List Output) :=
   ({x:=x, y:=y, type:=.deciderCombinator direction conditions outputs} : Entity)
 
+def recyler x y d (mirror:=false) := ({x:=x,y:=y,type:=.fabricator .recycler RecipeName.itemUnknownRecycling d mirror} : Entity)
+
 namespace Entity
 
 def width (e:Entity) : Nat :=
@@ -111,7 +113,7 @@ def width (e:Entity) : Nat :=
   | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 1 else 2
   | .heatingTower => 3
   | .roboport => 4
-  | .fabricator f _ _ _ => f.width
+  | .fabricator f _ dir _ => if dir == .N || dir == .S then f.width else f.height
 
 def height (e:Entity) : Nat :=
   match e.type with
@@ -122,7 +124,7 @@ def height (e:Entity) : Nat :=
   | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 2 else 1
   | .heatingTower => 3
   | .roboport => 4
-  | .fabricator f _ _ _ => f.height
+  | .fabricator f _ dir _ => if dir == .N || dir == .S then f.height else f.width
 
 def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {
   x := entity.x + dx
