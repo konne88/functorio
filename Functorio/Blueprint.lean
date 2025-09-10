@@ -51,27 +51,43 @@ private def entityName (e:Entity) : String :=
   | .refinedConcrete => "refined-concrete"
   | .heatingTower => "heating-tower"
   | .deciderCombinator _ _ _ => "decider-combinator"
+  | .arithmeticCombinator _ _ => "arithmetic-combinator"
   | .fabricator f _ _ _ => f.name
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
   | .belt d _ | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
-  | .fabricator _ _ d _ | .deciderCombinator d _ _ => d
+  | .fabricator _ _ d _ | .deciderCombinator d _ _ | .arithmeticCombinator d _ => d
   | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
   | .heatingTower | .refinedConcrete => .none
 
+private def signalToJson (s:Signal) : Json :=
+  Json.mkObj ([
+      ("name", Json.str s.name)
+    ] ++
+    (s.type.map ("type", Json.str .)).toList)
+
 private def conditionToJson (c:Condition) : Json :=
-  Json.mkObj [
-    ("first_signal", ToJson.toJson c.firstSignal),
-    ("constant", c.constantValue),
-    ("comparator", c.comparator)
-  ]
+  Json.mkObj ([
+      ("first_signal", signalToJson c.firstSignal),
+      ("comparator", c.comparator)
+    ] ++
+    (c.constantValue.map ("constant", Json.num .)).toList ++
+    (c.secondSignal.map ("second_signal", signalToJson .)).toList)
 
 private def outputToJson (o:Output) : Json :=
   Json.mkObj [
-    ("signal", ToJson.toJson o.signal),
+    ("signal", signalToJson o.signal),
     ("copy_count_from_input", o.copyCountFromInput)
+  ]
+
+private def arithmeticConditionToJson (c:ArithmeticCondition) : Json :=
+  Json.mkObj [
+    ("first_signal", signalToJson c.firstSignal),
+    ("second_constant", c.secondConstant),
+    ("operation", c.operation),
+    ("output_signal", signalToJson c.outputSignal)
   ]
 
 private def entityProps (e:Entity) : List (String × Json) :=
@@ -95,6 +111,11 @@ private def entityProps (e:Entity) : List (String × Json) :=
         ("conditions", Json.arr (conditions.map conditionToJson).toArray),
         ("outputs", Json.arr (outputs.map outputToJson).toArray),
       ])
+    ])
+  ]
+  | .arithmeticCombinator _ condition => [
+    ("control_behavior", Json.mkObj [
+      ("arithmetic_conditions", arithmeticConditionToJson condition)
     ])
   ]
   | .belt _ behavior => [

@@ -522,6 +522,14 @@ def busTap
   let outputs <- busTapGeneric inputs [outputIngredient] factory adapterMinHeight
   return {index := outputs[0]!}
 
+def busTap2
+  {outputIngredient} {outputThroughput} {outputIngredient'} {outputThroughput'} (inputs:List BusLane')
+  (factory:Factory [] [] (busTapInterface inputs [outputIngredient, outputIngredient']) [])
+  (adapterMinHeight:=0)
+: Bus (BusLane outputIngredient outputThroughput × BusLane outputIngredient' outputThroughput') := do
+  let outputs <- busTapGeneric inputs [outputIngredient, outputIngredient'] factory adapterMinHeight
+  return ({index := outputs[0]!}, {index := outputs[1]!})
+
 def split {i left input} (l:BusLane i input) (right := input - left) (_:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
   fun state =>
     (({index:= l.index}, {index:=l.index}),
@@ -582,6 +590,114 @@ def mergeLiquid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b
 
 def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltThroughput := by decide) : Bus (BusLane i (a + b)) :=
   if i.isLiquid then mergeLiquid l l' else mergeSolid l l'
+
+def splitBalanced {i left input} (l:BusLane i input) (right := input - left) (h:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
+  let inputSignal : Signal := {name:= i.name, type := .none}
+  let leftSignal : Signal := {name:="signal-L", type:="virtual"}
+  let rightSignal : Signal := {name:="signal-R", type:="virtual"}
+  let enableSignal : Signal := {name:="signal-check", type:="virtual"}
+
+  let counter x y :=
+    deciderCombinator x y .N [
+        {
+          firstSignal := inputSignal
+          secondSignal := .none
+          constantValue := .some 0
+          comparator:= "≥"
+        }
+      ] [
+        {
+          signal:= inputSignal
+          copyCountFromInput:=true
+        }
+      ]
+
+  let multiplier x y outputSignal c :=
+    arithmeticCombinator x y .N
+      {
+        firstSignal:=inputSignal
+        outputSignal := outputSignal
+        secondConstant:=c
+        operation:= "*"
+      }
+
+  if i.isLiquid then split l right h else
+  busTap2 [l.toBusLane'] {
+    width:=4,
+    height:=8,
+    wires := [
+      -- Hookup left
+      { src:= 0, dst:= 1, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 1, dst:= 1, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 1, dst:= 2, srcType:= .greenOutput, dstType:= .greenInput},
+      -- Hookup right
+      { src:= 3, dst:= 4, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 4, dst:= 4, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 4, dst:= 5, srcType:= .greenOutput, dstType:= .greenInput},
+      -- Hookup combiner
+      { src:= 2, dst:= 6, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 5, dst:= 6, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 6, dst:= 0, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 6, dst:= 3, srcType:= .redOutput, dstType:= .redInput},
+    ]
+    entities:= [
+      -- Left logic
+      belt 0 6 .N {
+        circuitCondition := .some {
+          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="="
+        }
+      },
+      counter 0 2,
+      multiplier 0 0 leftSignal 13,
+
+      -- Right logic
+      belt 1 6 .N {
+        circuitCondition := .some {
+          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="!="
+        }
+      },
+      counter 1 2,
+      multiplier 1 0 rightSignal 7,
+
+      -- Combine left and right
+      deciderCombinator 2 2 .S [
+        {
+          firstSignal:= leftSignal
+          secondSignal:= rightSignal
+          constantValue:=.none
+          comparator:= "<"
+        }
+      ] [
+        {
+          signal:=enableSignal
+          copyCountFromInput:=false
+        }
+      ],
+      splitter 0 7 .N,
+      belt 2 7 .S,
+      belt 3 7 .S,
+
+      belt 2 6 .S,
+      belt 3 6 .S,
+
+      belt 0 5 .N,
+      belt 1 5 .E,
+      belt 2 5 .S,
+      belt 3 5 .S,
+
+      belt 0 4 .E,
+      belt 1 4 .E,
+      belt 2 4 .E,
+      belt 3 4 .S,
+    ]
+    interface:={
+      n := #v[]
+      e := #v[]
+      s := #v[1,2,3]
+      w := #v[]
+    }
+    name := s!"splitBalanced {reprStr i}"
+  }
 
 def bigPoleFactory : Factory [] [] [] [] := {
   entities := [bigPole 0 0]

@@ -9,13 +9,14 @@ open Lean
 open Lean (Json)
 
 structure Signal where
-  type: String
+  type: Option String
   name: String
-  deriving DecidableEq, Inhabited, Repr, ToJson
+  deriving DecidableEq, Inhabited, Repr
 
 structure Condition where
   firstSignal: Signal
-  constantValue: Nat
+  secondSignal: Option Signal
+  constantValue: Option Nat
   comparator: String
   deriving DecidableEq, Inhabited, Repr
 
@@ -26,6 +27,13 @@ structure Output where
 
 structure BeltControlBehavior where
   circuitCondition: Option Condition
+  deriving DecidableEq, Inhabited, Repr
+
+structure ArithmeticCondition where
+  firstSignal: Signal
+  secondConstant: Nat
+  operation: String
+  outputSignal: Signal
   deriving DecidableEq, Inhabited, Repr
 
 inductive EntityType
@@ -45,6 +53,7 @@ inductive EntityType
   | roboport
   | passiveProviderChest (capacity:Option Nat)
   | deciderCombinator (direction:Direction) (conditions:List Condition) (outputs:List Output)
+  | arithmeticCombinator (direction:Direction) (condition:ArithmeticCondition)
   | refinedConcrete
   deriving DecidableEq, Inhabited, Repr
 
@@ -100,6 +109,9 @@ def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
 def deciderCombinator x y (direction:Direction) (conditions:List Condition) (outputs:List Output) :=
   ({x:=x, y:=y, type:=.deciderCombinator direction conditions outputs} : Entity)
 
+def arithmeticCombinator x y (direction:Direction) (condition:ArithmeticCondition) :=
+  ({x:=x, y:=y, type:=.arithmeticCombinator direction condition} : Entity)
+
 def recyler x y d (mirror:=false) := ({x:=x,y:=y,type:=.fabricator .recycler RecipeName.itemUnknownRecycling d mirror} : Entity)
 
 namespace Entity
@@ -110,7 +122,7 @@ def width (e:Entity) : Nat :=
   | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
-  | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 1 else 2
+  | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 1 else 2
   | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ dir _ => if dir == .N || dir == .S then f.width else f.height
@@ -121,7 +133,7 @@ def height (e:Entity) : Nat :=
   | .longInserter _ _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
-  | .deciderCombinator dir _ _ | .pump dir => if dir == .N || dir == .S then 2 else 1
+  | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 2 else 1
   | .heatingTower => 3
   | .roboport => 4
   | .fabricator f _ dir _ => if dir == .N || dir == .S then f.height else f.width

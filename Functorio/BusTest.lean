@@ -462,3 +462,28 @@ namespace Test
 >||||
 
 "
+
+#eval (IO.print (bus do
+  let iron <- input .ironOre 10
+  let _ <- splitBalanced iron (left:=3)
+).toAscii)
+
+#guard (bus do
+  let iron <- input .ironOre 10
+  let _ <- splitBalanced iron (left:=3)
+).toAscii == s!"
+
+ **
+ ++
+ ***
+ ≥≥≥
+ →→→↓
+ ↑→↓↓
+ ↑↑↓↓
+ *S↓↓
+  ↑↓→↓
+  ↑↓ ↓
+>→↑→⇥↓↦>
+     →→>
+
+"

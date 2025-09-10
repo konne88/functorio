@@ -29,10 +29,10 @@ F furnace
 
 private def entitySymbol (e:Entity) : Option Char :=
   match e.type with
-  | .belt .N => '↑'
-  | .belt .E => '→'
-  | .belt .S => '↓'
-  | .belt .W => '←'
+  | .belt .N _ => '↑'
+  | .belt .E _ => '→'
+  | .belt .S _ => '↓'
+  | .belt .W _ => '←'
 
   | .beltDown .N => '⤒'
   | .beltDown .E => '⇥'
@@ -73,6 +73,8 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .fabricator .chemicalPlant _ _ _ => 'C'
   | .fabricator .oilRefinery _ _ _ => 'O'
   | .fabricator .rocketSilo _ _ _ => 'L'  -- L is for Launch-site
+  | .deciderCombinator _ _ _ => '≥'
+  | .arithmeticCombinator _ _ => '+'
   | .heatingTower => 'H'
 
   | .roboport => 'R'
@@ -81,7 +83,9 @@ private def entitySymbol (e:Entity) : Option Char :=
 
   | .refinedConcrete => .none
 
-  | _ => '?'
+  | _ =>
+    dbg_trace s!"Couldn't print {reprStr e}"
+    '?'
 
 private def set {w h} (v:Vector (Vector Char w) h) (x y:Nat) (c:Char) : Vector (Vector Char w) h :=
   -- Mark overlapping entities with !

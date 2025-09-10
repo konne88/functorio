@@ -256,8 +256,8 @@ def glebaFactory := bus do
   let (water0, water) <- split water
   let (water1, water2) <- split (right:=6720) water
 
-  let (jellynut0, jellynut) <- split jellynut
-  let (jellynut1, jellynut2) <- split jellynut
+  let (jellynut0, jellynut) <- splitBalanced jellynut
+  let (jellynut1, jellynut2) <- splitBalanced jellynut
   let (nutrients, bioChamberNutrients) <- split (left:=60) bioChamberNutrients
   let (jelly, jellySeed0) <- makeJelly nutrients jellynut0
   let (jelly0, jelly1) <- split jelly

@@ -299,7 +299,7 @@ def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offs
         deciderCombinator x 2 .S [
           -- The combinator counts from 0 (inclusive) until constantValue (inclusive).
           -- {firstSignal:=signal, constantValue:=slots * 8 - 1, comparator:="<"}
-          {firstSignal:=signal, constantValue:=((ticksPerItem * 8) - 1).roundUp, comparator:="<"} -- TODO: should be round down
+          {firstSignal:=signal, secondSignal:=.none, constantValue:=((ticksPerItem * 8) - 1).roundUp, comparator:="<"} -- TODO: should be round down
         ] [
           {signal:=signal, copyCountFromInput:=false},
           {signal:=signal, copyCountFromInput:=true}
@@ -308,7 +308,7 @@ def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offs
         belt x 5 dir {
           -- The belt will be active from 0 (inclusive) until constantValue (exclusive)
           -- circuitCondition:= .some {firstSignal:=signal, constantValue:=openSlots * 8, comparator:="<"}
-          circuitCondition:= .some {firstSignal:=signal, constantValue:=8, comparator:="<"}
+          circuitCondition:= .some {firstSignal:=signal, secondSignal:=.none, constantValue:=.some 8, comparator:="<"}
         }
       ]
 
