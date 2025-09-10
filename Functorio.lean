@@ -1,7 +1,6 @@
 import Functorio.Abbreviations
 import Functorio.Adapter
 import Functorio.AdapterTest
-import Functorio.ArithmeticCombinatorTest
 import Functorio.Ascii
 import Functorio.AssemblyStation
 import Functorio.AssemblyStationTest
