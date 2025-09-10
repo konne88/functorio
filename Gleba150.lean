@@ -278,9 +278,8 @@ def glebaFactory := bus do
   let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440 -- TODO: 1350 would be perfect, since it would be half a belt
   let eggs <- input .pentapodEgg 112
-  let water <- input .water 13440
-
   let bioChamberNutrients <- input .nutrients 1455
+  let water <- input .water 13440
 
   let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
 
