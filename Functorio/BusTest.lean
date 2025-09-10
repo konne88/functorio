@@ -474,7 +474,7 @@ namespace Test
 ).toAscii == s!"
 
  **
- ++
+ ++⚡
  ***
  ≥≥≥
  →→→↓

@@ -622,16 +622,19 @@ def splitBalanced {i left input} (l:BusLane i input) (right := input - left) (h:
       }
 
   if i.isLiquid then split l right h else
+
+  let fraction := left / right
+
   busTap2 [l.toBusLane'] {
     width:=4,
     height:=8,
     wires := [
       -- Hookup left
-      { src:= 0, dst:= 1, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 0, dst:= 1, srcType:= .greenInput, dstType:= .greenInput},
       { src:= 1, dst:= 1, srcType:= .redOutput, dstType:= .redInput},
       { src:= 1, dst:= 2, srcType:= .greenOutput, dstType:= .greenInput},
       -- Hookup right
-      { src:= 3, dst:= 4, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 3, dst:= 4, srcType:= .greenInput, dstType:= .greenInput},
       { src:= 4, dst:= 4, srcType:= .redOutput, dstType:= .redInput},
       { src:= 4, dst:= 5, srcType:= .greenOutput, dstType:= .greenInput},
       -- Hookup combiner
@@ -646,18 +649,22 @@ def splitBalanced {i left input} (l:BusLane i input) (right := input - left) (h:
         circuitCondition := .some {
           firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="="
         }
+        circuitReadHandContents := true
+        circuitContentsReadMode := 0
       },
       counter 0 2,
-      multiplier 0 0 leftSignal 13,
+      multiplier 0 0 leftSignal fraction.num,
 
       -- Right logic
       belt 1 6 .N {
         circuitCondition := .some {
-          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="!="
+          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="≠"
         }
+        circuitReadHandContents := true
+        circuitContentsReadMode := 0
       },
       counter 1 2,
-      multiplier 1 0 rightSignal 7,
+      multiplier 1 0 rightSignal fraction.den,
 
       -- Combine left and right
       deciderCombinator 2 2 .S [
@@ -673,6 +680,8 @@ def splitBalanced {i left input} (l:BusLane i input) (right := input - left) (h:
           copyCountFromInput:=false
         }
       ],
+
+      pole 2 1,
       splitter 0 7 .N,
       belt 2 7 .S,
       belt 3 7 .S,

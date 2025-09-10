@@ -309,6 +309,8 @@ def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offs
           -- The belt will be active from 0 (inclusive) until constantValue (exclusive)
           -- circuitCondition:= .some {firstSignal:=signal, constantValue:=openSlots * 8, comparator:="<"}
           circuitCondition:= .some {firstSignal:=signal, secondSignal:=.none, constantValue:=.some 8, comparator:="<"}
+          circuitReadHandContents := false
+          circuitContentsReadMode := 0
         }
       ]
 

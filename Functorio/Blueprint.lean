@@ -121,12 +121,18 @@ private def entityProps (e:Entity) : List (String × Json) :=
   | .belt _ behavior => [
     ("control_behavior",
       if behavior.circuitCondition.isNone
-      then Json.mkObj [("circuit_enabled", false)]
+      then Json.mkObj [
+        ("circuit_enabled", false),
+        ("circuit_read_hand_contents", behavior.circuitReadHandContents),
+        ("circuit_contents_read_mode", behavior.circuitContentsReadMode)
+      ]
       else Json.mkObj [
         ("circuit_enabled", true),
-        ("circuit_condition", conditionToJson behavior.circuitCondition.get!)
+        ("circuit_condition", conditionToJson behavior.circuitCondition.get!),
+        ("circuit_read_hand_contents", behavior.circuitReadHandContents),
+        ("circuit_contents_read_mode", behavior.circuitContentsReadMode)
       ]
-    )
+    ),
   ]
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]

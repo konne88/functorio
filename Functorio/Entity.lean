@@ -27,6 +27,8 @@ structure Output where
 
 structure BeltControlBehavior where
   circuitCondition: Option Condition
+  circuitReadHandContents: Bool
+  circuitContentsReadMode: Nat
   deriving DecidableEq, Inhabited, Repr
 
 structure ArithmeticCondition where
@@ -37,7 +39,11 @@ structure ArithmeticCondition where
   deriving DecidableEq, Inhabited, Repr
 
 inductive EntityType
-  | belt (dir:Direction) (behavior:BeltControlBehavior := {circuitCondition := .none})
+  | belt (dir:Direction) (behavior:BeltControlBehavior := {
+      circuitCondition := .none
+      circuitReadHandContents := false
+      circuitContentsReadMode := 0
+    })
   | beltDown (direction:Direction)
   | beltUp (direction:Direction)
   | splitter (direction:Direction) (outputPriority:Option String)
@@ -63,7 +69,12 @@ structure Entity where
   type : EntityType
   deriving DecidableEq, Inhabited, Repr
 
-def belt x y d (behavior : BeltControlBehavior := {circuitCondition := .none}) :=
+def belt x y d (behavior : BeltControlBehavior := {
+    circuitCondition := .none
+    circuitReadHandContents := false
+    circuitContentsReadMode := 0
+  })
+:=
   ({x:=x,y:=y,type:=.belt d behavior} : Entity)
 
 def beltDown x y d := ({x:=x,y:=y,type:=.beltDown d} : Entity)
