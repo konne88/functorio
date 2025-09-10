@@ -24,22 +24,15 @@ abbrev YumakoSeed := BusLane .yumakoSeed
 
 -- 378
 
-def makeBioflux (nutrients:Nutrients 270) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160) := do
-  let (nutrients0, nutrients1) <- split nutrients
+def makeBioflux (nutrients:Nutrients 990) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 720) := do
+  let (nutrients0, nutrients) <- splitBalanced nutrients
   let bioflux0 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients0 mash[0] jelly[0]
+
+  let (nutrients1, nutrients) <- splitBalanced nutrients
   let bioflux1 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients1 mash[1] jelly[1]
+
   let bioflux <- merge bioflux0 bioflux1
-  return bioflux.less
-
---  return bioflux
-
-
-
---  busAssemblyLine (recipe .bioflux) 1
-
-
-
--- One unit of nutrients will power a biochamber for 4 seconds.
+  return (bioflux, nutrients)
 
 -- TODO: why do I need the "by exact" here?
 def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := by exact
@@ -254,7 +247,7 @@ def makeJelly (nutrients:Nutrients 1455) (jellynut:Jellynut 1440) : Bus (Vector 
   let (nutrients1, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly1, jellySeed1) <- makeJellyFullBelt nutrients1 jellynut1
 
-  let (jellynut2, jellynut) <- splitBalanced jellynut
+  let jellynut2 := jellynut
   let (nutrients2, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly2, jellySeed2) <- makeJellyFullBelt nutrients2 jellynut2
 
@@ -272,7 +265,7 @@ def makeMash (nutrients:Nutrients 1275) (yumako:Yumako 2700) : Bus (Vector (Yuma
   let (nutrients1, nutrients) <- splitBalanced (left:=120) nutrients
   let (mash1, yumakoSeed1) <- makeMashFullBelt nutrients1 yumako1
 
-  let (yumako2, yumako) <- splitBalanced yumako
+  let yumako2 := yumako.less -- TODO: need to process it all!
   let (nutrients2, nutrients) <- splitBalanced (left:=45) nutrients
   let (mash2, yumakoSeed2) <- makeMashPartialBelt nutrients2 yumako2
 
@@ -283,7 +276,7 @@ def makeMash (nutrients:Nutrients 1275) (yumako:Yumako 2700) : Bus (Vector (Yuma
 
 def glebaFactory := bus do
   let yumako <- input .yumako 2700
-  let jellynut <- input .jellynut 1440 -- 1350 would be perfect
+  let jellynut <- input .jellynut 1440 -- TODO: 1350 would be perfect, since it would be half a belt
   let eggs <- input .pentapodEgg 112
   let water <- input .water 13440
 
@@ -297,8 +290,8 @@ def glebaFactory := bus do
   let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako
   let (mash0, mash1) <- split mashPartial
 
-  let (nutrients, bioChamberNutrients) <- split (left:=270) (right:=720) bioChamberNutrients
-  let bioflux <- makeBioflux nutrients mash #v[jelly[0].less, jelly[1].less]
+  -- These less things are a problem
+  let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly[0].less, jelly[1].less]
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux) <- split bioflux
   let (bioflux2, bioflux) <- split bioflux
