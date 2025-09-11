@@ -239,11 +239,11 @@ do
   let _ <- makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
 
 def makeJelly (nutrients:Nutrients 1455) (jellynut:Jellynut 1440) : Bus (Vector (Jelly 2700) 3 × JellynutSeed (216 / 5) × Nutrients 1275):= do
-  let (jellynut0, jellynut) <- splitBalanced jellynut
+  let (jellynut0, jellynut) <- split jellynut
   let (nutrients0, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly0, jellySeed0) <- makeJellyFullBelt nutrients0 jellynut0
 
-  let (jellynut1, jellynut) <- splitBalanced jellynut
+  let (jellynut1, jellynut) <- split jellynut
   let (nutrients1, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly1, jellySeed1) <- makeJellyFullBelt nutrients1 jellynut1
 
@@ -257,16 +257,16 @@ def makeJelly (nutrients:Nutrients 1455) (jellynut:Jellynut 1440) : Bus (Vector 
   return (#v[jelly0, jelly1, jelly2], jellySeed, nutrients)
 
 def makeMash (nutrients:Nutrients 1275) (yumako:Yumako 2700) : Bus (Vector (YumakoMash 2700) 2 × YumakoMash 1080 × YumakoSeed (342 / 5) × Nutrients 990):= do
-  let (yumako0, yumako) <- splitBalanced yumako
+  let (yumako0, yumako) <- split yumako
   let (nutrients0, nutrients) <- splitBalanced (left:=120) nutrients
   let (mash0, yumakoSeed0) <- makeMashFullBelt nutrients0 yumako0
 
-  let (yumako1, yumako) <- splitBalanced yumako
+  let (yumako1, yumako) <- split yumako
   let (nutrients1, nutrients) <- splitBalanced (left:=120) nutrients
   let (mash1, yumakoSeed1) <- makeMashFullBelt nutrients1 yumako1
 
   let yumako2 := yumako.less -- TODO: need to process it all!
-  let (nutrients2, nutrients) <- splitBalanced (left:=45) nutrients
+  let (nutrients2, nutrients) <- split (left:=45) nutrients
   let (mash2, yumakoSeed2) <- makeMashPartialBelt nutrients2 yumako2
 
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
@@ -292,11 +292,11 @@ def glebaFactory := bus do
 --  let (water1, water2) <- split (right:=6720) water
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
-  let (bioflux0, bioflux) <- splitBalanced bioflux
+  let (bioflux0, bioflux) <- split bioflux
   let nutrients0 <- makeNutrients nutrients bioflux0
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
-  let (bioflux1, bioflux) <- splitBalanced bioflux
+  let (bioflux1, bioflux) <- split bioflux
   let nutrients1 <- makeNutrients nutrients bioflux1
 
   let (bioChamberNutrients, nutrients1) <- splitBalanced (left:=525) nutrients1
@@ -304,7 +304,7 @@ def glebaFactory := bus do
   let (eggs, _) <- splitBalanced (right:=126) eggs
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) bioChamberNutrients
-  let (bioflux2, bioflux) <- splitBalanced bioflux
+  let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs
 
 --  let (mash0, mash1) <- splitBalanced mashPartial
