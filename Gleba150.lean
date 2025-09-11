@@ -24,6 +24,8 @@ abbrev YumakoSeed := BusLane .yumakoSeed
 
 -- 378
 
+-- def x : BusAssemblyLineType (recipe .bioflux) 10 := by simp!
+
 def makeBioflux (nutrients:Nutrients 990) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 720) := do
   let (nutrients0, nutrients) <- splitBalanced nutrients
   let bioflux0 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients0 mash[0] jelly[0]
@@ -59,14 +61,16 @@ def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := b
 -- def makePentapodEggs'' : Water 3360 -> PentapodEgg 56 -> Nutrients 1680 -> Bus (PentapodEgg 168) :=
 --   busAssemblyLine (recipe .pentapodEgg) 7
 
-def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients0 : Nutrients 2700) (nutrients1 : Nutrients 930) : Bus (PentapodEgg 336) := do
+-- def x : BusAssemblyLineType (recipe .pentapodEgg) 4 := by simp!
+
+def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 336 × Nutrients 1680) := do
   let (water0, water1) <- split water
   let (eggs0, eggs1) <- splitBalanced eggs
-  let (nutrients1, nutrients2) <- splitBalanced nutrients1
-  let (nutrients2, nutrients3) <- splitBalanced nutrients2
-  let eggs0 <- busAssemblyLine (recipe .pentapodEgg) 11 water0 nutrients1 eggs0 nutrients0.less
-  let eggs1 <- busAssemblyLine (recipe .pentapodEgg) 3 water1 nutrients2 eggs1 nutrients3
-  merge eggs0 eggs1
+  let eggs0 <- busAssemblyLine (recipe .pentapodEgg) 10 water0 eggs0 nutrients[0].less
+  let (nutrients1, nutrientsOut) <- splitBalanced (left:=1020) nutrients[1]
+  let eggs1 <- busAssemblyLine (recipe .pentapodEgg) 4 water1 eggs1 nutrients1
+  let eggs <- merge eggs0 eggs1
+  return (eggs, nutrientsOut)
 
 def makeAgriculturalScience : Nutrients 105 -> Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
   busAssemblyLine (recipe .agriculturalSciencePack) 7
@@ -285,8 +289,9 @@ def glebaFactory := bus do
 
   let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako
 
-  -- These less things are a problem
-  let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly[0].less, jelly[1].less]
+  let (jelly0, _) <- splitBalanced jelly[0]
+  let (jelly1, _) <- splitBalanced jelly[1]
+  let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly0, jelly1]
 
   let (water0, water) <- split water
 --  let (water1, water2) <- split (right:=6720) water
@@ -299,8 +304,7 @@ def glebaFactory := bus do
   let (bioflux1, bioflux) <- split bioflux
   let nutrients1 <- makeNutrients nutrients bioflux1
 
-  let (bioChamberNutrients, nutrients1) <- splitBalanced (left:=525) nutrients1
-  let eggs <- makePentapodEggs water0 eggs nutrients0 nutrients1.less
+  let (eggs, bioChamberNutrients) <- makePentapodEggs water0 eggs #v[nutrients0, nutrients1]
   let (eggs, _) <- splitBalanced (right:=126) eggs
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) bioChamberNutrients

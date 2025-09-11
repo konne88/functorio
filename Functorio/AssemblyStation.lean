@@ -15,12 +15,18 @@ namespace Process
 def getRecipe (process:Process) : Recipe :=
   let original := process.recipe.getRecipe
   if process.fabricator != .biochamber then original else
-  let nutrientInput := [( original.time / process.fabricator.speedup / 4 , Ingredient.nutrients )]
+
   let liquidInputs := original.inputs.filter fun input => input.snd.isLiquid
   let solidInputs := original.inputs.filter fun input => !input.snd.isLiquid
 
+  let extraNutrients := original.time / process.fabricator.speedup / 4
+  let solidInputs :=
+    if solidInputs.any fun (_,ingredient) => ingredient == .nutrients
+    then solidInputs.map fun (items, ingredient) => (items + if ingredient == .nutrients then extraNutrients else 0, ingredient)
+    else [( extraNutrients , Ingredient.nutrients )] ++ solidInputs
+
   { original with
-    inputs := liquidInputs ++ nutrientInput ++ solidInputs
+    inputs := liquidInputs ++ solidInputs
   }
 
 def liquidInputs (process:Process) : List Ingredient :=

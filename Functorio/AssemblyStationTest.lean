@@ -172,11 +172,11 @@ import Functorio.Ascii
 "
 
 #guard (station (recipe .pentapodEgg)).toAscii == s!"
-  ^ ^^     ^v
-  |┤↑↑├***⇦↑↓
-  |⚡↑↑⇨*B*↠↑↓
-  | ↑↑↠***⚡↑↓
-  ^ ^^     ^v
+  ^ ^     ^v
+  |┤↑├***⇦↑↓
+  | ↑⇨*B*↠↑↓
+  | ↑⚡***⚡↑↓
+  ^ ^     ^v
 "
 
 #guard (station (recipe .nutrientsFromBioflux)).toAscii == s!"
