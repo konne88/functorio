@@ -444,7 +444,8 @@ private def nutrientsFromBiofluxStation : Station (recipe .nutrientsFromBioflux)
     [
       inserter 2 0 .W,
       longInserter 2 1 .W,
-      pole 2 2,
+      longInserter 2 2 .W,
+      pole 2 3,
 
       fabricator 3 0 .biochamber .nutrientsFromBioflux,
 

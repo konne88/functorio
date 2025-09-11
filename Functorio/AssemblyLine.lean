@@ -129,7 +129,7 @@ def outputBalancerInsert {interface} (offsets : Vector InterfaceImpl interface.l
   }
 
 def spoilableInterface (process:Process) : List InterfaceV :=
-  process.solidInputs.flatMap fun ingredient => ingredient.spoilResult.toList.map (.,.N)
+  process.solidInputs.flatMap fun ingredient => if ingredient.spoilResult.isNone then [] else [(ingredient,.N)]
 
 def capNonSpoilables (process:Process) (offsets:Vector Nat (stationInterface process).length) : Factory (spoilableInterface process) [] (stationInterface process) [] :=
   let width := offsets[offsets.size - 1]!
@@ -176,7 +176,7 @@ def destroySpoilage' (process:Process) : Factory [] [] (spoilableInterface proce
   | spoilables =>
     {
       width:= 10
-      height:= 3
+      height:= 4
       wires := []
       interface := {
         n := #v[]
@@ -195,7 +195,10 @@ def destroySpoilage' (process:Process) : Factory [] [] (spoilableInterface proce
           recyler 6 0 .W,
           pole 3 2
         ] ++
-        spoilables.mapIdx fun x (_,_) => inserter x 2 .S -- [ingredient]
+        spoilables.zipIdx.flatMap fun ((ingredient,_), x) => [
+          inserter x 2 .S (if ingredient == .yumako || ingredient == .jellynut || ingredient == .bioflux then ingredient.spoilResult.toList else []),
+          belt x 3 .N
+        ]
     }
 
 

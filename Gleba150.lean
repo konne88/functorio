@@ -61,9 +61,9 @@ def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := b
 
 def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients0 : Nutrients 2700) (nutrients1 : Nutrients 930) : Bus (PentapodEgg 336) := do
   let (water0, water1) <- split water
-  let (eggs0, eggs1) <- split eggs
-  let (nutrients1, nutrients2) <- split nutrients1
-  let (nutrients2, nutrients3) <- split nutrients2
+  let (eggs0, eggs1) <- splitBalanced eggs
+  let (nutrients1, nutrients2) <- splitBalanced nutrients1
+  let (nutrients2, nutrients3) <- splitBalanced nutrients2
   let eggs0 <- busAssemblyLine (recipe .pentapodEgg) 11 water0 nutrients1 eggs0 nutrients0.less
   let eggs1 <- busAssemblyLine (recipe .pentapodEgg) 3 water1 nutrients2 eggs1 nutrients3
   merge eggs0 eggs1
@@ -92,12 +92,12 @@ def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
   busTap [bacteria] factory
 
 def makeBacteriaCopper (nutrients:Nutrients 210) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360) := do
-  let (nutrients0, nutrients) <- split nutrients
-  let (nutrients1, nutrients) <- split nutrients
-  let (nutrients2, nutrients3) <- split nutrients
+  let (nutrients0, nutrients) <- splitBalanced nutrients
+  let (nutrients1, nutrients) <- splitBalanced nutrients
+  let (nutrients2, nutrients3) <- splitBalanced nutrients
 
-  let (bioflux0, bioflux) <- split bioflux
-  let (bioflux1, bioflux2) <- split bioflux
+  let (bioflux0, bioflux) <- splitBalanced bioflux
+  let (bioflux1, bioflux2) <- splitBalanced bioflux
   let (bacteria0, spoilage) <- cultivateCopperBacteria0 nutrients0 mash
   let bacteria1 <- cultivateCopperBacteria1 nutrients1 bacteria0.less bioflux0
   let bacteria2 <- cultivateCopperBacteria2 nutrients2 bacteria1.less bioflux1
@@ -126,10 +126,10 @@ def ironSpoilingChamber {n} (bacteria:IronBacteria n) : Bus (IronOre n) :=
 
 
 def makeBacteriaIron (nutrients:Nutrients 120) (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440) := do
-  let (nutrients0, nutrients) <- split nutrients
-  let (nutrients1, nutrients2) <- split nutrients
+  let (nutrients0, nutrients) <- splitBalanced nutrients
+  let (nutrients1, nutrients2) <- splitBalanced nutrients
 
-  let (bioflux0, bioflux1) <- split bioflux
+  let (bioflux0, bioflux1) <- splitBalanced bioflux
   let (spoilage, bacteria0) <- cultivateIronBacteria0 nutrients0 jelly
   let bacteria1 <- cultivateIronBacteria1 nutrients1 bacteria0.less bioflux0
   let bacteria2 <- cultivateIronBacteria2 nutrients2 bacteria1.less bioflux1
@@ -288,44 +288,48 @@ def glebaFactory := bus do
   -- These less things are a problem
   let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly[0].less, jelly[1].less]
 
+  let (water0, water) <- split water
+--  let (water1, water2) <- split (right:=6720) water
 
-  -- let (bioflux0, bioflux) <- split bioflux
-  -- let (bioflux1, bioflux) <- split bioflux
-  -- let (bioflux2, bioflux) <- split bioflux
-  -- let (bioflux3, bioflux) <- split bioflux
-  -- let (bioflux4, bioflux) <- split bioflux
-  -- let (bioflux5, bioflux) <- split bioflux
-  -- let (bioflux6, bioflux7) <- split bioflux
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
+  let (bioflux0, bioflux) <- splitBalanced bioflux
+  let nutrients0 <- makeNutrients nutrients bioflux0
 
-  -- let (mash0, mash1) <- split mashPartial
-  -- let (water0, water) <- split water
-  -- let (water1, water2) <- split (right:=6720) water
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
+  let (bioflux1, bioflux) <- splitBalanced bioflux
+  let nutrients1 <- makeNutrients nutrients bioflux1
 
-  -- let (nutrients, bioChamberNutrients) <- split (left:=45/4) bioChamberNutrients
-  -- let nutrients0 <- makeNutrients nutrients bioflux6
-  -- let (nutrients, bioChamberNutrients) <- split (left:=45/4) bioChamberNutrients
-  -- let nutrients1 <- makeNutrients nutrients bioflux7.less
-  -- let (bioChamberNutrients, nutrients1) <- split (left:=525) nutrients1
+  let (bioChamberNutrients, nutrients1) <- splitBalanced (left:=525) nutrients1
+  let eggs <- makePentapodEggs water0 eggs nutrients0 nutrients1.less
+  let (eggs, _) <- splitBalanced (right:=126) eggs
 
-  -- let eggs <- makePentapodEggs water2 eggs nutrients0 nutrients1.less
-  -- let (eggs, _) <- split (right:=126) eggs
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) bioChamberNutrients
+  let (bioflux2, bioflux) <- splitBalanced bioflux
+  let _ <- makeAgriculturalScience nutrients bioflux2 eggs
 
-  -- let (nutrients, bioChamberNutrients) <- split (left:=105) bioChamberNutrients
-  -- let _ <- makeAgriculturalScience nutrients bioflux5 eggs
+--  let (mash0, mash1) <- splitBalanced mashPartial
 
-  -- let (jelly0, jelly1) <- split jelly[0]
-  -- let (nutrients, bioChamberNutrients) <- split (left:=210) bioChamberNutrients
-  -- let (copperOre, spoilage0) <- makeBacteriaCopper nutrients mash0 bioflux4
-  -- let (nutrients, bioChamberNutrients) <- split (left:=120) bioChamberNutrients
-  -- let (ironOre, spoilage1) <- makeBacteriaIron nutrients jelly0 bioflux3
+
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
+  -- let (bioflux3, bioflux) <- splitBalanced bioflux
+  -- let (copperOre, spoilage0) <- makeBacteriaCopper nutrients mash0 bioflux3
+
+  -- let (jelly0, jelly1) <- splitBalanced jelly[0]
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
+  -- let (bioflux4, bioflux) <- splitBalanced bioflux
+  -- let (ironOre, spoilage1) <- makeBacteriaIron nutrients jelly0 bioflux4
   -- let spoilage <- merge spoilage0 spoilage1
 
-  -- let (nutrients, bioChamberNutrients) <- split (left:=45) bioChamberNutrients
-  -- let sulfur <- makeBioSulfur nutrients spoilage.less bioflux0
-  -- let (nutrients, bioChamberNutrients) <- split (left:=15) bioChamberNutrients
-  -- let plastic <- makeBioPlastic nutrients bioflux2 mash1.less
-  -- let (nutrients, bioChamberNutrients) <- split (left:=30) bioChamberNutrients
-  -- let rocketFuel <- makeBioRocketFuel water0 nutrients jelly1.less bioflux1
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients
+  -- let (bioflux5, bioflux) <- splitBalanced bioflux
+  -- let sulfur <- makeBioSulfur nutrients spoilage.less bioflux5
+
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=15) bioChamberNutrients
+  -- let (bioflux6, bioflux7) <- splitBalanced bioflux
+  -- let plastic <- makeBioPlastic nutrients bioflux6 mash1.less
+
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=30) bioChamberNutrients
+  -- let rocketFuel <- makeBioRocketFuel water0 nutrients jelly1.less bioflux7.less
 
   -- makeNonBiologicalComponents copperOre ironOre water1 sulfur plastic rocketFuel
 
