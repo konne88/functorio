@@ -61,16 +61,19 @@ def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := b
 -- def makePentapodEggs'' : Water 3360 -> PentapodEgg 56 -> Nutrients 1680 -> Bus (PentapodEgg 168) :=
 --   busAssemblyLine (recipe .pentapodEgg) 7
 
--- def x : BusAssemblyLineType (recipe .pentapodEgg) 4 := by simp!
+-- def x : BusAssemblyLineType (recipe .pentapodEgg) 5 := by simp!
 
-def makePentapodEggs (water:Water 6720) (eggs:PentapodEgg 112) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 336 × Nutrients 1680) := do
+-- 72 + 40 = 112
+-- 120
+
+def makePentapodEggs (eggsLoopIn:PentapodEgg 112) (water:Water 6720) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 216 × Nutrients 1425) := do
   let (water0, water1) <- split water
-  let (eggs0, eggs1) <- splitBalanced eggs
-  let eggs0 <- busAssemblyLine (recipe .pentapodEgg) 10 water0 eggs0 nutrients[0].less
-  let (nutrients1, nutrientsOut) <- splitBalanced (left:=1020) nutrients[1]
-  let eggs1 <- busAssemblyLine (recipe .pentapodEgg) 4 water1 eggs1 nutrients1
-  let eggs <- merge eggs0 eggs1
-  return (eggs, nutrientsOut)
+--  let (eggs0, eggs1) <- splitBalanced eggs
+  let (nutrients0, nutrientsOut) <- splitBalanced (left:=1275) nutrients[0]
+  let eggsLoopOut <- busAssemblyLine (recipe .pentapodEgg) 5 water1 eggsLoopIn.less nutrients0
+  let eggsOut <- busAssemblyLine (recipe .pentapodEgg) 9 water0 eggsLoopOut.less nutrients[1].less
+--  let eggs <- merge eggs0 eggs1
+  return (eggsOut, nutrientsOut)
 
 def makeAgriculturalScience : Nutrients 105 -> Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
   busAssemblyLine (recipe .agriculturalSciencePack) 7
@@ -293,7 +296,7 @@ def glebaFactory := bus do
   let (jelly1, _) <- splitBalanced jelly[1]
   let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly0, jelly1]
 
-  let (water0, water) <- split water
+  let (water0, water) <- split (left:=6720) water
 --  let (water1, water2) <- split (right:=6720) water
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
@@ -304,12 +307,12 @@ def glebaFactory := bus do
   let (bioflux1, bioflux) <- split bioflux
   let nutrients1 <- makeNutrients nutrients bioflux1
 
-  let (eggs, bioChamberNutrients) <- makePentapodEggs water0 eggs #v[nutrients0, nutrients1]
-  let (eggs, _) <- splitBalanced (right:=126) eggs
+  let (eggs, bioChamberNutrients) <- makePentapodEggs eggs water0 #v[nutrients0, nutrients1]
+--  let (eggs, _) <- splitBalanced (right:=126) eggs
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) bioChamberNutrients
   let (bioflux2, bioflux) <- split bioflux
-  let _ <- makeAgriculturalScience nutrients bioflux2 eggs
+  let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
 --  let (mash0, mash1) <- splitBalanced mashPartial
 
