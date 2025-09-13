@@ -80,6 +80,7 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .roboport => 'R'
   | .pump _ => 'P'
   | .passiveProviderChest _ => '🄿'
+  | .ironChest => '☐'
 
   | .refinedConcrete => .none
 

@@ -188,9 +188,9 @@ def destroySpoilage' (process:Process) : Factory [] [] (spoilableInterface proce
       entities :=
         [
           recyler 0 0 .E,
-          passiveProviderChest 4 0,
+          ironChest 4 0,
           inserter 5 0 .W,
-          passiveProviderChest 5 1,
+          ironChest 5 1,
           inserter 4 1 .E,
           recyler 6 0 .W,
           pole 3 2

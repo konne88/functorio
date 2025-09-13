@@ -482,3 +482,24 @@ namespace Test
      →→>
 
 "
+
+#guard (bus do
+  let bacteria <- input .ironBacteria 10
+  let _iron : BusLane .ironOre 10 <- spoilingChamber bacteria
+).toAscii == s!"
+
+  →→↓
+ →↑←↓
+ ↑*S↓
+ ↑*↑↓
+ ↥S↥↓
+ ⇧⇧⇧⤓
+ ☐☐☐⚡
+ ⇧⇧⇧↧
+ ←←←↓
+  →↑↓
+  ↑↓←
+  ↑↓
+>→↑→→>
+
+"

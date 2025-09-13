@@ -216,7 +216,8 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
   -- Go through all the columns
   for x in List.range matrix.size do
     let mut isUndergroundPipe := false
-    let mut isUndergroundBelt := false
+    let mut isUndergroundBeltN := false
+    let mut isUndergroundBeltS := false
 
     for y in List.range height do
       if y + 1 >= height then continue
@@ -233,11 +234,11 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
         matrix := matrix.setCell x y (.entity (.belt .N))
         matrix := matrix.setCell x (y+1) (.entity (.belt .N))
 
-      if isUndergroundBelt && cell == .empty && nextCell == .empty then
+      if isUndergroundBeltN && cell == .empty && nextCell == .empty then
         matrix := matrix.setCell x y (.entity (.beltDown .N))
         matrix := matrix.setCell x (y+1) (.entity (.beltUp .N))
 
-      if isUndergroundBelt && cell == .empty && nextCell == .entity (.beltDown .N)  then
+      if isUndergroundBeltN && cell == .empty && nextCell == .entity (.beltDown .N) then
         matrix := matrix.setCell x y (.entity (.beltDown .N))
         matrix := matrix.setCell x (y+1) (.entity (.belt .N))
 
@@ -248,6 +249,14 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
 
       if cell == .entity (.beltDown .S) && nextCell == .entity (.beltUp .S) then
         matrix := matrix.setCell x y (.entity (.belt .S))
+        matrix := matrix.setCell x (y+1) (.entity (.belt .S))
+
+      if isUndergroundBeltS && cell == .empty && nextCell == .empty then
+        matrix := matrix.setCell x y (.entity (.beltUp .S))
+        matrix := matrix.setCell x (y+1) (.entity (.beltDown .S))
+
+      if isUndergroundBeltS && cell == .empty && nextCell == .entity (.beltUp .N) then
+        matrix := matrix.setCell x y (.entity (.beltUp .S))
         matrix := matrix.setCell x (y+1) (.entity (.belt .S))
 
       -- Simplify pipe put/get
@@ -269,8 +278,10 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
 
       -- Determine whether we are underground
       let cell := matrix[x]![y]!
-      if cell == .entity (.beltUp .N) then isUndergroundBelt := true  -- yes, beltUp means y + 1 is underground
-      if cell == .entity (.beltDown .N) then isUndergroundBelt := false
+      if cell == .entity (.beltUp .N) then isUndergroundBeltN := true  -- yes, beltUp means y + 1 is underground
+      if cell == .entity (.beltDown .N) then isUndergroundBeltN := false
+      if cell == .entity (.beltUp .S) then isUndergroundBeltS := false
+      if cell == .entity (.beltDown .S) then isUndergroundBeltS := true
       if cell == .entity (.pipeToGround .N) then isUndergroundPipe := true
       if cell == .entity (.pipeToGround .S) then isUndergroundPipe := false
 
@@ -757,3 +768,61 @@ def pipePumps : Bus Unit :=
       output := config
       factory := row state.factory (column bigPoleFactory factory)
     })
+
+def spoilingChamber {n} {input:Ingredient} {output:Ingredient} (bacteria:BusLane input n) : Bus (BusLane output n) :=
+  let factory : Factory [] [] [(input, .N), (output, .S)] [] := {
+    name := s!"spoilingChamber {reprStr input}",
+    width := 4,
+    height := 9,
+    entities := [
+      belt 1 0 .E,
+      belt 2 0 .E,
+      belt 3 0 .S,
+
+      belt 0 1 .E,
+      belt 1 1 .N,
+      belt 2 1 .W,
+      belt 3 1 .S,
+
+      belt 0 2 .N,
+      splitter 1 2 .N,
+      belt 3 2 .S,
+
+      belt 0 3 .N,
+      splitter 1 3 .E,
+      belt 2 3 .N,
+      belt 3 3 .S,
+
+      beltUp 0 4 .N,
+      beltUp 2 4 .N,
+      belt 3 4 .S,
+
+      inserter 0 5 .S [output],
+      inserter 1 5 .S [output],
+      inserter 2 5 .S [output],
+      beltDown 3 5 .S,
+
+      ironChest 0 6,
+      ironChest 1 6,
+      ironChest 2 6,
+      pole 3 6,
+
+      inserter 0 7 .S,
+      inserter 1 7 .S,
+      inserter 2 7 .S,
+      beltUp 3 7 .S,
+
+      belt 0 8 .W,
+      belt 1 8 .W,
+      belt 2 8 .W,
+      belt 3 8 .S,
+    ],
+    wires := [],
+    interface := {
+      n := #v[],
+      e := #v[],
+      s := #v[2, 3],
+      w := #v[]
+    }
+  }
+  busTap [bacteria] (unsafeFactoryCast factory)
