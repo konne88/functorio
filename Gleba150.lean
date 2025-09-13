@@ -311,7 +311,7 @@ def glebaFactory := bus do
   let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly0, jelly1]
 
   let (water0, water) <- split (left:=6720) water
---  let (water1, water2) <- split (right:=6720) water
+  let (water1, water2) <- split (right:=6000) water
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
   let (bioflux0, bioflux) <- split bioflux
@@ -342,18 +342,19 @@ def glebaFactory := bus do
 
   let spoilage <- merge spoilage0 spoilage1
 
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients
-  -- let (bioflux5, bioflux) <- splitBalanced bioflux
-  -- let sulfur <- makeBioSulfur nutrients spoilage.less bioflux5
+  let (bioflux5, bioflux) <- split bioflux
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients
+  let sulfur <- makeBioSulfur nutrients spoilage.less bioflux5
 
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=15) bioChamberNutrients
-  -- let (bioflux6, bioflux7) <- splitBalanced bioflux
-  -- let plastic <- makeBioPlastic nutrients bioflux6 mash1.less
+  let (bioflux6, bioflux) <- split bioflux
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=15) bioChamberNutrients
+  let plastic <- makeBioPlastic nutrients bioflux6 mash1.less
 
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=30) bioChamberNutrients
-  -- let rocketFuel <- makeBioRocketFuel water0 nutrients jelly1.less bioflux7.less
+  let (bioflux7, _) <- split bioflux
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=30) bioChamberNutrients
+  let rocketFuel <- makeBioRocketFuel water1 nutrients jelly1.less bioflux7
 
-  -- makeNonBiologicalComponents copperOre ironOre water1 sulfur plastic rocketFuel
+  makeNonBiologicalComponents copperOre ironOre water2 sulfur plastic rocketFuel
 
 def main : IO Unit :=
   IO.println (glebaFactory.toBlueprint) --  (bootstrap := true))
