@@ -95,22 +95,44 @@ def cultivateCopperBacteria3 : Nutrients 135 -> CopperBacteria 270 -> Bioflux 27
   busAssemblyLine (recipe .copperBacteriaCultivation) 9
 
 def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
-  let factory := capN emptyFactoryH
+  let factory := {
+    width := 4
+    height := 9
+    wires := []
+    entities := [
+
+    ]
+    interface := {
+      n := #v[]
+      e := #v[]
+      s := #v[2,3]
+      w := #v[]
+    }
+    name := "spoilingChamber"
+  }
+
+
+
   busTap [bacteria] factory
 
-def makeBacteriaCopper (nutrients:Nutrients 210) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360) := do
-  let (nutrients0, nutrients) <- splitBalanced nutrients
-  let (nutrients1, nutrients) <- splitBalanced nutrients
-  let (nutrients2, nutrients3) <- splitBalanced nutrients
+def makeBacteriaCopper (nutrients:Nutrients 1320) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360 × Nutrients 1110) := do
+  let (bioflux0, bioflux) <- split bioflux
+  let (bioflux1, bioflux2) <- split bioflux
 
-  let (bioflux0, bioflux) <- splitBalanced bioflux
-  let (bioflux1, bioflux2) <- splitBalanced bioflux
+  let (nutrients0, nutrients) <- splitBalanced nutrients
   let (bacteria0, spoilage) <- cultivateCopperBacteria0 nutrients0 mash
+
+  let (nutrients1, nutrients) <- splitBalanced nutrients
   let bacteria1 <- cultivateCopperBacteria1 nutrients1 bacteria0.less bioflux0
+
+  let (nutrients2, nutrients) <- splitBalanced nutrients
   let bacteria2 <- cultivateCopperBacteria2 nutrients2 bacteria1.less bioflux1
+
+  let (nutrients3, nutrients) <- splitBalanced nutrients
   let bacteria3 <- cultivateCopperBacteria3 nutrients3 bacteria2.less bioflux2
+
   let ore <- copperSpoilingChamber bacteria3
-  return (ore.less, spoilage)
+  return (ore.less, spoilage, nutrients)
 
 def cultivateIronBacteria0 : Nutrients 30 -> Jelly 1440 -> Bus (Spoilage 1440 × IronBacteria 36):=
   busAssemblyLine (recipe .ironBacteria) 2
@@ -314,12 +336,11 @@ def glebaFactory := bus do
   let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
---  let (mash0, mash1) <- splitBalanced mashPartial
-
+  let (mash0, mash1) <- splitBalanced mashPartial
 
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
-  -- let (bioflux3, bioflux) <- splitBalanced bioflux
-  -- let (copperOre, spoilage0) <- makeBacteriaCopper nutrients mash0 bioflux3
+  let (bioflux3, bioflux) <- split bioflux
+  let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients nutrients mash0 bioflux3
 
   -- let (jelly0, jelly1) <- splitBalanced jelly[0]
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
