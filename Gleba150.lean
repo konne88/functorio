@@ -24,9 +24,20 @@ abbrev YumakoSeed := BusLane .yumakoSeed
 
 -- 378
 
--- def x : BusAssemblyLineType (recipe .bioflux) 10 := by simp!
+-- def y : BusAssemblyLineType (recipe .nutrientsFromSpoilage) 1 := by simp!
 
-def makeBioflux (nutrients:Nutrients 990) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 720) := do
+
+def x : BusAssemblyLineType (recipe .bioflux) 9 := by simp!
+
+
+def makeBootstrapNutrients (spoilage:Spoilage 750) (yumako:Yumako 120) : Bus (Nutrients 810 × YumakoSeed (18/5)) := do
+  let nutrients <- busAssemblyLine (recipe .nutrientsFromSpoilage) 2 spoilage
+  let (nutrients0, nutrients1) <- split (input:=60) nutrients.less
+  let (mash, seeds) <- busAssemblyLine (recipe .yumakoProcessing) 1 nutrients0 yumako
+  let nutrients <- busAssemblyLine (recipe .nutrientsFromYumakoMash) 3 nutrients1 mash
+  return (nutrients, seeds)
+
+def makeBioflux (nutrients:Nutrients 345) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 75) := do
   let (nutrients0, nutrients) <- splitBalanced nutrients
   let bioflux0 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients0 mash[0] jelly[0]
 
@@ -259,7 +270,7 @@ do
 
   let _ <- makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
 
-def makeJelly (nutrients:Nutrients 1455) (jellynut:Jellynut 1440) : Bus (Vector (Jelly 2700) 3 × JellynutSeed (216 / 5) × Nutrients 1275):= do
+def makeJelly (nutrients:Nutrients 810) (jellynut:Jellynut 1440) : Bus (Vector (Jelly 2700) 3 × JellynutSeed (216 / 5) × Nutrients 630):= do
   let (jellynut0, jellynut) <- split jellynut
   let (nutrients0, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly0, jellySeed0) <- makeJellyFullBelt nutrients0 jellynut0
@@ -277,7 +288,7 @@ def makeJelly (nutrients:Nutrients 1455) (jellynut:Jellynut 1440) : Bus (Vector 
 
   return (#v[jelly0, jelly1, jelly2], jellySeed, nutrients)
 
-def makeMash (nutrients:Nutrients 1275) (yumako:Yumako 2700) : Bus (Vector (YumakoMash 2700) 2 × YumakoMash 1080 × YumakoSeed (342 / 5) × Nutrients 990):= do
+def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2580) : Bus (Vector (YumakoMash 2700) 2 × YumakoMash 1080 × YumakoSeed (342 / 5) × Nutrients 345):= do
   let (yumako0, yumako) <- split yumako
   let (nutrients0, nutrients) <- splitBalanced (left:=120) nutrients
   let (mash0, yumakoSeed0) <- makeMashFullBelt nutrients0 yumako0
@@ -286,7 +297,7 @@ def makeMash (nutrients:Nutrients 1275) (yumako:Yumako 2700) : Bus (Vector (Yuma
   let (nutrients1, nutrients) <- splitBalanced (left:=120) nutrients
   let (mash1, yumakoSeed1) <- makeMashFullBelt nutrients1 yumako1
 
-  let yumako2 := yumako.less -- TODO: need to process it all!
+  let yumako2 := yumako.less
   let (nutrients2, nutrients) <- split (left:=45) nutrients
   let (mash2, yumakoSeed2) <- makeMashPartialBelt nutrients2 yumako2
 
@@ -299,12 +310,15 @@ def glebaFactory := bus do
   let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440 -- TODO: 1350 would be perfect, since it would be half a belt
   let eggs <- input .pentapodEgg 112
-  let bioChamberNutrients <- input .nutrients 1455
+  let spoilage <- input .spoilage 750
   let water <- input .water 13440
 
-  let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
+  let (yumako0, yumako1) <- split yumako
+  let (bioChamberNutrients, yumakoSeed0) <- makeBootstrapNutrients spoilage yumako0
 
-  let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako
+  let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
+  let (mash, mashPartial, yumakoSeed1, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
+  let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
   let (jelly0, _) <- splitBalanced jelly[0]
   let (jelly1, _) <- splitBalanced jelly[1]
@@ -317,9 +331,8 @@ def glebaFactory := bus do
   let (bioflux0, bioflux) <- split bioflux
   let nutrients0 <- makeNutrients nutrients bioflux0
 
-  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
   let (bioflux1, bioflux) <- split bioflux
-  let nutrients1 <- makeNutrients nutrients bioflux1
+  let nutrients1 <- makeNutrients bioChamberNutrients.less bioflux1
 
   let (eggs, bioChamberNutrients) <- makePentapodEggs eggs water0 #v[nutrients0, nutrients1]
 --  let (eggs, _) <- splitBalanced (right:=126) eggs
@@ -341,16 +354,17 @@ def glebaFactory := bus do
   let (ironOre, spoilage1, bioChamberNutrients) <- makeBacteriaIron bioChamberNutrients jelly0 bioflux4
 
   let spoilage <- merge spoilage0 spoilage1
+  let (spoilage, _spoilageOut) <- split (left:=900) (right:=750) (input:=1650) spoilage.less
 
   let (bioflux5, bioflux) <- split bioflux
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients
-  let sulfur <- makeBioSulfur nutrients spoilage.less bioflux5
+  let sulfur <- makeBioSulfur nutrients spoilage bioflux5
 
   let (bioflux6, bioflux) <- split bioflux
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=15) bioChamberNutrients
   let plastic <- makeBioPlastic nutrients bioflux6 mash1.less
 
-  let (bioflux7, _) <- split bioflux
+  let (bioflux7, _biofluxOut) <- split bioflux
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=30) bioChamberNutrients
   let rocketFuel <- makeBioRocketFuel water1 nutrients jelly1.less bioflux7
 
