@@ -336,11 +336,11 @@ def glebaFactory := bus do
   let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
-  let (mash0, mash1) <- splitBalanced mashPartial
+  -- let (mash0, mash1) <- splitBalanced mashPartial
 
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
-  let (bioflux3, bioflux) <- split bioflux
-  let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients nutrients mash0 bioflux3
+  -- -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
+  -- let (bioflux3, bioflux) <- split bioflux
+  -- let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients nutrients mash0 bioflux3
 
   -- let (jelly0, jelly1) <- splitBalanced jelly[0]
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
