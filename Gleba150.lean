@@ -27,12 +27,12 @@ abbrev YumakoSeed := BusLane .yumakoSeed
 -- def y : BusAssemblyLineType (recipe .nutrientsFromSpoilage) 1 := by simp!
 
 
-def x : BusAssemblyLineType (recipe .bioflux) 9 := by simp!
+-- def x : BusAssemblyLineType (recipe .bioflux) 9 := by simp!
 
 
 def makeBootstrapNutrients (spoilage:Spoilage 750) (yumako:Yumako 120) : Bus (Nutrients 810 × YumakoSeed (18/5)) := do
   let nutrients <- busAssemblyLine (recipe .nutrientsFromSpoilage) 2 spoilage
-  let (nutrients0, nutrients1) <- split (input:=60) nutrients.less
+  let (nutrients0, nutrients1) <- splitBalanced (input:=60) nutrients.less
   let (mash, seeds) <- busAssemblyLine (recipe .yumakoProcessing) 1 nutrients0 yumako
   let nutrients <- busAssemblyLine (recipe .nutrientsFromYumakoMash) 3 nutrients1 mash
   return (nutrients, seeds)
@@ -309,8 +309,8 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2580) : Bus (Vector (Yumak
 def glebaFactory := bus do
   let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440 -- TODO: 1350 would be perfect, since it would be half a belt
-  let eggs <- input .pentapodEgg 112
   let spoilage <- input .spoilage 750
+  let eggs <- input .pentapodEgg 112
   let water <- input .water 13440
 
   let (yumako0, yumako1) <- split yumako
