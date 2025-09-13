@@ -144,16 +144,18 @@ def cultivateIronBacteria1 : Nutrients 15 -> IronBacteria 30 -> Bioflux 30 -> Bu
 def cultivateIronBacteria2 : Nutrients 75 -> IronBacteria 150 -> Bioflux 150 -> Bus (IronBacteria 900):=
   busAssemblyLine (recipe .ironBacteriaCultivation) 5
 
-def makeBacteriaIron (nutrients:Nutrients 120) (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440) := do
-  let (nutrients0, nutrients) <- splitBalanced nutrients
-  let (nutrients1, nutrients2) <- splitBalanced nutrients
+def makeBacteriaIron (nutrients:Nutrients 1110) (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440 × Nutrients 990) := do
+  let (bioflux0, bioflux1) <- split bioflux
 
-  let (bioflux0, bioflux1) <- splitBalanced bioflux
+  let (nutrients0, nutrients) <- splitBalanced nutrients
   let (spoilage, bacteria0) <- cultivateIronBacteria0 nutrients0 jelly
+  let (nutrients1, nutrients) <- splitBalanced nutrients
   let bacteria1 <- cultivateIronBacteria1 nutrients1 bacteria0.less bioflux0
+  let (nutrients2, nutrients) <- splitBalanced nutrients
   let bacteria2 <- cultivateIronBacteria2 nutrients2 bacteria1.less bioflux1
   let ore <- spoilingChamber bacteria2
-  return (ore, spoilage)
+
+  return (ore, spoilage, nutrients)
 
 def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
   busAssemblyLine (recipe .lowDensityStructure) 4
@@ -326,17 +328,19 @@ def glebaFactory := bus do
   let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
-  let (mash0, mash1) <- splitBalanced mashPartial
+  pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
+  let (mash0, mash1) <- splitBalanced mashPartial
   let (bioflux3, bioflux) <- split bioflux
   let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mash0 bioflux3
 
-  -- let (jelly0, jelly1) <- splitBalanced jelly[0]
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
-  -- let (bioflux4, bioflux) <- splitBalanced bioflux
-  -- let (ironOre, spoilage1) <- makeBacteriaIron nutrients jelly0 bioflux4
-  -- let spoilage <- merge spoilage0 spoilage1
+--  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
+  let (jelly0, jelly1) <- splitBalanced jelly[2]
+  let (bioflux4, bioflux) <- split bioflux
+  let (ironOre, spoilage1, bioChamberNutrients) <- makeBacteriaIron bioChamberNutrients jelly0 bioflux4
+
+  let spoilage <- merge spoilage0 spoilage1
 
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients
   -- let (bioflux5, bioflux) <- splitBalanced bioflux
