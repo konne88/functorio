@@ -47,6 +47,7 @@ private def entityName (e:Entity) : String :=
   | .pole => "medium-electric-pole"
   | .bigPole => "big-electric-pole"
   | .roboport => "roboport"
+  | .ironChest => "iron-chest"
   | .passiveProviderChest _ => "passive-provider-chest"
   | .refinedConcrete => "refined-concrete"
   | .heatingTower => "heating-tower"
@@ -59,7 +60,7 @@ private def entityDirection (e:Entity) : Option Direction :=
   | .belt d _ | .beltDown d | .beltUp d | .splitter d _
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
   | .fabricator _ _ d _ | .deciderCombinator d _ _ | .arithmeticCombinator d _ => d
-  | .pipe | .pole | .bigPole | .roboport | .passiveProviderChest _
+  | .pipe | .pole | .bigPole | .roboport | .ironChest | .passiveProviderChest _
   | .heatingTower | .refinedConcrete => .none
 
 private def signalToJson (s:Signal) : Json :=
@@ -93,7 +94,7 @@ private def arithmeticConditionToJson (c:ArithmeticCondition) : Json :=
 private def entityProps (e:Entity) : List (String × Json) :=
   match e.type with
   | .pipe | .pipeToGround _ | .pump _
-  | .pole | .bigPole | .roboport | .heatingTower | .refinedConcrete => []
+  | .pole | .bigPole | .roboport | .ironChest | .heatingTower | .refinedConcrete => []
   | .inserter _ filter | .longInserter _ filter => [
     ("use_filters", !filter.isEmpty),
     ("filters", Json.arr (filter.mapIdx (fun i ingredient =>

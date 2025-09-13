@@ -57,6 +57,7 @@ inductive EntityType
   | fabricator (fabricator:Fabricator) (recipe:RecipeName) (direction:Direction) (mirror:Bool)
   | heatingTower
   | roboport
+  | ironChest
   | passiveProviderChest (capacity:Option Nat)
   | deciderCombinator (direction:Direction) (conditions:List Condition) (outputs:List Output)
   | arithmeticCombinator (direction:Direction) (condition:ArithmeticCondition)
@@ -113,6 +114,8 @@ def rocketSilo x y := fabricator x y .rocketSilo .rocketPart
 
 def roboport x y := ({x:=x,y:=y,type:=.roboport} : Entity)
 
+def ironChest x y := ({x:=x,y:=y,type:=.ironChest} : Entity)
+
 def passiveProviderChest x y (capacity : Option Nat := .none) := ({x:=x,y:=y,type:=.passiveProviderChest capacity} : Entity)
 
 def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
@@ -130,7 +133,7 @@ namespace Entity
 def width (e:Entity) : Nat :=
   match e.type with
   | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
-  | .pole | .passiveProviderChest _ | .refinedConcrete => 1
+  | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
   | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 1 else 2
@@ -141,7 +144,7 @@ def width (e:Entity) : Nat :=
 def height (e:Entity) : Nat :=
   match e.type with
   | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
-  | .longInserter _ _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
+  | .longInserter _ _ | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
   | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
   | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 2 else 1

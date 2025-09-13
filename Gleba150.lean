@@ -94,26 +94,84 @@ def cultivateCopperBacteria2 : Nutrients 30 -> CopperBacteria 60 -> Bioflux 60 -
 def cultivateCopperBacteria3 : Nutrients 135 -> CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
   busAssemblyLine (recipe .copperBacteriaCultivation) 9
 
-def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
-  let factory := {
-    width := 4
-    height := 9
-    wires := []
-    entities := [
+-- def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
+--   let factory := {
+--     width := 4
+--     height := 9
+--     wires := []
+--     entities := [
 
-    ]
+--     ]
+--     interface := {
+--       n := #v[]
+--       e := #v[]
+--       s := #v[2,3]
+--       w := #v[]
+--     }
+--     name := "spoilingChamber"
+--   }
+
+
+
+--   busTap [bacteria] factory
+
+def spoilingChamber {n} {input:Ingredient} {output:Ingredient} (bacteria:BusLane input n) : Bus (BusLane output n) :=
+  let factory : Factory [] [] [(input, .N), (output, .S)] [] := {
+    name := s!"spoilingChamber {reprStr input}",
+    width := 4,
+    height := 9,
+    entities := [
+      belt 1 0 .E,
+      belt 2 0 .E,
+      belt 2 0 .S,
+
+      belt 0 1 .E,
+      belt 1 1 .N,
+      belt 2 1 .W,
+      belt 3 1 .S,
+
+      belt 0 2 .N,
+      splitter 1 2 .N,
+      belt 3 2 .S,
+
+      belt 0 3 .N,
+      splitter 1 3 .E,
+      belt 2 3 .N,
+      belt 3 3 .S,
+
+      beltUp 0 4 .N,
+      beltUp 2 4 .N,
+      belt 3 4 .S,
+
+      inserter 0 5 .S [output],
+      inserter 1 5 .S [output],
+      inserter 2 5 .S [output],
+      beltDown 3 5 .S,
+
+      ironChest 0 6,
+      ironChest 1 6,
+      ironChest 2 6,
+      pole 3 6,
+
+      inserter 0 7 .S,
+      inserter 1 7 .S,
+      inserter 2 7 .S,
+      beltUp 3 7 .S,
+
+      belt 0 8 .E,
+      belt 1 8 .E,
+      belt 2 8 .E,
+      belt 3 8 .S,
+    ],
+    wires := [],
     interface := {
-      n := #v[]
-      e := #v[]
-      s := #v[2,3]
+      n := #v[],
+      e := #v[],
+      s := #v[2, 3],
       w := #v[]
     }
-    name := "spoilingChamber"
   }
-
-
-
-  busTap [bacteria] factory
+  busTap [bacteria] (unsafeFactoryCast factory)
 
 def makeBacteriaCopper (nutrients:Nutrients 1320) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360 × Nutrients 1110) := do
   let (bioflux0, bioflux) <- split bioflux
@@ -131,7 +189,7 @@ def makeBacteriaCopper (nutrients:Nutrients 1320) (mash:YumakoMash 720) (bioflux
   let (nutrients3, nutrients) <- splitBalanced nutrients
   let bacteria3 <- cultivateCopperBacteria3 nutrients3 bacteria2.less bioflux2
 
-  let ore <- copperSpoilingChamber bacteria3
+  let ore <- spoilingChamber bacteria3
   return (ore.less, spoilage, nutrients)
 
 def cultivateIronBacteria0 : Nutrients 30 -> Jelly 1440 -> Bus (Spoilage 1440 × IronBacteria 36):=
@@ -143,17 +201,6 @@ def cultivateIronBacteria1 : Nutrients 15 -> IronBacteria 30 -> Bioflux 30 -> Bu
 def cultivateIronBacteria2 : Nutrients 75 -> IronBacteria 150 -> Bioflux 150 -> Bus (IronBacteria 900):=
   busAssemblyLine (recipe .ironBacteriaCultivation) 5
 
-def ironSpoilingChamber {n} (bacteria:IronBacteria n) : Bus (IronOre n) :=
-  let factory := capN emptyFactoryH
-  busTap [bacteria] factory
-
--- def busTap
---   {outputIngredient} {outputThroughput} (inputs:List BusLane')
---   (factory:Factory [] [] (busTapInterface inputs [outputIngredient]) [])
---   (adapterMinHeight:=0)
--- : Bus (BusLane outputIngredient outputThroughput) := do
-
-
 def makeBacteriaIron (nutrients:Nutrients 120) (jelly:Jelly 1440) (bioflux:Bioflux 180) : Bus (IronOre 900 × Spoilage 1440) := do
   let (nutrients0, nutrients) <- splitBalanced nutrients
   let (nutrients1, nutrients2) <- splitBalanced nutrients
@@ -162,7 +209,7 @@ def makeBacteriaIron (nutrients:Nutrients 120) (jelly:Jelly 1440) (bioflux:Biofl
   let (spoilage, bacteria0) <- cultivateIronBacteria0 nutrients0 jelly
   let bacteria1 <- cultivateIronBacteria1 nutrients1 bacteria0.less bioflux0
   let bacteria2 <- cultivateIronBacteria2 nutrients2 bacteria1.less bioflux1
-  let ore <- ironSpoilingChamber bacteria2
+  let ore <- spoilingChamber bacteria2
   return (ore, spoilage)
 
 def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
@@ -336,11 +383,11 @@ def glebaFactory := bus do
   let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
-  -- let (mash0, mash1) <- splitBalanced mashPartial
+  let (mash0, mash1) <- splitBalanced mashPartial
 
-  -- -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
-  -- let (bioflux3, bioflux) <- split bioflux
-  -- let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients nutrients mash0 bioflux3
+  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
+  let (bioflux3, bioflux) <- split bioflux
+  let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mash0 bioflux3
 
   -- let (jelly0, jelly1) <- splitBalanced jelly[0]
   -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
