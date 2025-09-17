@@ -401,7 +401,7 @@ def processBusAssemblyLineArguments
 
 def busAssemblyLine [config:Config] (process: Process) (stations:Fraction) : BusAssemblyLineType process stations :=
   processBusAssemblyLineArguments process stations fun inputs => do
-    let factory := assemblyLine process stations.roundUp
+    let factory := assemblyLine process (stations.roundUp + config.extraStations)
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
     let indexes <- busTapGeneric
       inputs

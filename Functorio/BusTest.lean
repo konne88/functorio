@@ -438,7 +438,7 @@ namespace Test
   let _ <- merge iron0 iron1
 ).toAscii == s!"
 
-   →↓
+  ⚡→↓
    ↑⤓
   →↑←
   ↑→↑

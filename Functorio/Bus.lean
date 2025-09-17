@@ -559,6 +559,7 @@ def expressBeltThroughput : Throughput := 45 * 60  -- 2700
 def mergeSolid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)) :=
   busTap [l.toBusLane',l'.toBusLane'] {
     entities:=[
+      pole 0 0,
       belt 1 0 .E,
       belt 2 0 .S,
       belt 1 1 .N,
