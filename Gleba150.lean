@@ -5,33 +5,7 @@ instance : Config where
   generateBigPoles := true
   generateRoboports := true
   adapterMinHeight := 3
---  extraStations := 1
-
-abbrev AgriculturalScience := BusLane .agriculturalSciencePack
-abbrev Bioflux := BusLane .bioflux
-abbrev PentapodEgg := BusLane .pentapodEgg
-abbrev Jelly := BusLane .jelly
-abbrev Spoilage := BusLane .spoilage
-abbrev YumakoMash := BusLane .yumakoMash
-abbrev IronBacteria := BusLane .ironBacteria
-abbrev CopperBacteria := BusLane .copperBacteria
-abbrev Nutrients := BusLane .nutrients
-abbrev Jellynut := BusLane .jellynut
-abbrev JellynutSeed := BusLane .jellynutSeed
-abbrev Yumako := BusLane .yumako
-abbrev YumakoSeed := BusLane .yumakoSeed
-
--- 378
-
--- def y : BusAssemblyLineType (recipe .nutrientsFromSpoilage) (1/5) := by simp!
--- -- 112.5
-
-
--- def y8 : BusAssemblyLineType (recipe .nutrientsFromYumakoMash) (1/3) := by simp!
--- -- 112.5
-
-
--- def x : BusAssemblyLineType { recipe := .yumakoProcessing, fabricator := .assemblingMachine3} 4 := by simp!
+  -- extraStations := 1
 
 def makeBootstrapMash : Yumako 300 -> Bus (YumakoMash 600 × YumakoSeed 6) :=
   busAssemblyLine { recipe := .yumakoProcessing, fabricator := .assemblingMachine3} 4
@@ -42,13 +16,8 @@ def makeNutrientsFromSpoilage: Spoilage 75 → Bus (Nutrients (15/2)) := by exac
 def makeNutrientsFromYumakoMash0 : Nutrients 5 → YumakoMash 40 → Bus (Nutrients 90) := by exact
   (busAssemblyLine (recipe .nutrientsFromYumakoMash) (1/3))
 
---  BusLane Ingredient.nutrients (5, 1) → BusLane Ingredient.yumakoMash (40, 1) → Bus (BusLane Ingredient.nutrients (90, 1))
-
 def makeNutrientsFromYumakoMash1 : Nutrients 60 → YumakoMash 480 → Bus (Nutrients 1080) :=
   busAssemblyLine (recipe .nutrientsFromYumakoMash) 4
-
--- 60, 480
-
 
 def bootstrapNutrients (yumako:Yumako 300) : Bus (Nutrients 810 × YumakoSeed 6) := do
   let (mash, seeds) <- makeBootstrapMash yumako
@@ -62,17 +31,6 @@ def bootstrapNutrients (yumako:Yumako 300) : Bus (Nutrients 810 × YumakoSeed 6)
   let nutrients <- makeNutrientsFromYumakoMash1 nutrients.less mash2
 
   return (nutrients.less, seeds)
-
-
-
-  -- let nutrients <- busAssemblyLine (recipe .nutrientsFromSpoilage) 2 spoilage
-  -- let (nutrients0, nutrients1) <- splitBalanced (input:=60) nutrients.less
-  -- let (mash, seeds) <- busAssemblyLine (recipe .yumakoProcessing) 1 nutrients0 yumako
-  -- let nutrients <- busAssemblyLine (recipe .nutrientsFromYumakoMash) 3 nutrients1 mash
-  -- return (nutrients, seeds)
-
-
-  -- I measure just 740
 
 def makeBioflux (nutrients:Nutrients 345) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 75) := do
   let (nutrients0, nutrients) <- splitBalanced nutrients
@@ -88,40 +46,6 @@ def makeBioflux (nutrients:Nutrients 345) (mash:Vector (YumakoMash 2700) 2) (jel
 def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := by exact
   (busAssemblyLine (recipe .nutrientsFromBioflux) (3/4))
 
-  -- by
-
-  -- refine (let x := busAssemblyLine (recipe .nutrientsFromBioflux) (3/4); ?_)
-
-  -- exact x
-
-
-
-
-
-
--- Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) :=
-
---  busAssemblyLine (recipe .nutrientsFromBioflux) (3/4)
-
--- def makePentapodEggs' : Water 6720 -> PentapodEgg 112 -> Nutrients 3360 -> Bus (PentapodEgg 336) :=
---   busAssemblyLine (recipe .pentapodEgg) 14
-
--- def makePentapodEggs'' : Water 3360 -> PentapodEgg 56 -> Nutrients 1680 -> Bus (PentapodEgg 168) :=
---   busAssemblyLine (recipe .pentapodEgg) 7
-
--- def x : BusAssemblyLineType (recipe .pentapodEgg) 10 :=
---   by simp!
-
-
--- 1275 + 2295
-
--- 72 + 40 = 112
--- 120
-
--- 525 + 2040
-
--- 3840 + 4800
-
 def makePentapodEggs (eggsLoopIn:PentapodEgg 112) (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 216 × Nutrients 525) := do
   let (water0, water1) <- split water
 --  let (eggs0, eggs1) <- splitBalanced eggs
@@ -134,10 +58,6 @@ def makePentapodEggs (eggsLoopIn:PentapodEgg 112) (water:Water 8640) (nutrients 
 def makeAgriculturalScience : Nutrients 105 -> Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
   busAssemblyLine (recipe .agriculturalSciencePack) 7
 
-
-
-
-
 def cultivateCopperBacteria0 : Nutrients 30 -> YumakoMash 720 -> Bus (CopperBacteria 36 × Spoilage 360):=
   busAssemblyLine (recipe .copperBacteria) 2
 
@@ -149,28 +69,6 @@ def cultivateCopperBacteria2 : Nutrients 30 -> CopperBacteria 60 -> Bioflux 60 -
 
 def cultivateCopperBacteria3 : Nutrients 135 -> CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
   busAssemblyLine (recipe .copperBacteriaCultivation) 9
-
--- def copperSpoilingChamber {n} (bacteria:CopperBacteria n) : Bus (CopperOre n) :=
---   let factory := {
---     width := 4
---     height := 9
---     wires := []
---     entities := [
-
---     ]
---     interface := {
---       n := #v[]
---       e := #v[]
---       s := #v[2,3]
---       w := #v[]
---     }
---     name := "spoilingChamber"
---   }
-
-
-
---   busTap [bacteria] factory
-
 
 def makeBacteriaCopper (nutrients:Nutrients 420) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360 × Nutrients 210) := do
   let (bioflux0, bioflux) <- split bioflux
@@ -252,43 +150,14 @@ def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
   busAssemblyLine (recipe .rocketPart) 1
 
--- def x : BusAssemblyLineType (recipe .yumakoProcessing) 3 :=
---   by simp!
-
 def makeJellyFullBelt : Nutrients 60 -> Jellynut 480 -> Bus (Jelly 2700 × JellynutSeed (72/5)) :=
   busAssemblyLine (recipe .jellynutProcessing) 4
 
 def makeMashFullBelt : Nutrients 120 -> Yumako 960 -> Bus (YumakoMash 2700 × YumakoSeed (144/5)) :=
   busAssemblyLine (recipe .yumakoProcessing) 8
 
--- def adfs : BusAssemblyLineType (recipe .jellynutProcessing) 4 :=
---   by
---   simp!
-
-
-  -- unfold BusAssemblyLineType
-  -- simp!
-
-
-
-
-
-
 def makeMashPartialBelt : Nutrients 45 -> Yumako 360 -> Bus (YumakoMash 1080 × YumakoSeed (54/5)) :=
   busAssemblyLine (recipe .yumakoProcessing) 3
-
-
--- abbrev Yumako := BusLane .yumako
--- abbrev YumakoSeed := BusLane .yumakoSeed
-
--- output:
--- science | done
--- bioflux | done
--- carbon fiber
--- rocket fuel (for energy)
-
--- set_option maxHeartbeats 200000000
-
 
 def makeNonBiologicalComponents
   (copperOre : CopperOre 1500) (ironOre: IronOre 900) (water:Water 6000)
@@ -319,8 +188,6 @@ def makeJelly (nutrients:Nutrients 810) (jellynut:Jellynut 1440) : Bus (Vector (
   let (jellynut0, jellynut) <- split jellynut
   let (nutrients0, nutrients) <- splitBalanced (left:=60) nutrients
   let (jelly0, jellySeed0) <- makeJellyFullBelt nutrients0 jellynut0
-
-    -- 1020 - 958 = 62
 
   let (jellynut1, jellynut) <- split jellynut
   let (nutrients1, nutrients) <- splitBalanced (left:=60) nutrients
@@ -355,7 +222,7 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (Vector (Yumak
 
 def glebaFactory := bus do
   let yumako <- input .yumako 2580
-  let jellynut <- input .jellynut 1440 -- TODO: 1350 would be perfect, since it would be half a belt
+  let jellynut <- input .jellynut 1440
 --  let spoilage <- input .spoilage 750
   let eggs <- input .pentapodEgg 112
   let water <- input .water 15360
@@ -364,9 +231,6 @@ def glebaFactory := bus do
   let (bioChamberNutrients, yumakoSeed0) <- bootstrapNutrients yumako0
 
   let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
-
--- 1020 - 796 = 224
--- 810 - 630 = 180
 
   let (mash, mashPartial, yumakoSeed1, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
@@ -384,7 +248,6 @@ def glebaFactory := bus do
   let nutrients1 <- makeNutrients bioChamberNutrients.less bioflux1
 
   let (eggs, bioChamberNutrients) <- makePentapodEggs eggs water0 #v[nutrients0, nutrients1]
---  let (eggs, _) <- splitBalanced (right:=126) eggs
 
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) (input:=525) bioChamberNutrients
   let (bioflux2, bioflux) <- split bioflux
@@ -392,18 +255,15 @@ def glebaFactory := bus do
 
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
-  -- let (nutrients, bioChamberNutrients) <- splitBalanced (left:=210) bioChamberNutrients
   let (mash0, mash1) <- splitBalanced mashPartial
   let (bioflux3, bioflux) <- split bioflux
   let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mash0 bioflux3
 
---  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=120) bioChamberNutrients
   let (jelly0, jelly1) <- splitBalanced (input:=2160) jelly[2].less
   let (bioflux4, bioflux) <- split bioflux
   let (ironOre, spoilage1, bioChamberNutrients) <- makeBacteriaIron bioChamberNutrients jelly0 bioflux4
 
   let spoilage <- merge spoilage0 spoilage1
-  -- let (spoilage, _spoilageOut) <- split (left:=900) (right:=750) (input:=1650) spoilage.less
 
   let (bioflux5, bioflux) <- split bioflux
   let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45) bioChamberNutrients

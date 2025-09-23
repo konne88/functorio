@@ -83,3 +83,17 @@ def MoltenCopper:= BusLane .moltenCopper
 def Explosives := BusLane .explosives
 def Rocket := BusLane .rocket
 def RailgunAmmo := BusLane .railgunAmmo
+
+abbrev AgriculturalScience := BusLane .agriculturalSciencePack
+abbrev Bioflux := BusLane .bioflux
+abbrev PentapodEgg := BusLane .pentapodEgg
+abbrev Jelly := BusLane .jelly
+abbrev Spoilage := BusLane .spoilage
+abbrev YumakoMash := BusLane .yumakoMash
+abbrev IronBacteria := BusLane .ironBacteria
+abbrev CopperBacteria := BusLane .copperBacteria
+abbrev Nutrients := BusLane .nutrients
+abbrev Jellynut := BusLane .jellynut
+abbrev JellynutSeed := BusLane .jellynutSeed
+abbrev Yumako := BusLane .yumako
+abbrev YumakoSeed := BusLane .yumakoSeed

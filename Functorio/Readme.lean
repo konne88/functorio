@@ -59,7 +59,7 @@ def acidFactory := bus do
   let _ <- makeAcid water sulfur iron
 
 def gearFactory1 :=
-  station (recipe .ironGearWheel)
+  station (recipe' .ironGearWheel)
 
 def gearFactory3 :=
   assemblyLine (recipe .ironGearWheel) 3

@@ -57,6 +57,15 @@ def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl i
       if gapWidth > 4 then [pole (gapStart + gapWidth - 1) 3] else []
   }
 
+structure Process' extends Process where
+  returnedInputs : List (Fraction × Ingredient) := []
+
+@[simp]
+def recipe (recipe:RecipeName) : Process' := {
+  recipe := recipe,
+  fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+}
+
 def providerChestInsert [config:Config] {interface} (process:Process) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let recipe := process.getRecipe
   if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else
@@ -333,7 +342,7 @@ def rateLimitInputsInsert [config:Config] (process:Process) (stations:Nat) (offs
 
 def maxRoboportLogisticsDistance := 46
 
-def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stationInterface process) [] :=
+def assemblyLineNoReturnedInputs [Config] (process:Process) (stations:Nat) : Factory (stationInterface process) [] (stationInterface process) [] :=
   Id.run do
     let output := process.getRecipe.outputs[0]!
     let stationOutput := inputThroughput process 1 output.fst
@@ -361,7 +370,21 @@ def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (stat
       outputSinceBalance := outputSinceBalance + stationOutput
       distanceFromRoboport := distanceFromRoboport + station.height
 
-    column3 (destroySpoilage' process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
+    columnList factories.toList.reverse
+
+--    column3 (destroySpoilage' process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
+
+def assemblyLineInterface (process:Process') : List InterfaceV :=
+  process.inputIngredients.map (., .N) ++
+  process.outputIngredients.map (., .S) ++
+  process.returnedInputs.map fun (_,ingredient) => (ingredient, .S)
+
+def assemblyLine [Config] (process:Process') (stations:Nat) : Factory [] [] (assemblyLineInterface process) [] :=
+  let line := assemblyLineNoReturnedInputs process.toProcess stations
+  let returns := emptyFactoryH
+  let factory := row line returns
+
+  capN factory
 
 def tupleType {T} (ts:List T) (type:T->Type) : Type :=
   match ts with
@@ -376,17 +399,17 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
   | t::_::_ => (value t index, tuple value (index + 1))
 
 @[simp]
-def BusAssemblyLineReturn (process:Process) (stations:Fraction) : Type :=
-  Bus (tupleType process.getRecipe.outputs fun (items, ingredient) => BusLane ingredient (outputThroughput process stations ingredient items))
+def BusAssemblyLineReturn (process:Process') (stations:Fraction) : Type :=
+  Bus (tupleType (process.getRecipe.outputs ++ process.returnedInputs) fun (items, ingredient) => BusLane ingredient (outputThroughput process.toProcess stations ingredient items))
 
 @[simp]
-def BusAssemblyLineType (process:Process) (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
+def BusAssemblyLineType (process:Process') (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
   match remainingInputs with
   | [] => BusAssemblyLineReturn process stations
-  | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process stations items) -> BusAssemblyLineType process stations inputs
+  | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process.toProcess stations items) -> BusAssemblyLineType process stations inputs
 
 def processBusAssemblyLineArguments
-  (process:Process)
+  (process:Process')
   (stations:Fraction)
   (processor: List BusLane' -> BusAssemblyLineReturn process stations)
   (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs)
@@ -399,13 +422,13 @@ def processBusAssemblyLineArguments
     processBusAssemblyLineArguments process stations processor inputs (args ++ [arg.toBusLane'])
   )
 
-def busAssemblyLine [config:Config] (process: Process) (stations:Fraction) : BusAssemblyLineType process stations :=
+def busAssemblyLine [config:Config] (process: Process') (stations:Fraction) : BusAssemblyLineType process stations :=
   processBusAssemblyLineArguments process stations fun inputs => do
     let factory := assemblyLine process (stations.roundUp + config.extraStations)
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
     let indexes <- busTapGeneric
       inputs
-      (process.getRecipe.outputs.map Prod.snd)
+      ((process.getRecipe.outputs ++ process.returnedInputs).map Prod.snd)
       (unsafeFactoryCast namedFactory)
       (adapterMinHeight := config.adapterMinHeight)
     return tuple (fun (_, _) i => {index:=indexes[i]!})
