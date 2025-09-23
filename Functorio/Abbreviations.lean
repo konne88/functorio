@@ -73,3 +73,13 @@ def Superconductor := BusLane .superconductor
 def Supercapacitor := BusLane .supercapacitor
 def Accumulator := BusLane .accumulator
 def ElectromagneticScience := BusLane .electromagneticSciencePack
+
+def Carbon := BusLane .carbon
+def Calcite := BusLane .calcite
+def ThrusterFuel := BusLane .thrusterFuel
+def ThrusterOxidizer := BusLane .thrusterOxidizer
+def MoltenIron := BusLane .moltenIron
+def MoltenCopper:= BusLane .moltenCopper
+def Explosives := BusLane .explosives
+def Rocket := BusLane .rocket
+def RailgunAmmo := BusLane .railgunAmmo
