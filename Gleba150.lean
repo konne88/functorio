@@ -134,42 +134,53 @@ def makePentapodEggs (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) 
 
   return (eggs, nutrients)
 
-def makeAgriculturalScience : Nutrients 105 -> Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
+-- 810 -> 288
+def makeAgriculturalScience : Nutrients 810 -> Bioflux 210 -> PentapodEgg 288 -> Bus (AgriculturalScience 315 × PentapodEgg 78 × Nutrients 705) :=
+  busAssemblyLine (recipe .agriculturalSciencePack [(78, .pentapodEgg), (705, .nutrients)]) 7
+
+
+-- def x :   BusAssemblyLineType (recipe .copperBacteria [(360, .yumakoMash), (675, .nutrients)]) 2 :=
+-- by simp!
+
+
+def cultivateCopperBacteria0 : Nutrients 705 -> YumakoMash 1080 -> Bus (CopperBacteria 36 × Spoilage 360 × YumakoMash 360 × Nutrients 675):=
+  busAssemblyLine (recipe .copperBacteria [(360, .yumakoMash), (675, .nutrients)]) 2
+
+def cultivateCopperBacteria1 : Nutrients 675 -> CopperBacteria 36 -> Bioflux 30 -> Bus (CopperBacteria 180 × CopperBacteria 6 × Nutrients 660):=
+  busAssemblyLine (recipe .copperBacteriaCultivation [(6, .copperBacteria), (660, .nutrients)]) 1
+
+def cultivateCopperBacteria2 : Nutrients 660 -> CopperBacteria 186 -> Bioflux 30 -> Bus (CopperBacteria 180 × CopperBacteria 126 × Nutrients 630):=
+  busAssemblyLine (recipe .copperBacteriaCultivation [(126, .copperBacteria), (630, .nutrients)]) 2
 
 
 
-  busAssemblyLine (recipe .agriculturalSciencePack) 7
-
-def cultivateCopperBacteria0 : Nutrients 30 -> YumakoMash 720 -> Bus (CopperBacteria 36 × Spoilage 360):=
-  busAssemblyLine (recipe .copperBacteria) 2
-
-def cultivateCopperBacteria1 : Nutrients 15 -> CopperBacteria 30 -> Bioflux 30 -> Bus (CopperBacteria 180):=
-  busAssemblyLine (recipe .copperBacteriaCultivation) 1
-
-def cultivateCopperBacteria2 : Nutrients 30 -> CopperBacteria 60 -> Bioflux 60 -> Bus (CopperBacteria 360):=
-  busAssemblyLine (recipe .copperBacteriaCultivation) 2
+-- def cultivateCopperBacteria2 : Nutrients 30 -> CopperBacteria 60 -> Bioflux 60 -> Bus (CopperBacteria 360):=
+--   busAssemblyLine (recipe .copperBacteriaCultivation) 2
 
 def cultivateCopperBacteria3 : Nutrients 135 -> CopperBacteria 270 -> Bioflux 270 -> Bus (CopperBacteria 1620):=
   busAssemblyLine (recipe .copperBacteriaCultivation) 9
 
-def makeBacteriaCopper (nutrients:Nutrients 420) (mash:YumakoMash 720) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360 × Nutrients 210) := do
+def makeBacteriaCopper (nutrients:Nutrients 705) (mash:YumakoMash 1080) (bioflux:Bioflux 360) : Bus (CopperOre 1500 × Spoilage 360 × Nutrients 210) := do
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux2) <- split bioflux
 
-  let (nutrients0, nutrients) <- splitBalanced nutrients
-  let (bacteria0, spoilage) <- cultivateCopperBacteria0 nutrients0 mash
+--  let (nutrients0, nutrients) <- splitBalanced nutrients
+  let (bacteria, spoilage, mash, nutrients) <- cultivateCopperBacteria0 nutrients mash
 
-  let (nutrients1, nutrients) <- splitBalanced nutrients
-  let bacteria1 <- cultivateCopperBacteria1 nutrients1 bacteria0.less bioflux0
+--  let (nutrients1, nutrients) <- splitBalanced nutrients
+  let (bacteria0, bacteria1, nutrients) <- cultivateCopperBacteria1 nutrients bacteria bioflux0
+  let bacteria <- merge bacteria0 bacteria1
 
-  let (nutrients2, nutrients) <- splitBalanced nutrients
-  let bacteria2 <- cultivateCopperBacteria2 nutrients2 bacteria1.less bioflux1
+--  let (nutrients2, nutrients) <- splitBalanced nutrients
+  let (bacteria0, bacteria1, nutrients) <- cultivateCopperBacteria2 nutrients bacteria bioflux1
+  let bacteria <- merge bacteria0 bacteria1
 
-  let (nutrients3, nutrients) <- splitBalanced nutrients
-  let bacteria3 <- cultivateCopperBacteria3 nutrients3 bacteria2.less bioflux2
+--  let (nutrients3, nutrients) <- splitBalanced nutrients
+  let (bacteria0, bacteria1, nutrients) <- cultivateCopperBacteria3 nutrients3 bacteria2.less bioflux2
+  let bacteria <- merge bacteria0 bacteria1
 
-  let ore <- spoilingChamber bacteria3
-  return (ore.less, spoilage, nutrients)
+  let ore <- spoilingChamber bacteria
+  return (ore, spoilage, nutrients)
 
 def cultivateIronBacteria0 : Nutrients 30 -> Jelly 1440 -> Bus (Spoilage 1440 × IronBacteria 36):=
   busAssemblyLine (recipe .ironBacteria) 2
@@ -311,6 +322,7 @@ def glebaFactory := bus do
   let bioflux <- merge bioflux0 bioflux1
   let (bioflux0, bioflux) <- split bioflux
   let (bioflux1, bioflux) <- split bioflux
+  let (bioflux2, bioflux) <- split bioflux
 
   let (water0, water) <- split (left:=8640) water
   let (water1, water2) <- split (right:=6000) water
@@ -323,15 +335,14 @@ def glebaFactory := bus do
 
   let (eggs, bioChamberNutrients) <- makePentapodEggs water0 #v[nutrients0, nutrients1]
 
-  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) (input:=525) bioChamberNutrients.less
-  let (bioflux2, bioflux) <- split bioflux
-  let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
+--  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) (input:=525) bioChamberNutrients.less
+  let (_, _, bioChamberNutrients) <- makeAgriculturalScience bioChamberNutrients bioflux2 eggs
 
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
   let (mash0, mash1) <- splitBalanced mashPartial
   let (bioflux3, bioflux) <- split bioflux
-  let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mash0 bioflux3
+  let (copperOre, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mashPartial bioflux3
 
   let (jelly0, jelly1) <- splitBalanced (input:=2160) jelly[2].less
   let (bioflux4, bioflux) <- split bioflux
