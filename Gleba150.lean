@@ -32,19 +32,42 @@ def bootstrapNutrients (yumako:Yumako 300) : Bus (Nutrients 810 × YumakoSeed 6)
 
   return (nutrients.less, seeds)
 
-def makeBioflux (nutrients:Nutrients 345) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 75) := do
-  let (nutrients0, nutrients) <- splitBalanced nutrients
-  let bioflux0 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients0 mash[0] jelly[0]
 
-  let (nutrients1, nutrients) <- splitBalanced nutrients
-  let bioflux1 : Bioflux 1080 <- busAssemblyLine (recipe .bioflux) 9 nutrients1 mash[1] jelly[1]
+-- def x : BusAssemblyLineType
+--     (recipe RecipeName.bioflux [(0, Ingredient.jelly), (0, Ingredient.yumakoMash), (210, Ingredient.nutrients)]) 9 :=
 
-  let bioflux <- merge bioflux0 bioflux1
-  return (bioflux, nutrients)
+
+def makeBioflux0 : Nutrients 345 -> YumakoMash 2700 -> Jelly 2700 -> Bus (Bioflux 1080 × Jelly 540 × YumakoMash 0 × Nutrients 210) :=
+  busAssemblyLine (recipe .bioflux [(540, .jelly), (0, .yumakoMash), (210, .nutrients) ]) 9
+
+def makeBioflux1 : Nutrients 210 -> YumakoMash 2700 -> Jelly 2700 -> Bus (Bioflux 1080 × Jelly 540 × YumakoMash 0 × Nutrients 75) :=
+  busAssemblyLine (recipe .bioflux [(540, .jelly), (0, .yumakoMash), (75, .nutrients) ]) 9
+
+
+-- def makeBioflux (nutrients:Nutrients 345) (mash:Vector (YumakoMash 2700) 2) (jelly:Vector (Jelly 2160) 2) : Bus (Bioflux 2160 × Nutrients 75) := do
+-- --  let (nutrients0, nutrients) <- splitBalanced nutrients
+
+
+-- -- 135 nutrients each
+-- -- [(160, .jelly), (100, .yumakoMash), (85, .nutrients) ]
+
+--   let (bioflux0, nutrients) <- busAssemblyLine (recipe .bioflux [(210, .nutrients)]) 9 nutrients mash[0] jelly[0]
+--   let (bioflux1, nutrients) <- busAssemblyLine (recipe .bioflux [(75, .nutrients)]) 9 nutrients mash[1] jelly[1]
+
+--   let bioflux <- merge bioflux0 bioflux1
+--   return (bioflux, nutrients)
 
 -- TODO: why do I need the "by exact" here?
-def makeNutrients : Nutrients (45/4) -> Bioflux 225 -> Bus (Nutrients 2700) := by exact
-  (busAssemblyLine (recipe .nutrientsFromBioflux) (3/4))
+
+
+
+
+
+def makeNutrients0 : Nutrients 75 -> Bioflux 300 -> Bus (Nutrients 2700 × Nutrients 60) :=
+  busAssemblyLine (recipe .nutrientsFromBioflux [(60, .nutrients)]) 1
+
+def makeNutrients1 : Nutrients 60 -> Bioflux 300 -> Bus (Nutrients 2700 × Nutrients 45) :=
+  busAssemblyLine (recipe .nutrientsFromBioflux [(45, .nutrients)]) 1
 
 def makePentapodEggs (eggsLoopIn:PentapodEgg 112) (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 216 × Nutrients 525) := do
   let (water0, water1) <- split water
@@ -224,17 +247,20 @@ def glebaFactory := bus do
   let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
 --  let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
-  let (bioflux, bioChamberNutrients) <- makeBioflux bioChamberNutrients mash #v[jelly[0].less, jelly[1].less]
+  let (bioflux0, _, _, bioChamberNutrients) <- makeBioflux0 bioChamberNutrients mash[0] jelly[0]
+  let (bioflux1, _, _, bioChamberNutrients) <- makeBioflux1 bioChamberNutrients mash[1] jelly[1]
+  let bioflux <- merge bioflux0 bioflux1
+  let (bioflux0, bioflux) <- split bioflux
+  let (bioflux1, bioflux) <- split bioflux
 
   let (water0, water) <- split (left:=8640) water
   let (water1, water2) <- split (right:=6000) water
 
-  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
-  let (bioflux0, bioflux) <- split bioflux
-  let nutrients0 <- makeNutrients nutrients bioflux0
+--  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=45/4) bioChamberNutrients
+  let (nutrients0, bioChamberNutrients) <- makeNutrients0 bioChamberNutrients bioflux0
 
-  let (bioflux1, bioflux) <- split bioflux
-  let nutrients1 <- makeNutrients bioChamberNutrients.less bioflux1
+--  let (bioflux1, bioflux) <- split bioflux
+  let (nutrients1, _) <- makeNutrients1 bioChamberNutrients bioflux1
 
   let (eggs, bioChamberNutrients) <- makePentapodEggs eggs water0 #v[nutrients0, nutrients1]
 
