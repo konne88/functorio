@@ -125,7 +125,7 @@ def emptyFactoryV {i} (offsets:Vector InterfaceImpl i.length := Vector.range i.l
     w := offsets
   }
   width := 0
-  height := if i.isEmpty then 0 else offsets[i.length-1]!
+  height := if i.isEmpty then 0 else offsets[i.length-1]! + 1
   name := s!"emptyFactoryV {reprStr i}"
 }
 
@@ -138,7 +138,7 @@ def emptyFactoryH {i} (offsets:Vector InterfaceImpl i.length := Vector.range i.l
     s := offsets
     w := #v[]
   }
-  width := if i.isEmpty then 0 else offsets[i.length-1]!
+  width := if i.isEmpty then 0 else offsets[i.length-1]! + 1
   height := 0
   name := s!"emptyFactoryH {reprStr i}"
 }

@@ -61,9 +61,10 @@ structure Process' extends Process where
   returnedInputs : List (Fraction × Ingredient) := []
 
 @[simp]
-def recipe (recipe:RecipeName) : Process' := {
+def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process' := {
   recipe := recipe,
   fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+  returnedInputs := returnedInputs
 }
 
 def providerChestInsert [config:Config] {interface} (process:Process) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
@@ -383,7 +384,6 @@ def assemblyLine [Config] (process:Process') (stations:Nat) : Factory [] [] (ass
   let line := assemblyLineNoReturnedInputs process.toProcess stations
   let returns := emptyFactoryH
   let factory := row line returns
-
   capN factory
 
 def tupleType {T} (ts:List T) (type:T->Type) : Type :=
@@ -400,13 +400,18 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
 
 @[simp]
 def BusAssemblyLineReturn (process:Process') (stations:Fraction) : Type :=
-  Bus (tupleType (process.getRecipe.outputs ++ process.returnedInputs) fun (items, ingredient) => BusLane ingredient (outputThroughput process.toProcess stations ingredient items))
+  let outputs := (process.getRecipe.outputs.map fun (items, ingredient) => (outputThroughput process.toProcess stations ingredient items, ingredient)) ++ process.returnedInputs
+  Bus (tupleType outputs fun (throughput, ingredient) => BusLane ingredient throughput)
 
 @[simp]
 def BusAssemblyLineType (process:Process') (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
   match remainingInputs with
   | [] => BusAssemblyLineReturn process stations
-  | (items,ingredient)::inputs => BusLane ingredient (inputThroughput process.toProcess stations items) -> BusAssemblyLineType process stations inputs
+  | (items,ingredient)::inputs =>
+    let throughput :=
+      inputThroughput process.toProcess stations items +
+      List.sum (process.returnedInputs.map fun (throughput, ingredient') => if ingredient' == ingredient then throughput else 0)
+    BusLane ingredient throughput -> BusAssemblyLineType process stations inputs
 
 def processBusAssemblyLineArguments
   (process:Process')

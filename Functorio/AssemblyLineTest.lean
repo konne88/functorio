@@ -92,6 +92,43 @@ import Functorio.Ascii
 
 "
 
+#guard (bus do
+  let nutrients <- input .nutrients 15
+  let jellynut <- input .jellynut 120
+  let _ <- busAssemblyLine (recipe .jellynutProcessing) 1 nutrients jellynut
+).toAscii == s!"
+
+ ↑↑⇨***⇨↓↓
+ ↑↑↠*B*↠↓↓
+ ↑↑⚡***⚡↓↓
+ ↑↑←↓←←←←↓
+ ↑←↑↓ ↓←←←
+  ↑↑↓ ↓
+>→↑↑→⇥↓↦→→>
+>→→↑  →→→→>
+
+"
+
+#guard (bus do
+  let nutrients <- input .nutrients 115
+  let jellynut <- input .jellynut 120
+  let _ <- busAssemblyLine (recipe .jellynutProcessing [(100, .nutrients)]) 1 nutrients jellynut
+).toAscii == s!"
+
+ ↑↑⇨***⇨↓↓↓
+ ↑↑↠*B*↠↓↓↓
+ ↑↑⚡***⚡↓↓↓
+ ↑↑ ↓←←←←↓↓
+ ↑↑←↓ ↓←←←↓
+ ↑←↑↓ ↓ ↓←←
+  ↑↑↓ ↓ ↓
+>→↑↑→⇥↓ ↓↦→>
+>→→↑  →⇥↓↦→>
+        →→→>
+
+"
+
+
 -- #guard (bus do
 --   let nutrients <- input .nutrients 15
 --   let jellynut <- input .jellynut 120
