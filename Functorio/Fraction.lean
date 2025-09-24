@@ -31,7 +31,7 @@ instance (n:Nat) : OfNat Fraction n where
 
 attribute [simp] OfNat.ofNat
 
-attribute [simp] Nat.gcd
+-- attribute [simp] Nat.gcd
 
 @[simp]
 def normalize (r:Fraction) : Fraction :=

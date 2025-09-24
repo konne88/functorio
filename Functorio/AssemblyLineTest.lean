@@ -115,6 +115,9 @@ import Functorio.Ascii
   let _ <- busAssemblyLine (recipe .jellynutProcessing [(100, .nutrients)]) 1 nutrients jellynut
 ).toAscii == s!"
 
+ →↓
+ ↑→→→→→→→→↓
+ ↑        ↓
  ↑↑⇨***⇨↓↓↓
  ↑↑↠*B*↠↓↓↓
  ↑↑⚡***⚡↓↓↓
@@ -128,6 +131,56 @@ import Functorio.Ascii
 
 "
 
+#guard (bus do
+  let nutrients <- input .nutrients 15
+  let mash <- input .yumakoMash 300
+  let jelly <- input .jelly 240
+  let _ <- busAssemblyLine (recipe .bioflux) 1 nutrients mash jelly
+).toAscii == s!"
+
+ ↑↑⇨***⇦↑↓
+ ↑↑↠*B*↠↑↓
+ ↑↑⚡***⚡↑↓
+ ↑↑←→→→→↑↓
+ ↑←↑↑↓←←←←
+  ↑↑↑↓
+>→↑↑↑→→→→→>
+>→→↑↑
+>→→→↑
+
+"
+
+
+#guard (bus do
+  let nutrients <- input .nutrients 100
+  let mash <- input .yumakoMash 400
+  let jelly <- input .jelly 400
+  let _ <- busAssemblyLine (recipe .bioflux [(160, .jelly), (100, .yumakoMash), (85, .nutrients) ]) 1 nutrients mash jelly
+).toAscii == s!"
+
+  →→→→→↓
+  ↑→→→↓↓
+  ↑↑→↓↓↓
+  ↑↑↑↓↓→→→→→→↓
+  ↑↑↑↓→→→→→→↓↓
+  ↑↑↑→→→→→→↓↓↓
+  ↑↑↑←←←←← ↓↓↓
+  ↑↑     ↑ ↓↓↓
+  ↑↑⇨***⇦↑↓↓↓↓
+  ↑↑↠*B*↠↑↓↓↓↓
+  ↑↑⚡***⚡↑↓↓↓↓
+  ↑↑→→→→→↑↓↓↓↓
+  ↑↑↑↓←←←←←↓↓↓
+  ↑↑↑↓ ↓←←←←↓↓
+  ↑↑↑↓ ↓ ↓←←←↓
+  ↑↑↑↓ ↓ ↓  ↓←
+  ↑↑↑↓ ↓ ↓  ↓
+>→↑↑↑→⇥↓ ↓↦⇥↓↦>
+>→→↑↑  →⇥↓↦⇥↓↦>
+>→→→↑    →→⇥↓↦>
+            →→>
+
+"
 
 -- #guard (bus do
 --   let nutrients <- input .nutrients 15

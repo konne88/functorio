@@ -380,11 +380,72 @@ def assemblyLineInterface (process:Process') : List InterfaceV :=
   process.outputIngredients.map (., .S) ++
   process.returnedInputs.map fun (_,ingredient) => (ingredient, .S)
 
+def filterInterfaceN {n e s w} (factory:Factory n e s w) (n':List InterfaceV) : Factory n' e s w :=
+  {
+    factory with
+    interface := {
+      n := n'.toVector.map fun interface => factory.interface.n[n.idxOf interface]!
+      e := factory.interface.e
+      s := factory.interface.s
+      w := factory.interface.w
+    }
+  }
+
+
+
+
+  -- bus do
+  --   let lanes <- busTapGeneric [] returnedInputs emptyFactoryH
+  --   return _
+
+     -- emptyFactor
+
+      -- inputs
+      -- ((process.getRecipe.outputs ++ process.returnedInputs).map Prod.snd)
+      -- (unsafeFactoryCast namedFactory)
+      -- (adapterMinHeight := config.adapterMinHeight)
+
+
+def connectorInterface (process:Process') : List InterfaceV :=
+  (process.returnedInputs.reverse.map fun (_,ingredient) => (ingredient, .N)) ++
+  (process.returnedInputs.map fun (_,ingredient) => (ingredient, .S))
+
+def returnedInputsConnector (process:Process') : Factory [] [] (connectorInterface process)  [] :=
+  let n := process.returnedInputs.length
+  let leftEntities : List Entity :=
+    (List.range n).flatMap fun x =>
+      (List.range n).map fun y =>
+        belt x y (if x < y then .N else .E)
+
+  let rightEntities : List Entity  :=
+    (List.range n).flatMap fun x =>
+      (List.range n).map fun y =>
+        belt (x+n) y (if (n-x-1) <= y then .S else .E)
+
+  {
+    entities := leftEntities ++ rightEntities
+    interface := {
+      n := #v[]
+      e := #v[]
+      s := Vector.range (connectorInterface process).length
+      w := #v[]
+    }
+    width := 2*n
+    height := n
+    wires := []
+    name := s!"returnedInputsConnector {reprStr process.returnedInputs}"
+  }
+
+def connectReturnedInputs (process:Process') (factory:Factory (assemblyLineInterface process) [] (assemblyLineInterface process) []) :Factory [] [] (assemblyLineInterface process) [] :=
+  if process.returnedInputs.isEmpty then capN factory else
+  let filteredFactory := (filterInterfaceN factory (connectorInterface process)).expand .N 1
+  column (returnedInputsConnector process) filteredFactory
+
 def assemblyLine [Config] (process:Process') (stations:Nat) : Factory [] [] (assemblyLineInterface process) [] :=
   let line := assemblyLineNoReturnedInputs process.toProcess stations
   let returns := emptyFactoryH
   let factory := row line returns
-  capN factory
+  connectReturnedInputs process factory
 
 def tupleType {T} (ts:List T) (type:T->Type) : Type :=
   match ts with
