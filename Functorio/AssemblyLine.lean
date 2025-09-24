@@ -380,11 +380,22 @@ def assemblyLineInterface (process:Process') : List InterfaceV :=
   process.outputIngredients.map (., .S) ++
   process.returnedInputs.map fun (_,ingredient) => (ingredient, .S)
 
+namespace List
+
+def lastIdxOf {A} [BEq A] (l:List A) (a:A) : Nat := Id.run do
+  let mut index := l.length
+  for (a', i) in l.zipIdx do
+    if a == a' then
+      index := i
+  return index
+
+end List
+
 def filterInterfaceN {n e s w} (factory:Factory n e s w) (n':List InterfaceV) : Factory n' e s w :=
   {
     factory with
     interface := {
-      n := n'.toVector.map fun interface => factory.interface.n[n.idxOf interface]!
+      n := n'.toVector.map fun interface => factory.interface.n[n.lastIdxOf interface]!
       e := factory.interface.e
       s := factory.interface.s
       w := factory.interface.w
