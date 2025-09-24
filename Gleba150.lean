@@ -69,16 +69,75 @@ def makeNutrients0 : Nutrients 75 -> Bioflux 300 -> Bus (Nutrients 2700 × Nutri
 def makeNutrients1 : Nutrients 60 -> Bioflux 300 -> Bus (Nutrients 2700 × Nutrients 45) :=
   busAssemblyLine (recipe .nutrientsFromBioflux [(45, .nutrients)]) 1
 
-def makePentapodEggs (eggsLoopIn:PentapodEgg 112) (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 216 × Nutrients 525) := do
+--  Bus
+--         (BusLane Ingredient.pentapodEgg (192, 1) ×
+--           BusLane Ingredient.pentapodEgg (10, 1) × BusLane Ingredient.nutrients (10, 1))
+
+def loopbackPentapodEggs (water:Water 3840) (nutrients:Nutrients 2700) : Bus (Nutrients 660 × PentapodEgg 128) := do
+  let process := recipe .pentapodEgg [(660, .nutrients), (128, .pentapodEgg)]
+  let factoryNoLoopback := assemblyLine process 8
+  let loopback : Factory (assemblyLineInterface process) [] [(.water, .N), (.nutrients, .N), (.nutrients, .S), (.pentapodEgg, .S)] [] := {
+    entities := [
+      pipe 1 0, pipe 1 1, pipe 1 2,
+      belt 3 0 .N, belt 3 1 .N,
+      belt 4 1 .W, belt 5 1 .W, belt 6 1 .W, belt 7 1 .W, belt 8 1 .W, belt 9 1 .W, belt 10 1 .W,
+      beltUp 9 0 .N, beltDown 9 2 .N,
+      belt 10 0 .S,
+      belt 11 0 .S, belt 11 1 .S, belt 11 2 .S,
+      belt 12 0 .S, belt 12 1 .S, belt 12 2 .S,
+    ]
+    interface := {
+      n := #v[1, 3, 9, 10, 11, 12],
+      e := #v[],
+      s := #v[1, 9, 11, 12],
+      w := #v[],
+    }
+    wires := []
+    width := 13
+    height := 3
+    name := "makePentapodEggsLoopbackInner"
+  }
+
+  let factory := column factoryNoLoopback loopback
+  let namedFactory := factory.setName "makePentapodEggsLoopback"
+
+  let indexes <- busTapGeneric
+    [water.toBusLane', nutrients.toBusLane']
+    [.nutrients, .pentapodEgg]
+    namedFactory
+
+  return ({index:=indexes[0]!}, {index:=indexes[1]!})
+
+
+
+-- def x : BusAssemblyLineType (recipe .pentapodEgg) 10 :=
+--   by simp!
+
+
+def amplifyPentapodEggs : Water 4800 -> PentapodEgg 128 -> Nutrients 2700 -> Bus (PentapodEgg 240 × Nutrients 150 × PentapodEgg 48) :=
+  busAssemblyLine (recipe .pentapodEgg [(150, .nutrients), (48, .pentapodEgg)]) 10
+
+
+-- ⊢ BusLane Ingredient.water (4800, 1) →
+--   BusLane Ingredient.pentapodEgg (80, 1) →
+--     BusLane Ingredient.nutrients (2550, 1) → Bus (BusLane Ingredient.pentapodEgg (240, 1))
+
+
+-- (eggsLoopIn:PentapodEgg 112)
+def makePentapodEggs (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 288 × Nutrients 810) := do
   let (water0, water1) <- split water
---  let (eggs0, eggs1) <- splitBalanced eggs
-  let (nutrients0, nutrientsOut) <- splitBalanced (input:=2565) nutrients[0].less
-  let eggsLoopOut <- busAssemblyLine (recipe .pentapodEgg) 8 water1 eggsLoopIn.less nutrients0
-  let eggsOut <- busAssemblyLine (recipe .pentapodEgg) 10 water0 eggsLoopOut.less nutrients[1].less
---  let eggs <- merge eggs0 eggs1
-  return (eggsOut.less, nutrientsOut)
+  let (nutrients0, eggs) <- loopbackPentapodEggs water0 nutrients[0]
+  let (eggs0, nutrients1, eggs1) <- amplifyPentapodEggs water1 eggs nutrients[1]
+
+  let eggs <- merge eggs0 eggs1
+  let nutrients <- merge nutrients0 nutrients1
+
+  return (eggs, nutrients)
 
 def makeAgriculturalScience : Nutrients 105 -> Bioflux 210 -> PentapodEgg 210 -> Bus (AgriculturalScience 315) :=
+
+
+
   busAssemblyLine (recipe .agriculturalSciencePack) 7
 
 def cultivateCopperBacteria0 : Nutrients 30 -> YumakoMash 720 -> Bus (CopperBacteria 36 × Spoilage 360):=
@@ -234,7 +293,7 @@ def glebaFactory := bus do
   let yumako <- input .yumako 2580
   let jellynut <- input .jellynut 1440
  -- let spoilage <- input .spoilage 750
-  let eggs <- input .pentapodEgg 112
+--  let eggs <- input .pentapodEgg 112
   let bioChamberNutrients <- input .nutrients 810
   let water <- input .water 15360
 
@@ -262,9 +321,9 @@ def glebaFactory := bus do
 --  let (bioflux1, bioflux) <- split bioflux
   let (nutrients1, _) <- makeNutrients1 bioChamberNutrients bioflux1
 
-  let (eggs, bioChamberNutrients) <- makePentapodEggs eggs water0 #v[nutrients0, nutrients1]
+  let (eggs, bioChamberNutrients) <- makePentapodEggs water0 #v[nutrients0, nutrients1]
 
-  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) (input:=525) bioChamberNutrients
+  let (nutrients, bioChamberNutrients) <- splitBalanced (left:=105) (input:=525) bioChamberNutrients.less
   let (bioflux2, bioflux) <- split bioflux
   let _ <- makeAgriculturalScience nutrients bioflux2 eggs.less
 
