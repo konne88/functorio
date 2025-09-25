@@ -36,26 +36,34 @@ def useLane (index:Nat) (lanes:LaneConfigs) : LaneConfigs :=
       ingredient := if lane.refCount <= 1 then default else lane.ingredient
     }
 
-def allocLane (ingredient:Ingredient) (lanes:LaneConfigs) : (Nat × LaneConfigs) := Id.run do
+def allocLane (ingredient:Ingredient) (lanes:LaneConfigs) (skip : Nat:=0): (Nat × LaneConfigs) := Id.run do
   let newLane := {ingredient := ingredient, refCount := 1}
+  let mut skip := skip
 
   for (lane, i) in lanes.zipIdx do
     if i == 0 then continue   -- Don't alloc the 0th lane, we need the space for exits
 
     if lane.depleted then
+      -- We found an empty lane!
+
       if ingredient.isLiquid then
         -- Don't alloc if the previous or next lane is already a pipe
         if i > 1 && lanes[i - 1]!.ingredient.isLiquid then continue
         if i < lanes.length - 1 && lanes[i + 1]!.ingredient.isLiquid then continue
 
+      if skip > 0 then
+        skip := skip - 1
+        continue
+
       return (i, lanes.set i newLane)
 
   -- Couldn't find a depleted lane, so we need to alloc a new one
-  if lanes.length > 0 && lanes[lanes.length - 1]!.ingredient.isLiquid then
-    let paddingLane := {ingredient := default, refCount := 0}
-    (lanes.length + 1, lanes ++ [paddingLane, newLane])
+  if ingredient.isLiquid && skip == 0 && lanes.length > 0 && lanes[lanes.length - 1]!.ingredient.isLiquid then
+    -- Padding between pipes
+    (lanes.length + 1, lanes ++ [depletedLane, newLane])
   else
-    (lanes.length, lanes ++ [newLane])
+    let newLanes := lanes ++ List.replicate skip depletedLane ++  [newLane]
+    (lanes.length, newLanes)
 
 def available (lanes:LaneConfigs): List (LaneConfig × Nat) :=
   lanes.zipIdx.filter fun (lane, _) => !lane.depleted
@@ -474,14 +482,14 @@ def busTapGeneric
 
   -- Handle all outputs
   let mut outputLanes : Array Nat := #[]
-  for ingredient in outputs do
+  for (ingredient, i) in outputs.zipIdx do
     if previousWasLiquid && ingredient.isLiquid then x := x + 1  -- Gap between pipes so they don't connect.
 
     if x > 8 then
       (x, matrix) := bringUpAllLanes lanes x matrix
       (x, matrix) := bringDownAllLanes lanes x matrix
 
-    let (index, newLanes) := lanes.allocLane ingredient
+    let (index, newLanes) := lanes.allocLane ingredient (skip := outputs.length - 1 - i)
     lanes := newLanes
 
     let entities x := laneAccess .put lanes ingredient index x

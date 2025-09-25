@@ -306,7 +306,6 @@ namespace Test
 
 "
 
--- TODO we're getting iron1[0] but it should be iron1[1]
 #guard (bus do
   let iron0 <- inputs 3 .ironOre 2700
   let water <- input .water 1000
@@ -319,18 +318,18 @@ namespace Test
   |↑↑↑↑←↑
   |↑↑↑←↑↑
   |↑↑←↑↑↑
-  |↑ ↥↑↑↑
->⇥|↑↦→↑↑↑
->⇥|↑ ⤒↦↑↑
->⇥|↥ ↑↦→↑
->|||┤↑├|||>
->→⇥⤒↦↑
->→→↑
+  |↑←↑↑↑↑
+  | ↑↥↑↑↑
+>⇥| ↑↦↑↑↑
+>⇥| ↑⤒↦↑↑
+>⇥| ↑↑↦→↑
+>||┤↑↑├|||>
+>→→→↑↑
+>→→→→↑
 >→→→→→→→→→>
 
 "
 
--- TODO we're getting iron1[0] but it should be iron1[1]
 #guard (bus do
   let iron0 <- inputs 3 .ironOre 2700
   let water <- input .water 1000
@@ -341,13 +340,14 @@ namespace Test
 
   |↑↑↑←
   |↑↑←↑
-  |↑ ↥↑
->⇥|↑↦→↑
->⇥|↑ ⤒↦→>
->⇥|↥ ↑↦→>
->|||┤↑├|>
->→⇥⤒↦↑
->→→↑
+  |↑←↑↑
+  | ↑↥↑
+>⇥| ↑↦↑
+>⇥| ↑⤒↦→>
+>⇥| ↑↑↦→>
+>||┤↑↑├|>
+>→→→↑↑
+>→→→→↑
 >→→→→→→→>
 
 "
@@ -476,10 +476,9 @@ namespace Test
  ↑→↓↓
  ↑↑↓↓
  *S↓↓
-  ↑↓→↓
-  ↑↓ ↓
->→↑→⇥↓↦>
-     →→>
+  ↑↓↓
+>→↑↓→→>
+   →→→>
 
 "
 
