@@ -7,25 +7,35 @@ instance : Config where
   adapterMinHeight := 3
   -- extraStations := 1
 
+-- def x : BusAssemblyLineType { recipe := .yumakoProcessing, fabricator := .assemblingMachine2} 9 :=
+--   by simp!
 
-def makeBootstrapMash : Yumako 300 -> Bus (YumakoMash 600 × YumakoSeed 6) :=
-  busAssemblyLine { recipe := .yumakoProcessing, fabricator := .assemblingMachine3} 4
+
+def makeBootstrapMash : Yumako 405 -> Bus (YumakoMash 810 × YumakoSeed (81/10)) :=
+  busAssemblyLine { recipe := .yumakoProcessing, fabricator := .assemblingMachine2} 9
 
 -- def makeNutrientsFromSpoilage: Spoilage 75 → Bus (Nutrients (15/2)) := by exact
 --   (busAssemblyLine (recipe .nutrientsFromSpoilage) (1/5))
 
-def makeNutrientsFromSpoilage: Spoilage 150 → Bus (Nutrients 15) := by exact
-  (busAssemblyLine { recipe := .nutrientsFromSpoilage, fabricator := .assemblingMachine1} 1)
+
+-- def x : (BusAssemblyLineType { recipe := .nutrientsFromSpoilage, fabricator := .assemblingMachine2} 1) :=
+--   by simp!
 
 
 
-def makeNutrientsFromYumakoMash0 : Nutrients 15 → YumakoMash 450 → Bus (Nutrients 270 × YumakoMash 330 × Nutrients 0) :=
-  (busAssemblyLine (recipe .nutrientsFromYumakoMash [(330, .yumakoMash), (0, .nutrients)]) 1)
+def makeNutrientsFromSpoilage: Spoilage 225 → Bus (Nutrients (45/2)) := by exact
+  (busAssemblyLine { recipe := .nutrientsFromSpoilage, fabricator := .assemblingMachine2} 1)
+
+def makeNutrientsFromYumakoMash0 : Nutrients (45/2) → YumakoMash 585 → Bus (Nutrients 270 × YumakoMash 465 × Nutrients (15/2)) := by exact
+  (busAssemblyLine (recipe .nutrientsFromYumakoMash [(465, .yumakoMash), (15/2, .nutrients)]) 1)
 
 -- 165, 4
 
 -- 915/4
 
+
+-- def x : (BusAssemblyLineType (recipe .nutrientsFromYumakoMash) 3) :=
+--   by simp!
 
 -- def x : (BusAssemblyLineType (recipe .nutrientsFromYumakoMash) (11/4)) :=
 --   by simp!
@@ -36,23 +46,33 @@ def makeNutrientsFromYumakoMash0 : Nutrients 15 → YumakoMash 450 → Bus (Nutr
 -- All Messages (3)
 
 
-def makeNutrientsFromYumakoMash1 : Nutrients 270 → YumakoMash 330 → Bus (Nutrients (1485/2) × YumakoMash 0 × Nutrients (915/4)) :=
-  by exact (busAssemblyLine (recipe .nutrientsFromYumakoMash [(0, .yumakoMash), (915/4, .nutrients)]) (11/4))
+-- def makeNutrientsFromYumakoMash1 : Nutrients 270 → YumakoMash 330 → Bus (Nutrients (1485/2) × YumakoMash 0 × Nutrients (915/4)) :=
+--   by exact (busAssemblyLine (recipe .nutrientsFromYumakoMash [(0, .yumakoMash), (915/4, .nutrients)]) (11/4))
+
+
+def makeNutrientsFromYumakoMash1 : Nutrients (555/2) → YumakoMash 465 → Bus (Nutrients 810 × YumakoMash 105 × Nutrients (465/2)) :=
+  by exact (busAssemblyLine (recipe .nutrientsFromYumakoMash [(105, .yumakoMash), (465/2, .nutrients)]) 3)
+
+-- ⊢ BusLane Ingredient.nutrients (45, 1) →
+--   BusLane Ingredient.yumakoMash (360, 1) → Bus (BusLane Ingredient.nutrients (810, 1))
 
 -- 270 + 540
 
-def bootstrapNutrients (yumako:Yumako 300) : Bus (Nutrients 810 × YumakoSeed 6) := do
+def bootstrapNutrients (yumako:Yumako 405) : Bus (Nutrients 810 × YumakoSeed (81/10)) := do
   let (mash, seeds) <- makeBootstrapMash yumako
-  let (mashToSpoil, mash) <- splitBalanced (left:=150) (right:=450) mash
+  let (mashToSpoil, mash) <- splitBalanced (left:=225) mash
 --  let (mash1, mash2) <- splitBalanced (left:=40) (right:=480) mash
 
   let spoilage <- spoilingChamber mashToSpoil
   let nutrients <- makeNutrientsFromSpoilage spoilage
 
+
   let (nutrients0, mash, nutrients1) <- makeNutrientsFromYumakoMash0 nutrients mash
   let nutrients <- merge nutrients0 nutrients1
   let (nutrients0, mash, nutrients1) <- makeNutrientsFromYumakoMash1 nutrients mash
   let nutrients <- merge nutrients0 nutrients1
+
+  -- 495 + 540
 
   return (nutrients.less, seeds)
 
@@ -387,14 +407,14 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (Vector (Yumak
   return (#v[mash0, mash1], mash2, yumakoSeed, nutrients)
 
 def glebaFactory := bus do
-  let yumako <- input .yumako 2580
+  let yumako <- input .yumako 2685
   let jellynut <- input .jellynut 1440
  -- let spoilage <- input .spoilage 750
 --  let eggs <- input .pentapodEgg 112
   -- let bioChamberNutrients <- input .nutrients 810
   let water <- input .water 15360
 
-  let (yumako0, yumako1) <- split (left:=300) (right:=2280) yumako
+  let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
 
   let (bioChamberNutrients, yumakoSeed0) <- bootstrapNutrients yumako0
 
