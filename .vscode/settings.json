@@ -6,12 +6,15 @@
         "Factorio",
         "foldl",
         "Functorio",
+        "jellynut",
         "nauvis",
+        "pentapod",
         "println",
         "repr",
         "roboport",
         "Roboports",
-        "Supercapacitor"
+        "Supercapacitor",
+        "yumako"
     ],
 
     "files.exclude": {
