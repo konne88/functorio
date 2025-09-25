@@ -63,7 +63,7 @@ def allocLane (ingredient:Ingredient) (lanes:LaneConfigs) (skip : Nat:=0): (Nat 
     (lanes.length + 1, lanes ++ [depletedLane, newLane])
   else
     let newLanes := lanes ++ List.replicate skip depletedLane ++  [newLane]
-    (lanes.length, newLanes)
+    (newLanes.length - 1, newLanes)
 
 def available (lanes:LaneConfigs): List (LaneConfig × Nat) :=
   lanes.zipIdx.filter fun (lane, _) => !lane.depleted
