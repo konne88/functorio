@@ -248,7 +248,8 @@ def glebaFactory := bus do
   let (bioChamberNutrients, yumakoSeed0, mashOut) <- bootstrapNutrients yumako0
 
   let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
-  let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
+  let (mash, mashPartial, yumakoSeed1, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
+  let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
   let (bioflux0, _, _, bioChamberNutrients) <- makeBioflux0 bioChamberNutrients mash[0] jelly[0]
   let (bioflux1, _, _, bioChamberNutrients) <- makeBioflux1 bioChamberNutrients mash[1] jelly[1]
