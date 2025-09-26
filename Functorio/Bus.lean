@@ -835,3 +835,43 @@ def spoilingChamber {n} {input:Ingredient} {output:Ingredient} (bacteria:BusLane
     }
   }
   busTap [bacteria] (unsafeFactoryCast factory)
+
+def removeExcess {i n} (l:BusLane i n) : Bus (BusLane i n × BusLane i 0) :=
+  busTap2 [l.toBusLane'] {
+    entities:=[
+      belt 0 0 .E,
+      belt 1 0 .S,
+
+      belt 0 1 .N,
+      beltDown 1 1 .S,
+      pole 2 1,
+
+      belt 0 2 .N,
+      belt 1 2 .E,
+      belt 2 2 .S,
+
+      splitter 0 3 .N (outputPriority:="left"),
+      belt 2 3 .S,
+
+      belt 0 4 .N,
+      belt 1 4 .E,
+      belt 2 4 .S,
+
+      splitter 0 5 .N (outputPriority:="right") (filter:=Ingredient.spoilage),
+      belt 2 5 .S,
+
+      belt 0 6 .N,
+      beltUp 1 6 .S,
+      belt 2 6 .S,
+    ],
+    wires := []
+    width:=3,
+    height:=7,
+    interface:={
+      n := #v[]
+      e := #v[]
+      s := #v[0,1,2]
+      w := #v[]
+    }
+    name := s!"removeExcess {reprStr i}"
+  }
