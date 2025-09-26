@@ -263,7 +263,9 @@ def glebaFactory := bus do
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
   let (copperOre, mash, bioflux, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mashPartial bioflux
+  let (copperOre, _) <- removeExcess copperOre
   let (ironOre, jelly, bioflux, spoilage1, bioChamberNutrients) <- makeBacteriaIron bioChamberNutrients jelly[2] bioflux
+  let (ironOre, _) <- removeExcess ironOre
   let spoilage <- merge spoilage0 spoilage1
 
   let (sulfur, bioflux, _spoilage, bioChamberNutrients) <- makeBioSulfur bioChamberNutrients spoilage bioflux
