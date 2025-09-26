@@ -237,9 +237,9 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (Vector (Yumak
   return (#v[mash0, mash1], mash2, yumakoSeed, nutrients)
 
 def glebaFactory := bus do
+  let water <- input .water 15360
   let yumako <- input .yumako 2685
   let jellynut <- input .jellynut 1440
-  let water <- input .water 15360
 
   let (water0, water) <- split (left:=8640) water
   let (water1, water2) <- split (right:=6000) water
@@ -267,17 +267,13 @@ def glebaFactory := bus do
   let spoilage <- merge spoilage0 spoilage1
 
   let (sulfur, bioflux, _spoilage, bioChamberNutrients) <- makeBioSulfur bioChamberNutrients spoilage bioflux
-  let (sulfur, _sulfurOut) <- removeExcess sulfur
+  let (sulfur, _) <- removeExcess sulfur
   let (plastic, mashOutMore, bioflux, bioChamberNutrients) <- makeBioPlastic bioChamberNutrients bioflux mash
-  let (plastic, _plasticOut) <- removeExcess plastic
+  let (plastic, _) <- removeExcess plastic
   let (rocketFuel, _bioflux, jellyOutMore, _bioChamberNutrients) <- makeBioRocketFuel water1 bioChamberNutrients jelly bioflux
-  let (rocketFuel, _rocketFuelOut) <- removeExcess rocketFuel
+  let (rocketFuel, _) <- removeExcess rocketFuel
 
-  -- let (sulfur, bioflux, _, bioChamberNutrients) <- makeBioSulfur bioChamberNutrients spoilage bioflux
-  -- let (plastic, _, bioflux, bioChamberNutrients) <- makeBioPlastic bioChamberNutrients bioflux mash
-  -- let (rocketFuel, _, _, _) <- makeBioRocketFuel water1 bioChamberNutrients jelly bioflux
-
---  makeNonBiologicalComponents copperOre ironOre water2 sulfur plastic rocketFuel
+  makeNonBiologicalComponents copperOre.less ironOre.less water2 sulfur plastic rocketFuel
 
 def main : IO Unit :=
   IO.println (glebaFactory.toBlueprint) --  (bootstrap := true))
