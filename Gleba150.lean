@@ -276,9 +276,10 @@ def glebaFactory := bus do
 
   let (sulfur, bioflux, _, nutrients) <- makeBioSulfur nutrients spoilage bioflux
   let (sulfur, _) <- removeExcess sulfur
-  let (plastic, mashOutMore, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
+  let (plastic, mashMore, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
+  let mashOut <- merge mashOut mashMore
   let (plastic, _) <- removeExcess plastic
-  let (rocketFuel, _, jellyOutMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
+  let (rocketFuel, _, jellyMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
   let (rocketFuel, _) <- removeExcess rocketFuel
 
   makeNonBiologicalComponents copperOre.less ironOre.less water2 sulfur plastic rocketFuel
