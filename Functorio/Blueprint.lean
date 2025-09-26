@@ -38,7 +38,7 @@ private def entityName (e:Entity) : String :=
   match e.type with
   | .belt _ _ => "express-transport-belt"
   | .beltDown _ | .beltUp _ => "express-underground-belt"
-  | .splitter _ _ => "express-splitter"
+  | .splitter _ _ _ => "express-splitter"
   | .pipe => "pipe"
   | .pipeToGround _ => "pipe-to-ground"
   | .pump _ => "pump"
@@ -57,7 +57,7 @@ private def entityName (e:Entity) : String :=
 
 private def entityDirection (e:Entity) : Option Direction :=
   match e.type with
-  | .belt d _ | .beltDown d | .beltUp d | .splitter d _
+  | .belt d _ | .beltDown d | .beltUp d | .splitter d _ _
   | .pipeToGround d | .pump d | .inserter d _ | .longInserter d _
   | .fabricator _ _ d _ | .deciderCombinator d _ _ | .arithmeticCombinator d _ => d
   | .pipe | .pole | .bigPole | .roboport | .ironChest | .passiveProviderChest _
@@ -138,7 +138,15 @@ private def entityProps (e:Entity) : List (String × Json) :=
   | .beltDown _ => [("type", "input")]
   | .beltUp _ => [("type", "output")]
   | .passiveProviderChest capacity => match capacity with | .none => [] | .some capacity => [("bar", capacity)]
-  | .splitter _ priority => match priority with | .none => [] | .some p => [("output_priority", p)]
+  | .splitter _ priority filter =>
+    match priority with | .none => [] | .some p => [("output_priority", Json.str p)] ++
+    match filter with | .none => [] | .some f => [
+      ("filter", Json.mkObj [
+        ("name", f.name),
+        ("quality", "normal"),
+        ("comparator", "=")
+      ])
+    ]
   | .fabricator _ r _ m => [("recipe", r.getRecipe.name), ("recipe_quality", "normal"), ("mirror", m)]
 
 private def directionToNat (d:Direction) :=

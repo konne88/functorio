@@ -176,7 +176,7 @@ def canApplyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) :
       | .entity (.beltDown .E), .beltUp .E => true
       | .entity (.pipeToGround .W), .pipeToGround .E => true
       -- For splitters, the box below also has to be free.
-      | .empty, .splitter .E .none =>
+      | .empty, .splitter .E .none .none =>
         matrix[e.x]![e.y + 1]! == .empty
       | .empty, _ => true
       | _,_ => false
@@ -189,7 +189,7 @@ def applyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) : Ma
     let mut matrix := matrix
 
     for e in entities do
-      if e.type ==  .splitter .E .none then
+      if e.type ==  .splitter .E .none .none then
         matrix := matrix.setCell e.x e.y (.entity e.type)
         matrix := matrix.setCell e.x (e.y + 1) .blocked
       else
@@ -806,9 +806,9 @@ def spoilingChamber {n} {input:Ingredient} {output:Ingredient} (bacteria:BusLane
       beltUp 2 4 .N,
       belt 3 4 .S,
 
-      inserter 0 5 .S [output],
-      inserter 1 5 .S [output],
-      inserter 2 5 .S [output],
+      inserter 0 5 .S [output, .spoilage],
+      inserter 1 5 .S [output, .spoilage],
+      inserter 2 5 .S [output, .spoilage],
       beltDown 3 5 .S,
 
       ironChest 0 6,

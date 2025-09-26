@@ -46,7 +46,7 @@ inductive EntityType
     })
   | beltDown (direction:Direction)
   | beltUp (direction:Direction)
-  | splitter (direction:Direction) (outputPriority:Option String)
+  | splitter (direction:Direction) (outputPriority:Option String) (filter:Option Ingredient)
   | pipe
   | pipeToGround (direction:Direction)
   | pump (direction:Direction)
@@ -82,7 +82,7 @@ def beltDown x y d := ({x:=x,y:=y,type:=.beltDown d} : Entity)
 
 def beltUp x y d := ({x:=x,y:=y,type:=.beltUp d} : Entity)
 
-def splitter x y d (outputPriority : Option String := .none) := ({x:=x,y:=y,type:=.splitter d outputPriority} : Entity)
+def splitter x y d (outputPriority : Option String := .none) (filter := Option.none) := ({x:=x,y:=y,type:=.splitter d outputPriority filter} : Entity)
 
 def pipe x y := ({x:=x,y:=y,type:=.pipe} : Entity)
 
@@ -135,7 +135,7 @@ def width (e:Entity) : Nat :=
   | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
   | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
-  | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
+  | .splitter dir _ _ => if dir == .N || dir == .S then 2 else 1
   | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 1 else 2
   | .heatingTower => 3
   | .roboport => 4
@@ -146,7 +146,7 @@ def height (e:Entity) : Nat :=
   | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
   | .longInserter _ _ | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
-  | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
+  | .splitter dir _ _ => if dir == .N || dir == .S then 1 else 2
   | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 2 else 1
   | .heatingTower => 3
   | .roboport => 4

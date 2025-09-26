@@ -63,7 +63,7 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .pole => '⚡'
   | .bigPole => '↯'
 
-  | .splitter _ _ => 'S'
+  | .splitter _ _ _ => 'S'
   | .fabricator .assemblingMachine3 _ _ _ => 'A'
   | .fabricator .electricFurnace _ _ _ => 'F'
   | .fabricator .stoneFurnace _ _ _ => 'F'
