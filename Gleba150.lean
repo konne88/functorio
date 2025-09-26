@@ -245,35 +245,35 @@ def glebaFactory := bus do
   let (water1, water2) <- split (right:=6000) water
 
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
-  let (bioChamberNutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
+  let (nutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
 
-  let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
-  let (mash, mashPartial, yumakoSeed1, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
+  let (jelly, jellySeed, nutrients) <- makeJelly nutrients jellynut
+  let (mash, mashPartial, yumakoSeed1, nutrients) <- makeMash nutrients yumako1
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
-  let (bioflux0, _, _, bioChamberNutrients) <- makeBioflux0 bioChamberNutrients mash[0] jelly[0]
-  let (bioflux1, _, _, bioChamberNutrients) <- makeBioflux1 bioChamberNutrients mash[1] jelly[1]
+  let (bioflux0, _, _, nutrients) <- makeBioflux0 nutrients mash[0] jelly[0]
+  let (bioflux1, _, _, nutrients) <- makeBioflux1 nutrients mash[1] jelly[1]
   let bioflux <- merge bioflux0 bioflux1
 
-  let (nutrients0, bioflux, bioChamberNutrients) <- makeNutrients0 bioChamberNutrients bioflux
-  let (nutrients1, bioflux, _) <- makeNutrients1 bioChamberNutrients bioflux
+  let (eggNutrients0, bioflux, nutrients) <- makeNutrients0 nutrients bioflux
+  let (eggNutrients1, bioflux, _) <- makeNutrients1 nutrients bioflux
 
-  let (eggs, bioChamberNutrients) <- makePentapodEggs water0 #v[nutrients0, nutrients1]
-  let (_, _, bioflux, bioChamberNutrients) <- makeAgriculturalScience bioChamberNutrients bioflux eggs
+  let (eggs, nutrients) <- makePentapodEggs water0 #v[eggNutrients0, eggNutrients1]
+  let (_, _, bioflux, nutrients) <- makeAgriculturalScience nutrients bioflux eggs
 
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
-  let (copperOre, mash, bioflux, spoilage0, bioChamberNutrients) <- makeBacteriaCopper bioChamberNutrients mashPartial bioflux
+  let (copperOre, mash, bioflux, spoilage0, nutrients) <- makeBacteriaCopper nutrients mashPartial bioflux
   let (copperOre, _) <- removeExcess copperOre
-  let (ironOre, jelly, bioflux, spoilage1, bioChamberNutrients) <- makeBacteriaIron bioChamberNutrients jelly[2] bioflux
+  let (ironOre, jelly, bioflux, spoilage1, nutrients) <- makeBacteriaIron nutrients jelly[2] bioflux
   let (ironOre, _) <- removeExcess ironOre
   let spoilage <- merge spoilage0 spoilage1
 
-  let (sulfur, bioflux, _spoilage, bioChamberNutrients) <- makeBioSulfur bioChamberNutrients spoilage bioflux
+  let (sulfur, bioflux, _spoilage, nutrients) <- makeBioSulfur nutrients spoilage bioflux
   let (sulfur, _) <- removeExcess sulfur
-  let (plastic, mashOutMore, bioflux, bioChamberNutrients) <- makeBioPlastic bioChamberNutrients bioflux mash
+  let (plastic, mashOutMore, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
   let (plastic, _) <- removeExcess plastic
-  let (rocketFuel, _bioflux, jellyOutMore, _bioChamberNutrients) <- makeBioRocketFuel water1 bioChamberNutrients jelly bioflux
+  let (rocketFuel, _bioflux, jellyOutMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
   let (rocketFuel, _) <- removeExcess rocketFuel
 
   makeNonBiologicalComponents copperOre.less ironOre.less water2 sulfur plastic rocketFuel
