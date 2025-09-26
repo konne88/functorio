@@ -245,7 +245,7 @@ def glebaFactory := bus do
   let (water1, water2) <- split (right:=6000) water
 
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
-  let (bioChamberNutrients, yumakoSeed0, mashOut) <- bootstrapNutrients yumako0
+  let (bioChamberNutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
 
   let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
   let (mash, mashPartial, yumakoSeed1, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
