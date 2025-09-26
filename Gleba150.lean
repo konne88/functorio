@@ -18,7 +18,7 @@ def makeNutrientsFromYumakoMash0 : Nutrients (45/2) → YumakoMash 585 → Bus (
 def makeNutrientsFromYumakoMash1 : Nutrients (555/2) → YumakoMash 465 → Bus (Nutrients 810 × YumakoMash 105 × Nutrients (465/2)) :=
   by exact (busAssemblyLine (recipe .nutrientsFromYumakoMash [(105, .yumakoMash), (465/2, .nutrients)]) 3)
 
-def bootstrapNutrients (yumako:Yumako 405) : Bus (Nutrients 810 × YumakoSeed (81/10)) := do
+def bootstrapNutrients (yumako:Yumako 405) : Bus (Nutrients 810 × YumakoSeed (81/10) × YumakoMash 105) := do
   let (mash, seeds) <- makeBootstrapMash yumako
   let (mashToSpoil, mash) <- splitBalanced (left:=225) mash
 
@@ -30,7 +30,7 @@ def bootstrapNutrients (yumako:Yumako 405) : Bus (Nutrients 810 × YumakoSeed (8
   let (nutrients0, mash, nutrients1) <- makeNutrientsFromYumakoMash1 nutrients mash
   let nutrients <- merge nutrients0 nutrients1
 
-  return (nutrients.less, seeds)
+  return (nutrients.less, seeds, mash)
 
 def makeBioflux0 : Nutrients 345 -> YumakoMash 2700 -> Jelly 2700 -> Bus (Bioflux 1080 × Jelly 540 × YumakoMash 0 × Nutrients 210) :=
   busAssemblyLine (recipe .bioflux [(540, .jelly), (0, .yumakoMash), (210, .nutrients) ]) 9
@@ -245,19 +245,14 @@ def glebaFactory := bus do
   let (water1, water2) <- split (right:=6000) water
 
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
-  let (bioChamberNutrients, yumakoSeed0) <- bootstrapNutrients yumako0
+  let (bioChamberNutrients, yumakoSeed0, mashOut) <- bootstrapNutrients yumako0
 
   let (jelly, jellySeed, bioChamberNutrients) <- makeJelly bioChamberNutrients jellynut
   let (mash, mashPartial, yumakoSeed, bioChamberNutrients) <- makeMash bioChamberNutrients yumako1
 
   let (bioflux0, _, _, bioChamberNutrients) <- makeBioflux0 bioChamberNutrients mash[0] jelly[0]
   let (bioflux1, _, _, bioChamberNutrients) <- makeBioflux1 bioChamberNutrients mash[1] jelly[1]
-  let bioflux <- merge bioflux0 bioflux1 -- 1080
-  -- let (bioflux0, bioflux) <- split bioflux
-  -- let (bioflux1, bioflux) <- split bioflux
-  -- let (bioflux2, bioflux) <- split bioflux
-  -- let (bioflux5, bioflux) <- split bioflux
-  -- let (bioflux6, bioflux7) <- split bioflux
+  let bioflux <- merge bioflux0 bioflux1
 
   let (nutrients0, bioflux, bioChamberNutrients) <- makeNutrients0 bioChamberNutrients bioflux
   let (nutrients1, bioflux, _) <- makeNutrients1 bioChamberNutrients bioflux
