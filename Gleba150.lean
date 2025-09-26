@@ -210,7 +210,7 @@ do
 
   let _ <- makeRocket blueCircuit.less lowDensityStruct rocketFuel.less
 
-def makeJelly (nutrients:Nutrients 810) (jellynut:Jellynut 1440) : Bus (Vector (Jelly 2700) 3 × JellynutSeed (216 / 5) × Nutrients 630):= do
+def makeJelly (nutrients:Nutrients 810) (jellynut:Jellynut 1440) : Bus (Jelly 2700 × Jelly 2700 × Jelly 2700 × JellynutSeed (216 / 5) × Nutrients 630):= do
   let (jellynut0, jellynut) <- split jellynut
   let (jellynut1, jellynut2) <- split jellynut
 
@@ -221,9 +221,9 @@ def makeJelly (nutrients:Nutrients 810) (jellynut:Jellynut 1440) : Bus (Vector (
   let jellySeed <- merge jellySeed0 jellySeed1
   let jellySeed <- merge jellySeed jellySeed2
 
-  return (#v[jelly0, jelly1, jelly2], jellySeed, nutrients)
+  return (jelly0, jelly1, jelly2, jellySeed, nutrients)
 
-def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (Vector (YumakoMash 2700) 2 × YumakoMash 1080 × YumakoSeed (342 / 5) × Nutrients 345):= do
+def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (YumakoMash 2700 × YumakoMash 2700 × YumakoMash 1080 × YumakoSeed (342 / 5) × Nutrients 345):= do
   let (yumako0, yumako) <- split yumako
   let (yumako1, yumako2) <- split yumako
 
@@ -234,7 +234,7 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (Vector (Yumak
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
   let yumakoSeed <- merge yumakoSeed yumakoSeed2
 
-  return (#v[mash0, mash1], mash2, yumakoSeed, nutrients)
+  return (mash0, mash1, mash2, yumakoSeed, nutrients)
 
 def glebaFactory := bus do
   let water <- input .water 15360
@@ -247,12 +247,12 @@ def glebaFactory := bus do
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
   let (nutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
 
-  let (jelly, jellySeed, nutrients) <- makeJelly nutrients jellynut
-  let (mash, mashPartial, yumakoSeed1, nutrients) <- makeMash nutrients yumako1
+  let (jelly0, jelly1, jelly2, jellySeed, nutrients) <- makeJelly nutrients jellynut
+  let (mash0, mash1, mash2, yumakoSeed1, nutrients) <- makeMash nutrients yumako1
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
-  let (bioflux0, _, _, nutrients) <- makeBioflux0 nutrients mash[0] jelly[0]
-  let (bioflux1, _, _, nutrients) <- makeBioflux1 nutrients mash[1] jelly[1]
+  let (bioflux0, _, _, nutrients) <- makeBioflux0 nutrients mash0 jelly0
+  let (bioflux1, _, _, nutrients) <- makeBioflux1 nutrients mash1 jelly1
   let bioflux <- merge bioflux0 bioflux1
 
   let (eggNutrients0, bioflux, nutrients) <- makeNutrients0 nutrients bioflux
@@ -264,9 +264,9 @@ def glebaFactory := bus do
 
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
-  let (copperOre, mash, bioflux, spoilage0, nutrients) <- makeBacteriaCopper nutrients mashPartial bioflux
+  let (copperOre, mash, bioflux, spoilage0, nutrients) <- makeBacteriaCopper nutrients mash2 bioflux
   let (copperOre, _) <- removeExcess copperOre
-  let (ironOre, jelly, bioflux, spoilage1, nutrients) <- makeBacteriaIron nutrients jelly[2] bioflux
+  let (ironOre, jelly, bioflux, spoilage1, nutrients) <- makeBacteriaIron nutrients jelly2 bioflux
   let (ironOre, _) <- removeExcess ironOre
   let spoilage <- merge spoilage0 spoilage1
 
