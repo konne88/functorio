@@ -245,14 +245,18 @@ def glebaFactory := bus do
   let (water1, water2) <- split (right:=6000) water
 
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
-  let (nutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
+  let (nutrients, yumakoSeed0, mashOut) <- bootstrapNutrients yumako0
 
   let (jelly0, jelly1, jelly2, jellySeed, nutrients) <- makeJelly nutrients jellynut
   let (mash0, mash1, mash2, yumakoSeed1, nutrients) <- makeMash nutrients yumako1
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
-  let (bioflux0, _, _, nutrients) <- makeBioflux0 nutrients mash0 jelly0
-  let (bioflux1, _, _, nutrients) <- makeBioflux1 nutrients mash1 jelly1
+  let (bioflux0, _, mashMore, nutrients) <- makeBioflux0 nutrients mash0 jelly0
+  let mashOut <- merge mashOut mashMore
+
+  let (bioflux1, _, mashMore, nutrients) <- makeBioflux1 nutrients mash1 jelly1
+  let mashOut <- merge mashOut mashMore
+
   let bioflux <- merge bioflux0 bioflux1
 
   let (eggNutrients0, bioflux, nutrients) <- makeNutrients0 nutrients bioflux
@@ -270,11 +274,11 @@ def glebaFactory := bus do
   let (ironOre, _) <- removeExcess ironOre
   let spoilage <- merge spoilage0 spoilage1
 
-  let (sulfur, bioflux, _spoilage, nutrients) <- makeBioSulfur nutrients spoilage bioflux
+  let (sulfur, bioflux, _, nutrients) <- makeBioSulfur nutrients spoilage bioflux
   let (sulfur, _) <- removeExcess sulfur
   let (plastic, mashOutMore, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
   let (plastic, _) <- removeExcess plastic
-  let (rocketFuel, _bioflux, jellyOutMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
+  let (rocketFuel, _, jellyOutMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
   let (rocketFuel, _) <- removeExcess rocketFuel
 
   makeNonBiologicalComponents copperOre.less ironOre.less water2 sulfur plastic rocketFuel
