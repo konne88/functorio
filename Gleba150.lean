@@ -82,10 +82,10 @@ def loopbackPentapodEggs (water:Water 3840) (nutrients:Nutrients 2700) : Bus (Nu
 def amplifyPentapodEggs : Water 4800 -> PentapodEgg 128 -> Nutrients 2700 -> Bus (PentapodEgg 240 × Nutrients 150 × PentapodEgg 48) :=
   busAssemblyLine (recipe .pentapodEgg [(150, .nutrients), (48, .pentapodEgg)]) 10
 
-def makePentapodEggs (water:Water 8640) (nutrients : Vector (Nutrients 2700) 2) : Bus (PentapodEgg 288 × Nutrients 810) := do
+def makePentapodEggs (water:Water 8640) (nutrients0 : Nutrients 2700) (nutrients1 : Nutrients 2700) : Bus (PentapodEgg 288 × Nutrients 810) := do
   let (water0, water1) <- split water
-  let (nutrients0, eggs) <- loopbackPentapodEggs water0 nutrients[0]
-  let (eggs0, nutrients1, eggs1) <- amplifyPentapodEggs water1 eggs nutrients[1]
+  let (nutrients0, eggs) <- loopbackPentapodEggs water0 nutrients0
+  let (eggs0, nutrients1, eggs1) <- amplifyPentapodEggs water1 eggs nutrients1
 
   let eggs <- merge eggs0 eggs1
   let nutrients <- merge nutrients0 nutrients1
@@ -256,10 +256,11 @@ def glebaFactory := bus do
   let bioflux <- merge bioflux0 bioflux1
 
   let (eggNutrients0, bioflux, nutrients) <- makeNutrients0 nutrients bioflux
-  let (eggNutrients1, bioflux, _) <- makeNutrients1 nutrients bioflux
+  let (eggNutrients1, bioflux, nutrients) <- makeNutrients1 nutrients bioflux
+  let (eggs, moreNutrients) <- makePentapodEggs water0 eggNutrients0 eggNutrients1
+  let nutrients <- merge nutrients moreNutrients
 
-  let (eggs, nutrients) <- makePentapodEggs water0 #v[eggNutrients0, eggNutrients1]
-  let (_, _, bioflux, nutrients) <- makeAgriculturalScience nutrients bioflux eggs
+  let (_, _, bioflux, nutrients) <- makeAgriculturalScience nutrients.less bioflux eggs
 
   pipePumps   -- Right around here, the pipes on the bus are so long that they need pumps.
 
