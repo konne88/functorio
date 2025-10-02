@@ -236,28 +236,32 @@ def makeMash (nutrients:Nutrients 630) (yumako:Yumako 2280) : Bus (YumakoMash 27
 
   return (mash0, mash1, mash2, yumakoSeed, nutrients)
 
+def x : BusAssemblyLineType (recipe .carbonFiber) 1 :=
+  by simp!
+
+-- 120
+
+def makeCarbonFiber :=
+  busAssemblyLine (recipe .carbonFiber) --  [(750, .nutrients)]) 4 nutrients jellynut0
+
+
 def glebaFactory := bus do
   let water <- input .water 15360
-  let yumako <- input .yumako 2685
+  let yumako <- input .yumako 2700
   let jellynut <- input .jellynut 1440
 
   let (water0, water) <- split (left:=8640) water
   let (water1, water2) <- split (right:=6000) water
 
   let (yumako0, yumako1) <- split (left:=405) (right:=2280) yumako
-  let (nutrients, yumakoSeed0, mashOut) <- bootstrapNutrients yumako0
+  let (nutrients, yumakoSeed0, _) <- bootstrapNutrients yumako0
 
   let (jelly0, jelly1, jelly2, jellySeed, nutrients) <- makeJelly nutrients jellynut
   let (mash0, mash1, mash2, yumakoSeed1, nutrients) <- makeMash nutrients yumako1
   let yumakoSeed <- merge yumakoSeed0 yumakoSeed1
 
-  let (bioflux0, jellyOut, mashMore, nutrients) <- makeBioflux0 nutrients mash0 jelly0
-  let mashOut <- merge mashOut mashMore
-
-  let (bioflux1, jellyMore, mashMore, nutrients) <- makeBioflux1 nutrients mash1 jelly1
-  let mashOut <- merge mashOut mashMore
-  -- let jellyOut <- merge jellyOut jellyMore
-
+  let (bioflux0, _, _, nutrients) <- makeBioflux0 nutrients mash0 jelly0
+  let (bioflux1, _, _, nutrients) <- makeBioflux1 nutrients mash1 jelly1
   let bioflux <- merge bioflux0 bioflux1
 
   let (eggNutrients0, bioflux, nutrients) <- makeNutrients0 nutrients bioflux
@@ -277,11 +281,9 @@ def glebaFactory := bus do
 
   let (sulfur, bioflux, _, nutrients) <- makeBioSulfur nutrients spoilage bioflux
   let (sulfur, _) <- removeExcess sulfur
-  let (plastic, mashMore, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
-  let _ <- merge mashOut mashMore
+  let (plastic, _, bioflux, nutrients) <- makeBioPlastic nutrients bioflux mash
   let (plastic, _) <- removeExcess plastic
-  let (rocketFuel, _, jellyMore, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
-  let _ <- merge jellyOut jellyMore
+  let (rocketFuel, _, _, _) <- makeBioRocketFuel water1 nutrients jelly bioflux
   let (rocketFuel, _) <- removeExcess rocketFuel
 
   makeNonBiologicalComponents copperOre.less ironOre.less water2 sulfur plastic rocketFuel
