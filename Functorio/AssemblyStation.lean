@@ -6,6 +6,7 @@ import Functorio.Row
 structure Process where
   recipe:RecipeName
   fabricator:Fabricator
+  returnedInputs : List (Fraction × Ingredient) := []
   -- fabricatorOk : fabricator.handlesCategory recipeName.getRecipe.category := by decide
   deriving Repr, DecidableEq
 

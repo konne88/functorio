@@ -57,11 +57,8 @@ def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl i
       if gapWidth > 4 then [pole (gapStart + gapWidth - 1) 3] else []
   }
 
-structure Process' extends Process where
-  returnedInputs : List (Fraction × Ingredient) := []
-
 @[simp]
-def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process' := {
+def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process := {
   recipe := recipe,
   fabricator := defaultCategoryFabricator recipe.getRecipe.category,
   returnedInputs := returnedInputs
@@ -375,7 +372,7 @@ def assemblyLineNoReturnedInputs [Config] (process:Process) (stations:Nat) : Fac
 
 --    column3 (destroySpoilage' process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
 
-def assemblyLineInterface (process:Process') : List InterfaceV :=
+def assemblyLineInterface (process:Process) : List InterfaceV :=
   process.inputIngredients.map (., .N) ++
   process.outputIngredients.map (., .S) ++
   process.returnedInputs.map fun (_,ingredient) => (ingredient, .S)
@@ -417,11 +414,11 @@ def filterInterfaceN {n e s w} (factory:Factory n e s w) (n':List InterfaceV) : 
       -- (adapterMinHeight := config.adapterMinHeight)
 
 
-def connectorInterface (process:Process') : List InterfaceV :=
+def connectorInterface (process:Process) : List InterfaceV :=
   (process.returnedInputs.reverse.map fun (_,ingredient) => (ingredient, .N)) ++
   (process.returnedInputs.map fun (_,ingredient) => (ingredient, .S))
 
-def returnedInputsConnector (process:Process') : Factory [] [] (connectorInterface process)  [] :=
+def returnedInputsConnector (process:Process) : Factory [] [] (connectorInterface process)  [] :=
   let n := process.returnedInputs.length
   let leftEntities : List Entity :=
     (List.range n).flatMap fun x =>
@@ -447,13 +444,13 @@ def returnedInputsConnector (process:Process') : Factory [] [] (connectorInterfa
     name := s!"returnedInputsConnector {reprStr process.returnedInputs}"
   }
 
-def connectReturnedInputs (process:Process') (factory:Factory (assemblyLineInterface process) [] (assemblyLineInterface process) []) :Factory [] [] (assemblyLineInterface process) [] :=
+def connectReturnedInputs (process:Process) (factory:Factory (assemblyLineInterface process) [] (assemblyLineInterface process) []) :Factory [] [] (assemblyLineInterface process) [] :=
   if process.returnedInputs.isEmpty then capN factory else
   let filteredFactory := (filterInterfaceN factory (connectorInterface process)).expand .N 1
   column (returnedInputsConnector process) filteredFactory
 
-def assemblyLine [Config] (process:Process') (stations:Nat) : Factory [] [] (assemblyLineInterface process) [] :=
-  let line := assemblyLineNoReturnedInputs process.toProcess stations
+def assemblyLine [Config] (process:Process) (stations:Nat) : Factory [] [] (assemblyLineInterface process) [] :=
+  let line := assemblyLineNoReturnedInputs process stations
   let returns := emptyFactoryH
   let factory := row line returns
   connectReturnedInputs process factory
@@ -471,22 +468,22 @@ def tuple {T} {ts:List T} {type:T->Type} (value : (t:T) -> Nat -> type t) (index
   | t::_::_ => (value t index, tuple value (index + 1))
 
 @[simp]
-def BusAssemblyLineReturn (process:Process') (stations:Fraction) : Type :=
-  let outputs := (process.getRecipe.outputs.map fun (items, ingredient) => (outputThroughput process.toProcess stations ingredient items, ingredient)) ++ process.returnedInputs
+def BusAssemblyLineReturn (process:Process) (stations:Fraction) : Type :=
+  let outputs := (process.getRecipe.outputs.map fun (items, ingredient) => (outputThroughput process stations ingredient items, ingredient)) ++ process.returnedInputs
   Bus (tupleType outputs fun (throughput, ingredient) => BusLane ingredient throughput)
 
 @[simp]
-def BusAssemblyLineType (process:Process') (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
+def BusAssemblyLineType (process:Process) (stations:Fraction) (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs): Type :=
   match remainingInputs with
   | [] => BusAssemblyLineReturn process stations
   | (items,ingredient)::inputs =>
     let throughput :=
-      inputThroughput process.toProcess stations items +
+      inputThroughput process stations items +
       List.sum (process.returnedInputs.map fun (throughput, ingredient') => if ingredient' == ingredient then throughput else 0)
     BusLane ingredient throughput -> BusAssemblyLineType process stations inputs
 
 def processBusAssemblyLineArguments
-  (process:Process')
+  (process:Process)
   (stations:Fraction)
   (processor: List BusLane' -> BusAssemblyLineReturn process stations)
   (remainingInputs: List (Fraction × Ingredient) := process.getRecipe.inputs)
@@ -499,7 +496,7 @@ def processBusAssemblyLineArguments
     processBusAssemblyLineArguments process stations processor inputs (args ++ [arg.toBusLane'])
   )
 
-def busAssemblyLine [config:Config] (process: Process') (stations:Fraction) : BusAssemblyLineType process stations :=
+def busAssemblyLine [config:Config] (process: Process) (stations:Fraction) : BusAssemblyLineType process stations :=
   processBusAssemblyLineArguments process stations fun inputs => do
     let factory := assemblyLine process (stations.roundUp + config.extraStations)
     let namedFactory := factory.setName s!"{stations}x{reprStr process.recipe}"
