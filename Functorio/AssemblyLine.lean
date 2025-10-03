@@ -57,13 +57,6 @@ def roboportInsert [config:Config] {interface} (offsets : Vector InterfaceImpl i
       if gapWidth > 4 then [pole (gapStart + gapWidth - 1) 3] else []
   }
 
-@[simp]
-def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process := {
-  recipe := recipe,
-  fabricator := defaultCategoryFabricator recipe.getRecipe.category,
-  returnedInputs := returnedInputs
-}
-
 def providerChestInsert [config:Config] {interface} (process:Process) (offsets : Vector InterfaceImpl interface.length) : Factory interface [] interface [] :=
   let recipe := process.getRecipe
   if config.providerChestCapacity == 0 || recipe.outputs.isEmpty || recipe.outputs[0]!.snd.isLiquid then emptyFactoryH offsets else

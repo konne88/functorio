@@ -1,7 +1,7 @@
 import Functorio.AssemblyStation
 import Functorio.Ascii
 
-#guard (station (recipe' .ironPlate)).toAscii == s!"
+#guard (station (recipe .ironPlate)).toAscii == s!"
  ^     v
  ↑⇨***⇨↓
  ↑ *F* ↓
@@ -9,7 +9,7 @@ import Functorio.Ascii
  ^     v
 "
 
-#guard (station (recipe' .electronicCircuit)).toAscii == s!"
+#guard (station (recipe .electronicCircuit)).toAscii == s!"
  ^     ^v
  ↑⇨***⇦↑↓
  ↑ *A*↠↑↓
@@ -17,7 +17,7 @@ import Functorio.Ascii
  ^     ^v
 "
 
-#guard (station (recipe' .advancedCircuit)).toAscii == s!"
+#guard (station (recipe .advancedCircuit)).toAscii == s!"
  ^^     ^v
  ↑↑⇨***⇦↑↓
  ↑↑↠*A*↠↑↓
@@ -25,7 +25,7 @@ import Functorio.Ascii
  ^^     ^v
 "
 
-#guard (station (recipe' .superconductor)).toAscii == s!"
+#guard (station (recipe .superconductor)).toAscii == s!"
   ^ ^^      ^v
   | ↑↑⇨****⇦↑↓
   | ↑↑↠****↠↑↓
@@ -43,7 +43,7 @@ import Functorio.Ascii
  ^      ^v
 "
 
-#guard (station (recipe' .supercapacitor)).toAscii == s!"
+#guard (station (recipe .supercapacitor)).toAscii == s!"
   ^ ^^^      ^v
   | ↑↑↥⇨****↠↑↓
   | ↑↑↠↠****⇦↑↓
@@ -52,7 +52,7 @@ import Functorio.Ascii
   ^ ^^^      ^v
 "
 
-#guard (station (recipe' .electromagneticSciencePack)).toAscii == s!"
+#guard (station (recipe .electromagneticSciencePack)).toAscii == s!"
   ^ ^ ^^      v
   |┤| ↑↑ ├|   ↓
   | | ↑↑⇨****⇨↓
@@ -63,7 +63,7 @@ import Functorio.Ascii
   ^ ^ ^^      v
 "
 
-#guard (station (recipe' .electrolyte)).toAscii == s!"
+#guard (station (recipe .electrolyte)).toAscii == s!"
   ^ ^ ^     v
   |┤| ↑ ├|  |
   | | ↑⇨****|
@@ -74,7 +74,7 @@ import Functorio.Ascii
   ^ ^ ^     v
 "
 
-#guard (station (recipe' .flyingRobotFrame)).toAscii == s!"
+#guard (station (recipe .flyingRobotFrame)).toAscii == s!"
  ^^^     ^v
  ↑↑↥↠***↠↑↓
  ↑↑↠⚡*A*⚡↑↓
@@ -82,7 +82,7 @@ import Functorio.Ascii
  ^^^     ^v
 "
 
-#guard (station (recipe' .rail)).toAscii == s!"
+#guard (station (recipe .rail)).toAscii == s!"
  ^^     ^v
  ↑↑⇨***⇦↑↓
  ↑↑↠*A*↠↑↓
@@ -91,7 +91,7 @@ import Functorio.Ascii
  ^^     ^v
 "
 
-#guard (station (recipe' .processingUnit)).toAscii == s!"
+#guard (station (recipe .processingUnit)).toAscii == s!"
   ^ ^     ^v
   | ↑⇨***⇦↑↓
   |┤↑├*A*↠↑↓
@@ -99,7 +99,7 @@ import Functorio.Ascii
   ^ ^     ^v
 "
 
-#guard (station (recipe' .battery)).toAscii == s!"
+#guard (station (recipe .battery)).toAscii == s!"
   ^ ^     ^v
   |┤↑├***⇦↑↓
   | ↑⇨*C*↠↑↓
@@ -107,7 +107,7 @@ import Functorio.Ascii
   ^ ^     ^v
 "
 
-#guard (station (recipe' .sulfuricAcid)).toAscii == s!"
+#guard (station (recipe .sulfuricAcid)).toAscii == s!"
   ^ ^     ^ v
   |┤↑├***┤↑├|
   | ↑⇨*C*⇦↑ |
@@ -115,7 +115,7 @@ import Functorio.Ascii
   ^ ^     ^ v
 "
 
-#guard (station (recipe' .sulfur)).toAscii == s!"
+#guard (station (recipe .sulfur)).toAscii == s!"
   ^ ^     v
   |┤|├***⇨↓
   | | *C* ↓
@@ -123,7 +123,7 @@ import Functorio.Ascii
   ^ ^     v
 "
 
-#guard (station (recipe' .solidFuelFromLightOil)).toAscii == s!"
+#guard (station (recipe .solidFuelFromLightOil)).toAscii == s!"
   ^     v
   ||***⇨↓
   | *C* ↓
@@ -131,7 +131,7 @@ import Functorio.Ascii
   ^     v
 "
 
-#guard (station (recipe' .rocketFuel)).toAscii == s!"
+#guard (station (recipe .rocketFuel)).toAscii == s!"
   ^ ^     v
   | ↑⇨***⇨↓
   |┤↑├*A* ↓
@@ -139,7 +139,7 @@ import Functorio.Ascii
   ^ ^     v
 "
 
-#guard (station (recipe' .heavyOilCracking)).toAscii == s!"
+#guard (station (recipe .heavyOilCracking)).toAscii == s!"
   ^ ^     v
   |┤|├***||
   | |⚡*C* |
@@ -147,7 +147,7 @@ import Functorio.Ascii
   ^ ^     v
 "
 
-#guard (station (recipe' .advancedOilProcessing)).toAscii == s!"
+#guard (station (recipe .advancedOilProcessing)).toAscii == s!"
   ^ ^       v v v
   | | *****|| | |
   |┤|├***** | | |
@@ -157,7 +157,7 @@ import Functorio.Ascii
   ^ ^       v v v
 "
 
-#guard (station (recipe' .rocketPart)).toAscii == s!"
+#guard (station (recipe .rocketPart)).toAscii == s!"
  ^           ^^
  ↑⇨*********⇦↑↑
  ↑ *********↞↑↑
@@ -171,7 +171,7 @@ import Functorio.Ascii
  ^           ^^
 "
 
-#guard (station (recipe' .pentapodEgg)).toAscii == s!"
+#guard (station (recipe .pentapodEgg)).toAscii == s!"
   ^ ^     ^v
   |┤↑├***⇦↑↓
   | ↑⇨*B*↠↑↓
@@ -179,7 +179,7 @@ import Functorio.Ascii
   ^ ^     ^v
 "
 
-#guard (station (recipe' .nutrientsFromBioflux)).toAscii == s!"
+#guard (station (recipe .nutrientsFromBioflux)).toAscii == s!"
  ^^     v
  ↑↑⇨***⇨↓
  ↑↑↠*B*⇨↓

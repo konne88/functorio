@@ -85,16 +85,11 @@ def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .recycling => .recycler
 
 @[simp]
-def recipe' (recipe:RecipeName) : Process := {
+def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process := {
   recipe := recipe,
   fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+  returnedInputs := returnedInputs
 }
-
--- instance : Coe RecipeName Process where
---   coe recipe := {
---     recipe := recipe,
---     fabricator := defaultCategoryFabricator recipe.getRecipe.category,
---   }
 
 structure FabricatorConfig where
   direction : Direction
@@ -275,16 +270,6 @@ def pipesOnSideStation (process:Process) : Factory
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
   let leftAccess := leftAccessor station.interface.w station.height leftNS process.solidOutputs.length
   let rightAccess := rightAccessor station.interface.e station.height rightNS process.solidOutputs.length
-
-  -- in these cases, there might not be enough space for poles right next to the fabricator
-  -- if ns.length == 0--  || process.inputIngredients.length + process.outputIngredients.length >= station.height * 2 - 1
-  -- then
-  --   let factory := station.expand .S 1
-  --   unsafeFactoryCast {factory with
-  --     entities := factory.entities.append [pole (factory.width/2) (factory.height - 1)]
-  --   }
-  -- else
-
   unsafeFactoryCast (row3 leftAccess station rightAccess)
 
 private def pipesIn (ingredients:List Ingredient) (underground:Bool := false) (powerPole:Bool := false)
@@ -407,7 +392,7 @@ def stationWithoutOverride (process:Process) : Station process :=
     (pipesOut process.liquidOutputs (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
-private def flyingRobotFrameStation : Station (recipe' .flyingRobotFrame) :=
+private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
   let height := 3
   let entities : List Entity :=
     beltline (x:=0) .N height ++
@@ -443,7 +428,7 @@ private def flyingRobotFrameStation : Station (recipe' .flyingRobotFrame) :=
   }
 
 -- Special case, because it has incredible requirements on output speed
-private def nutrientsFromBiofluxStation : Station (recipe' .nutrientsFromBioflux) :=
+private def nutrientsFromBiofluxStation : Station (recipe .nutrientsFromBioflux) :=
   let height := 5
   let entities : List Entity :=
     beltline (x:=0) .N height ++
@@ -485,8 +470,8 @@ private def nutrientsFromBiofluxStation : Station (recipe' .nutrientsFromBioflux
   }
 
 -- Special case, needs two output inserters to keep up with the production rate.
-def railStation : Station (recipe' .rail) :=
-  let factory := (pipesOnSideStation (recipe' .rail)).expand .S 1
+def railStation : Station (recipe .rail) :=
+  let factory := (pipesOnSideStation (recipe .rail)).expand .S 1
   let removedLeftPole := eraseRectangle 2 2 1 1 factory.entities
   let removedPoles := eraseRectangle 6 2 1 1 removedLeftPole
   {factory with
@@ -497,8 +482,8 @@ def railStation : Station (recipe' .rail) :=
   }
 
 -- Special case, needs more powerpoles to covert the huge size of the building
-def rocketPart : Station (recipe' .rocketPart) :=
-  let factory := pipesOnSideStation (recipe' .rocketPart)
+def rocketPart : Station (recipe .rocketPart) :=
+  let factory := pipesOnSideStation (recipe .rocketPart)
   {factory with
     entities := factory.entities.append [
       pole 1 3, pole 11 3,
@@ -514,7 +499,7 @@ def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, 
 }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electrolyteStation : Station (recipe' .electrolyte) :=
+def electrolyteStation : Station (recipe .electrolyte) :=
   {
     wires := []
     width := 13, height := 6,
@@ -534,7 +519,7 @@ def electrolyteStation : Station (recipe' .electrolyte) :=
   }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electromagneticScienceStation : Station (recipe' .electromagneticSciencePack) :=
+def electromagneticScienceStation : Station (recipe .electromagneticSciencePack) :=
   {
     wires := []
     width := 14, height := 6,
@@ -556,7 +541,7 @@ def electromagneticScienceStation : Station (recipe' .electromagneticSciencePack
   }
 
 -- Special case, because of 4 solid inputs
-private def supercapacitorStation : Station (recipe' .supercapacitor) :=
+private def supercapacitorStation : Station (recipe .supercapacitor) :=
   let height := 4
   let entities : List Entity :=
     pipeline (x:=1) height ++
