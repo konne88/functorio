@@ -7,9 +7,7 @@ import Functorio.Factory
 open Lean
 open Lean (Json)
 
-namespace Blueprint
-
-private def copperWire := 5
+private def coppperWire := 5
 
 private structure BlueprintInner where
   entities: List Json
@@ -108,6 +106,8 @@ private def distance (a b : Entity) : Nat :=
   ((Int.ofNat a.x) - (Int.ofNat b.x)).natAbs +
   ((Int.ofNat a.y) - (Int.ofNat b.y)).natAbs
 
+namespace Factory
+
 def withinDistance (a b:Entity) :=
   let d := distance a b
   d <= 9 || (a.type == .bigPole && b.type == .bigPole && d <= 30)
@@ -117,147 +117,22 @@ def neededForBootStrap (e:Entity) : Bool :=
   | .pole | .bigPole | .roboport => true
   | _ => false
 
-
-inductive PoleType where
-  | medium
-  | big
-  deriving Inhabited, DecidableEq, Repr
-
-structure CellData where
-  type : PoleType
-  connected : Bool
-  id : Nat
-  deriving Inhabited, Repr
-
-abbrev Cell := Option CellData
-
-abbrev Matrix w h := Vector (Vector Cell h) w
-
-namespace Matrix
-
-def empty {w h} (a:Cell) : Matrix w h := Vector.replicate w (Vector.replicate h a)
-
-def modifyCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell -> Cell) : Matrix w h :=
-  matrix.modify x fun column => column.modify y cell
-
-def setCell {w h} (matrix:Matrix w h) (x y : Nat) (cell:Cell) : Matrix w h :=
-  modifyCell matrix x y fun _ => cell
-
-def markConnected {w h} (x y:Nat) (matrix:Matrix w h ) : Matrix w h :=
-  matrix.modifyCell x y (fun cell =>
-    match cell with
-    | .none => error! s!"Trying to connect cell that's not there {x} {y}"
-    | .some cell => .some {cell with connected := true}
-  )
-
-def getCell {w h} (matrix:Matrix w h) (x y : Nat) : Cell :=
-  let column := matrix[x]?
-  match column with
-  | .none => .none
-  | .some column =>
-    let cell := column[y]?
-    match cell with
-    | .none => .none
-    | .some cell => cell
-
-end Matrix
-
-def entityToCell (pole: Entity) (id:Nat): CellData :=
-  let type : PoleType := match pole.type with
-    | .bigPole => .big
-    | .pole => .medium
-    | _ => impossible! s!"Trying to create wire between entities that aren't poles {reprStr pole}"
-
-  {type:=type,id:=id,connected:=false}
-
-abbrev Wire := Nat × Nat
-
-def poleArea (maxDistance:Nat) : Array (Int32 × Int32 × Int32) := Id.run do
-  let mut result := #[]
-
-  for distance in List.range' 1 maxDistance do
-    for dx in List.range (distance + 1) do
-      let signs : List (Int32 × Int32) := [(1,1), (1,-1), (-1,1), (-1,-1)]
-      for (signX,signY) in signs do
-        result := result.push (distance.toInt32, dx * signX, (distance - dx) * signY)
-
-  return result
-
--- There are 8 tiles between the poles.
-def mediumPoleMaxDistance := 9
-
--- There are 30 tiles between the poles, but keep in mind that entities are 2 wide.
-def bigPoleMaxDistance := 32
-
-def mediumPoleArea : Array (Int32 × Int32 × Int32) := poleArea mediumPoleMaxDistance
-
-def bigPoleArea : Array (Int32 × Int32 × Int32) := poleArea bigPoleMaxDistance
-
-def generateWiresRec {w h} (remainingPoles:Nat) (nodeX nodeY:Nat) (node:CellData) (matrix: Matrix w h) (wires:Array Wire): Matrix w h × Array Wire := Id.run do
-  match remainingPoles with
-  | 0 => impossible! s!"Ran out of poles {remainingPoles}"
-  | remainingPoles + 1 =>
-    let mut matrix := matrix
-    let mut wires := wires
-
-    matrix := matrix.markConnected nodeX nodeY
-
-    -- Connect to big poles first, then medium poles
-    for type in [PoleType.big, PoleType.medium] do
-      -- Connect to low distance poles first
-      for (distance, dx, dy) in (if node.type == .medium then mediumPoleArea else bigPoleArea) do
-        let x := nodeX + dx
-        let y := nodeY + dy
-
-        if x < 0 || y < 0 then continue
-        let neighbor := matrix.getCell x.toNatClampNeg y.toNatClampNeg
-        match neighbor with
-        | .none => continue
-        | .some neighbor =>
-          if neighbor.connected then continue
-          if neighbor.type != type then continue
-          if neighbor.type == .medium && distance > mediumPoleMaxDistance then continue
-
-          wires := wires.push (node.id, neighbor.id)
-          let (newMatrix, newWires) := generateWiresRec remainingPoles x.toNatClampNeg y.toNatClampNeg neighbor matrix wires
-          matrix := newMatrix
-          wires := newWires
-
-    return (matrix, wires)
-
-def generateWires (width height:Nat) (poles: List (Entity × Nat)) : List Wire := Id.run do
-  let mut matrix : Matrix width height := Matrix.empty .none
-  let mut wires : Array Wire := #[]
-
-  for (pole, id) in poles do
-    matrix := matrix.setCell pole.x pole.y (entityToCell pole id)
-
-  if poles.isEmpty then [] else
-  let (root, id) := poles[0]!
-
-  let (_, newWires) := generateWiresRec poles.length root.x root.y (entityToCell root id) matrix wires
-  wires := newWires
-
-  return wires.toList
-
-end Blueprint
-
-namespace Factory
-
-open Blueprint
-
 def toBlueprint {n e s w} (factory:Factory n e s w) (bootstrap := false) : String :=
   let entities := (factory.entities.filter (fun e =>
-    !isTile e && (!bootstrap || Blueprint.neededForBootStrap e))).zipIdx
+    !isTile e && (!bootstrap || neededForBootStrap e))).zipIdx
   let tiles := factory.entities.filter isTile
   let poles := entities.filter (fun (e,_) => e.type == .pole || e.type == .bigPole)
-  let wires := generateWires factory.width factory.height poles
+  let wires := poles.flatMap (fun (a,aIdx) => poles.flatMap (fun (b,bIdx) =>
+    if aIdx < bIdx && withinDistance a b then [[
+      aIdx, coppperWire, bIdx, coppperWire
+    ]] else []
+  ))
 
   let blueprint : Blueprint := {
     blueprint := {
       entities:=entities.map (fun (e,idx) => entityToJson idx e),
       tiles:=tiles.map tileToJson,
-      wires:= wires.map fun (x,y) => [x, copperWire, y, copperWire],
+      wires:= wires,
       item:="blueprint",
       version:= 562949957025792
     }

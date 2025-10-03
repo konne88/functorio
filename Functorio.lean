@@ -7,7 +7,6 @@ import Functorio.AssemblyStationTest
 import Functorio.AssemblyLine
 import Functorio.AssemblyLineTest
 import Functorio.Blueprint
-import Functorio.BlueprintTest
 import Functorio.Bus
 import Functorio.BusTest
 import Functorio.Cap
