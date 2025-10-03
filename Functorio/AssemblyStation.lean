@@ -6,18 +6,51 @@ import Functorio.Row
 structure Process where
   recipe:RecipeName
   fabricator:Fabricator
+  returnedInputs : List (Fraction × Ingredient) := []
   -- fabricatorOk : fabricator.handlesCategory recipeName.getRecipe.category := by decide
   deriving Repr, DecidableEq
 
-namespace RecipeName
+namespace Process
 
-def inputIngredients (r:RecipeName) : List Ingredient :=
-  r.getRecipe.inputs.map (Prod.snd)
+@[simp]
+def getRecipe (process:Process) : Recipe :=
+  let original := process.recipe.getRecipe
+  if process.fabricator != .biochamber then original else
 
-def outputIngredients (r:RecipeName) : List Ingredient :=
-  r.getRecipe.outputs.map (Prod.snd)
+  let liquidInputs := original.inputs.filter fun input => input.snd.isLiquid
+  let solidInputs := original.inputs.filter fun input => !input.snd.isLiquid
 
-end RecipeName
+  let extraNutrients := original.time / process.fabricator.speedup / 4
+  let solidInputs :=
+    if solidInputs.any fun (_,ingredient) => ingredient == .nutrients
+    then solidInputs.map fun (items, ingredient) => (items + if ingredient == .nutrients then extraNutrients else 0, ingredient)
+    else [( extraNutrients , Ingredient.nutrients )] ++ solidInputs
+
+  { original with
+    inputs := liquidInputs ++ solidInputs
+  }
+
+def liquidInputs (process:Process) : List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
+
+def liquidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
+
+def solidInputs (process:Process): List Ingredient :=
+  (process.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
+
+def solidOutputs (process:Process): List Ingredient :=
+  (process.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
+
+@[simp]
+def inputIngredients (process:Process) : List Ingredient :=
+  process.getRecipe.inputs.map (Prod.snd)
+
+@[simp]
+def outputIngredients (process:Process) : List Ingredient :=
+  process.getRecipe.outputs.map (Prod.snd)
+
+end Process
 
 @[simp]
 def defaultCategoryFabricator : RecipeCategory -> Fabricator
@@ -51,11 +84,12 @@ def defaultCategoryFabricator : RecipeCategory -> Fabricator
 | .recyclingOrHandCrafting
 | .recycling => .recycler
 
-instance : Coe RecipeName Process where
-  coe recipe := {
-    recipe := recipe,
-    fabricator := defaultCategoryFabricator recipe.getRecipe.category,
-  }
+@[simp]
+def recipe (recipe:RecipeName) (returnedInputs : List (Fraction × Ingredient) := []) : Process := {
+  recipe := recipe,
+  fabricator := defaultCategoryFabricator recipe.getRecipe.category,
+  returnedInputs := returnedInputs
+}
 
 structure FabricatorConfig where
   direction : Direction
@@ -117,39 +151,28 @@ def fabricatorConfig : Fabricator -> FabricatorConfig
   outputOffsets := [1]
 }
 
-def liquidInputs (recipe:RecipeName) : List Ingredient :=
-  (recipe.getRecipe.inputs.map Prod.snd).filter Ingredient.isLiquid
+def interfaceE (process:Process) : List InterfaceH :=
+  process.liquidOutputs.map (.,.E)
 
-def liquidOutputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.outputs.map Prod.snd).filter Ingredient.isLiquid
+def interfaceW (process:Process) : List InterfaceH :=
+  process.liquidInputs.map (.,.E)
 
-def solidInputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.inputs.map Prod.snd).filter (!Ingredient.isLiquid .)
-
-def solidOutputs (recipe:RecipeName): List Ingredient :=
-  (recipe.getRecipe.outputs.map Prod.snd).filter (!Ingredient.isLiquid .)
-
-def interfaceE (recipe:RecipeName) : List InterfaceH :=
-  (liquidOutputs recipe).map (.,.E)
-
-def interfaceW (recipe:RecipeName) : List InterfaceH :=
-  (liquidInputs recipe).map (.,.E)
-
-def plainStation (process:Process) : Factory [] (interfaceE process.recipe) [] (interfaceW process.recipe) :=
+def plainStation (process:Process) : Factory [] (interfaceE process) [] (interfaceW process) :=
   let details := fabricatorConfig process.fabricator
   {
     entities := [
       fabricator 0 0 process.fabricator process.recipe details.direction details.mirror
     ]
+    wires := []
     width := process.fabricator.width
     height := process.fabricator.height
     interface := {
       n := #v[]
-      e := (details.outputOffsets.splitAt (liquidOutputs process.recipe).length).fst.castToVector!
+      e := (details.outputOffsets.splitAt process.liquidOutputs.length).fst.castToVector!
       s := #v[]
-      w := (details.inputOffsets.splitAt (liquidInputs process.recipe).length).fst.castToVector!
+      w := (details.inputOffsets.splitAt process.liquidInputs.length).fst.castToVector!
     }
-    name := reprStr process.recipe.getRecipe.name
+    name := reprStr process.getRecipe.name
   }
 
 private def beltline (x:Nat) (dir:Direction) (height:Nat) : List Entity :=
@@ -163,7 +186,7 @@ structure Access where
   ingredient: Ingredient
 
 -- factoryDir = direction in which the factory lies
-def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : List InterfaceV) (factoryDir: DirectionH) : List Entity :=
+def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : List InterfaceV) (factoryDir: DirectionH) (numSolidOutputs:Nat) : List Entity :=
   Id.run do
     let mut entities : Vector (Option EntityType) height := Vector.replicate height .none
 
@@ -173,18 +196,18 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
     for y in ewOffsets do
       entities := entities.set! y (.some (.pipeToGround factoryDir))
 
-    for ((_, dir), i) in ns.zipIdx do
+    for ((ingredient, dir), i) in ns.zipIdx do
       for y in List.range height do
         if entities[y]! == .none then
           let inserterDir := match dir with | .N => inputInserterDir | .S => outputInserterDir
+          let filter := if dir == .S && numSolidOutputs > 1 then [ingredient] ++ ingredient.spoilResult.toList else []
           match i with
-          | 0 => entities := entities.set! y (.some (.inserter inserterDir))
-          | 1 => entities := entities.set! y (.some (.longInserter inserterDir))
+          | 0 => entities := entities.set! y (.some (.inserter inserterDir filter))
+          | 1 => entities := entities.set! y (.some (.longInserter inserterDir filter))
           | _ => error! s!"More than 2 belt inputs/outputs per side are not supported, belt index = {i}"
           break
 
-    for i in List.range height do
-      let y := height - i - 1
+    for y in (List.range height).reverse do
       if entities[y]! == .none then
         entities := entities.set! y (.some .pole)
         break
@@ -192,13 +215,14 @@ def accessEntities (x:Nat) (height:Nat) (ewOffsets:List InterfaceImpl) (ns : Lis
     return entities.toList.zipIdx.flatMap fun (type, y) =>
       match type with | .none => [] | .some type => [{x:=x, y:=y, type:=type}]
 
-def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) : Factory ns ew ns ew :=
+def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) (numSolidOutputs:Nat): Factory ns ew ns ew :=
   match ns with
   | [] => emptyFactoryV ewOffsets
   | _ =>
     {
       width := ns.length + 1
       height := height
+      wires := []
       interface := {
         n := (ns.mapIdx fun i _ => i + 1).castToVector!
         e := ewOffsets
@@ -207,17 +231,18 @@ def rightAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) 
       }
       name := "rightAccessor"
       entities :=
-        accessEntities 0 height ewOffsets.toList ns .W ++
+        accessEntities 0 height ewOffsets.toList ns .W numSolidOutputs ++
         (ns.zipIdx.flatMap fun ((_, dir), i) => beltline (i + 1) dir height)
     }
 
-def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) : Factory ns ew ns ew :=
+def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (ns : List InterfaceV) (numSolidOutputs:Nat): Factory ns ew ns ew :=
   match ns with
   | [] => emptyFactoryV ewOffsets
   | _ =>
     {
       width := ns.length + 1
       height := height
+      wires := []
       interface := {
         n := (ns.mapIdx fun i _ => i).castToVector!
         e := ewOffsets
@@ -226,38 +251,33 @@ def leftAccessor {ew} (ewOffsets: Vector InterfaceImpl ew.length) (height:Nat) (
       }
       name := "leftAccessor"
       entities :=
-        accessEntities ns.length height ewOffsets.toList ns .E ++
+        accessEntities ns.length height ewOffsets.toList ns .E numSolidOutputs ++
         (ns.zipIdx.flatMap fun ((_, dir), i) => beltline i dir height)
     }
 
 
-def interfaceNS (recipe:RecipeName) : List InterfaceV :=
-  (solidInputs recipe).map (.,.N) ++ (solidOutputs recipe).map (.,.S)
+def interfaceNS (process:Process) : List InterfaceV :=
+  process.solidInputs.map (.,.N) ++ process.solidOutputs.map (.,.S)
 
 def pipesOnSideStation (process:Process) : Factory
-  (interfaceNS process.recipe)
-  (interfaceE process.recipe)
-  (interfaceNS process.recipe)
-  (interfaceW process.recipe)
+  (interfaceNS process)
+  (interfaceE process)
+  (interfaceNS process)
+  (interfaceW process)
 :=
   let station := plainStation process
-  let ns := interfaceNS process.recipe
+  let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
-  let leftAccess := leftAccessor station.interface.w station.height leftNS
-  let rightAccess := rightAccessor station.interface.e station.height rightNS
+  let leftAccess := leftAccessor station.interface.w station.height leftNS process.solidOutputs.length
+  let rightAccess := rightAccessor station.interface.e station.height rightNS process.solidOutputs.length
+  unsafeFactoryCast (row3 leftAccess station rightAccess)
 
-  if ns.length == 0
-  then
-    let factory := station.expand .S 1
-    unsafeFactoryCast {factory with entities := factory.entities.append [pole (factory.width/2) (factory.height - 1)]}
-  else unsafeFactoryCast (row3 leftAccess station rightAccess)
-
-private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
+private def pipesIn (ingredients:List Ingredient) (underground:Bool := false) (powerPole:Bool := false)
 : Factory (ingredients.map (.,.N)) (ingredients.map (.,.E)) (ingredients.map (.,.N)) []
 :=
   let pipes := ingredients.length
   let width := if pipes == 0 then 0 else pipes * 2 + 1
-  let height := pipes * 2 - 1
+  let height := if powerPole then max 2 (pipes * 2 - 1) else pipes * 2 - 1
 
   let pipelines : List Entity :=
     (List.range pipes).flatMap fun i =>
@@ -283,13 +303,17 @@ private def pipesIn (ingredients:List Ingredient) (underground:Bool := false)
       then []
       else [pipeToGround x y .E]
 
+  let power : List Entity :=
+    if powerPole then [pole (width-1) 1] else []
+
   let interfaceNS := ingredients.toVector.mapIdx fun i _ => (i * 2 + 1 : InterfaceImpl)
   let interfaceE := ingredients.toVector.mapIdx fun i _ => (i * 2 : InterfaceImpl)
 
   {
     width := width
     height := height
-    entities := pipelines ++ goDown ++ comeUp
+    wires := []
+    entities := pipelines ++ goDown ++ comeUp ++ power
     interface := {
       n := cast (by simp) interfaceNS
       e := cast (by simp) interfaceE
@@ -334,6 +358,7 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool := false)
   let interfaceW := ingredients.toVector.mapIdx fun i _ => (i * 2 : InterfaceImpl)
 
   {
+    wires := []
     width := width
     height := height
     entities := pipelines ++ goDown ++ comeUp
@@ -346,25 +371,28 @@ private def pipesOut (ingredients:List Ingredient) (underground:Bool := false)
     name := s!"pipesOut {reprStr ingredients}"
   }
 
-def stationInterface (recipe:RecipeName) : List InterfaceV :=
-  recipe.inputIngredients.map (., .N) ++
-  recipe.outputIngredients.map (., .S)
+def stationInterface (process:Process) : List InterfaceV :=
+  process.inputIngredients.map (., .N) ++
+  process.outputIngredients.map (., .S)
 
-abbrev Station recipe := Factory (stationInterface recipe) [] (stationInterface recipe) []
+abbrev Station process := Factory (stationInterface process) [] (stationInterface process) []
 
-def stationWithoutOverride (process:Process) : Station process.recipe :=
+def stationWithoutOverride (process:Process) : Station process :=
   let station := pipesOnSideStation process
+  let height := process.fabricator.height
 
-  let ns := interfaceNS process.recipe
+  let ns := interfaceNS process
   let (leftNS, rightNS) := ns.splitAt (ns.length / 2)
 
   unsafeFactoryCast (row3
-    (pipesIn (liquidInputs process.recipe) (underground:=!leftNS.isEmpty))
+    (pipesIn process.liquidInputs (underground:=!leftNS.isEmpty) (powerPole:=
+      ns.length == 0 ||
+      process.liquidInputs.length + leftNS.length >= height))
     station
-    (pipesOut (liquidOutputs process.recipe) (underground:=!rightNS.isEmpty)))
+    (pipesOut process.liquidOutputs (underground:=!rightNS.isEmpty)))
 
 -- Special case, because it takes 4 inputs.
-private def flyingRobotFrameStation : Station .flyingRobotFrame :=
+private def flyingRobotFrameStation : Station (recipe .flyingRobotFrame) :=
   let height := 3
   let entities : List Entity :=
     beltline (x:=0) .N height ++
@@ -388,6 +416,7 @@ private def flyingRobotFrameStation : Station .flyingRobotFrame :=
     beltline (x:=9) .S height
 
   {
+    wires := []
     width:= 10, height:=height, entities := entities
     interface := {
       n := #v[0,1,2,8,9]
@@ -398,9 +427,51 @@ private def flyingRobotFrameStation : Station .flyingRobotFrame :=
     name := "flyingRobotFrame"
   }
 
+-- Special case, because it has incredible requirements on output speed
+private def nutrientsFromBiofluxStation : Station (recipe .nutrientsFromBioflux) :=
+  let height := 5
+  let entities : List Entity :=
+    beltline (x:=0) .N height ++
+    beltline (x:=1) .N height ++
+    [
+      inserter 2 0 .W,
+      longInserter 2 1 .W,
+      longInserter 2 2 .W,
+      pole 2 3,
+
+      fabricator 3 0 .biochamber .nutrientsFromBioflux,
+
+      inserter 6 0 .W,
+      inserter 6 1 .W,
+      inserter 6 2 .W,
+
+      inserter 3 3 .N,
+      inserter 4 3 .N,
+      inserter 5 3 .N,
+      pole 6 3,
+
+      belt 3 4 .E,
+      belt 4 4 .E,
+      belt 5 4 .E,
+      belt 6 4 .E
+    ] ++
+    beltline (x:=7) .S height
+
+  {
+    wires := []
+    width:= 8, height:=height, entities := entities
+    interface := {
+      n := #v[0,1,7]
+      e := #v[]
+      s := #v[0,1,7]
+      w := #v[]
+    }
+    name := "nutrientsFromBioflux"
+  }
+
 -- Special case, needs two output inserters to keep up with the production rate.
-def railStation : Station .rail :=
-  let factory := (pipesOnSideStation RecipeName.rail).expand .S 1
+def railStation : Station (recipe .rail) :=
+  let factory := (pipesOnSideStation (recipe .rail)).expand .S 1
   let removedLeftPole := eraseRectangle 2 2 1 1 factory.entities
   let removedPoles := eraseRectangle 6 2 1 1 removedLeftPole
   {factory with
@@ -411,8 +482,8 @@ def railStation : Station .rail :=
   }
 
 -- Special case, needs more powerpoles to covert the huge size of the building
-def rocketPart : Station .rocketPart :=
-  let factory := pipesOnSideStation RecipeName.rocketPart
+def rocketPart : Station (recipe .rocketPart) :=
+  let factory := pipesOnSideStation (recipe .rocketPart)
   {factory with
     entities := factory.entities.append [
       pole 1 3, pole 11 3,
@@ -421,14 +492,16 @@ def rocketPart : Station .rocketPart :=
 
 def acccessPipe (x:Nat) (ingredient:Ingredient): Factory [] [] [] [(ingredient, .E)] := {
   width := 4, height := 1
+  wires := []
   entities := [pipe x 0, pipeToGround (x-1) 0 .E]
   name := "accessPipe"
   interface := {n := #v[], e := #v[], s := #v[], w := #v[0]}
 }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electrolyteStation : Station .electrolyte :=
+def electrolyteStation : Station (recipe .electrolyte) :=
   {
+    wires := []
     width := 13, height := 6,
     name := ".electrolyte"
     interface := {n := #v[1,3,5,11], e := #v[], s := #v[1,3,5,11], w := #v[]}
@@ -446,8 +519,9 @@ def electrolyteStation : Station .electrolyte :=
   }
 
 -- Special case, because the plant's pipes come out in weird spots
-def electromagneticScienceStation : Station .electromagneticSciencePack :=
+def electromagneticScienceStation : Station (recipe .electromagneticSciencePack) :=
   {
+    wires := []
     width := 14, height := 6,
     name := ".electromagneticSciencePack"
     interface := {n := #v[1,3,5,6,13], e := #v[], s := #v[1,3,5,6,13], w := #v[]}
@@ -467,7 +541,7 @@ def electromagneticScienceStation : Station .electromagneticSciencePack :=
   }
 
 -- Special case, because of 4 solid inputs
-private def supercapacitorStation : Station .supercapacitor :=
+private def supercapacitorStation : Station (recipe .supercapacitor) :=
   let height := 4
   let entities : List Entity :=
     pipeline (x:=1) height ++
@@ -494,6 +568,7 @@ private def supercapacitorStation : Station .supercapacitor :=
     beltline (x:=13) .S height
 
   {
+    wires := []
     width:= 14, height:=height, entities := entities
     interface := {
       n := #v[1,3,4,5,12,13]
@@ -504,12 +579,13 @@ private def supercapacitorStation : Station .supercapacitor :=
     name := ".supercapacitor"
   }
 
-def station (process:Process) : Station process.recipe :=
+def station (process:Process) : Station process :=
   match process.recipe with
-  | .flyingRobotFrame => flyingRobotFrameStation
-  | .electrolyte => electrolyteStation
-  | .electromagneticSciencePack => electromagneticScienceStation
-  | .supercapacitor => supercapacitorStation
-  | .rail => railStation
-  | .rocketPart => rocketPart
-  | recipe => stationWithoutOverride {process with recipe := recipe}
+  | .flyingRobotFrame => unsafeFactoryCast flyingRobotFrameStation
+  | .electrolyte => unsafeFactoryCast electrolyteStation
+  | .electromagneticSciencePack => unsafeFactoryCast electromagneticScienceStation
+  | .supercapacitor => unsafeFactoryCast supercapacitorStation
+  | .rail => unsafeFactoryCast railStation
+  | .rocketPart => unsafeFactoryCast rocketPart
+  | .nutrientsFromBioflux => unsafeFactoryCast nutrientsFromBiofluxStation
+  | _ => stationWithoutOverride process

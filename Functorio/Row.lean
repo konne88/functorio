@@ -15,6 +15,7 @@ private def rowPerfect {n e s w n' e' s'} (left : Factory n e s w) (right:Factor
     width := left.width + right.width,
     height := height,
     entities := left.entities ++ right.entities.map (Entity.offsetPosition left.width 0)
+    wires := left.wires ++ right.wires.map fun wire => wire.incrementLabels left.entities.length
     interface := {
       n := cast (by simp) (left.interface.n ++ increaseOffset left.width (right.interface.n))
       e := right.interface.e

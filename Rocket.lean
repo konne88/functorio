@@ -7,46 +7,46 @@ instance : Config where
   adapterMinHeight := 3
 
 def makeLowDensityStructure : Steel 40 -> Copper 400 -> Plastic 100 -> Bus (LowDensityStructure 20) :=
-  busAssemblyLine RecipeName.lowDensityStructure 4
+  busAssemblyLine (recipe .lowDensityStructure) 4
 
 def makeAcid : Water 6000 -> Sulfur 300 -> Iron 60 -> Bus (Acid 3000) :=
-  busAssemblyLine RecipeName.sulfuricAcid 1
+  busAssemblyLine (recipe RecipeName.sulfuricAcid) 1
 
 def makeCopper : CopperOre 1500 -> Bus (Copper 1500) :=
-  busAssemblyLine RecipeName.copperPlate 40
+  busAssemblyLine (recipe .copperPlate) 40
 
 def makeIron : IronOre 900 -> Bus (Iron 900) :=
-  busAssemblyLine RecipeName.ironPlate 24
+  busAssemblyLine (recipe .ironPlate) 24
 
 def makeSteel : Iron 225 -> Bus (Steel 45) :=
-  busAssemblyLine RecipeName.steelPlate 6
+  busAssemblyLine (recipe .steelPlate) 6
 
 def makeSulfur : Water 7200 -> Petrolium 7200 -> Bus (Sulfur 480) :=
-  busAssemblyLine RecipeName.sulfur 4
+  busAssemblyLine (recipe .sulfur) 4
 
 def makePlastic : Petrolium 2400 -> Coal 120 -> Bus (Plastic 240) :=
-  busAssemblyLine RecipeName.plasticBar 2
+  busAssemblyLine (recipe .plasticBar) 2
 
 def makeCable : Copper 1050 -> Bus (Cable 2100) :=
-  busAssemblyLine RecipeName.copperCable 7
+  busAssemblyLine (recipe .copperCable) 7
 
 def makeGreenCircuit : Iron 600 -> Cable 1800 -> Bus (GreenCircuit 600) :=
-  busAssemblyLine RecipeName.electronicCircuit 4
+  busAssemblyLine (recipe .electronicCircuit) 4
 
 def makeRedCircuit : GreenCircuit 100 -> Plastic 100 -> Cable 200 -> Bus (RedCircuit 50) :=
-  busAssemblyLine RecipeName.advancedCircuit 4
+  busAssemblyLine (recipe .advancedCircuit) 4
 
 def makeBlueCircuit : Acid (225/2) -> GreenCircuit 450 -> RedCircuit 45 -> Bus (BlueCircuit (45/2)) :=
-  busAssemblyLine RecipeName.processingUnit 3
+  busAssemblyLine (recipe .processingUnit) 3
 
 def makeSolidFuel : LightOil 2400 -> Bus (SolidFuel 240) :=
-  busAssemblyLine RecipeName.solidFuelFromLightOil 4
+  busAssemblyLine (recipe .solidFuelFromLightOil) 4
 
 def makeRocketFuel : LightOil 200 -> SolidFuel 200 -> Bus (RocketFuel 20) :=
-  busAssemblyLine RecipeName.rocketFuel 4
+  busAssemblyLine (recipe .rocketFuel) 4
 
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
-  busAssemblyLine RecipeName.rocketPart 1
+  busAssemblyLine (recipe .rocketPart) 1
 
 def rocketFactory := bus do
   let copper <- input .copperPlate 1500

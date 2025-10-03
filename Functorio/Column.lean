@@ -11,6 +11,7 @@ private def columnPerfect {n e s w e' s' w'} (top : Factory n e s w) (bot:Factor
     width := width,
     height := top.height + bot.height,
     entities := top.entities ++ bot.entities.map (Entity.offsetPosition 0 top.height)
+    wires := top.wires ++ bot.wires.map fun wire => wire.incrementLabels top.entities.length
     interface :=
     {
       n := top.interface.n

@@ -44,16 +44,40 @@ structure InterfaceImpls (n:List InterfaceV) (e:List InterfaceH) (s:List Interfa
   w: Vector InterfaceImpl (w.length)
   deriving Inhabited, Repr
 
+inductive WireType where
+  | redInput
+  | greenInput
+  | redOutput
+  | greenOutput
+  | copper
+  deriving DecidableEq, Inhabited, Repr
+
+structure Wire where
+  src: Nat
+  srcType: WireType
+  dst: Nat
+  dstType: WireType
+  deriving DecidableEq, Inhabited, Repr
+
+namespace Wire
+
+def incrementLabels (wire:Wire) (n:Nat) : Wire :=
+  {src:=wire.src+n, dst:=wire.dst+n, srcType:=wire.srcType, dstType:=wire.dstType}
+
+end Wire
+
 structure Factory (n:List InterfaceV) (e:List InterfaceH) (s:List InterfaceV) (w:List InterfaceH) where
   width: Nat
   height: Nat
   entities: List Entity
+  wires: List Wire
   interface: InterfaceImpls n e s w
   name: String
   deriving Repr
 
 def errorFactory {n e s w} : Factory n e s w := {
   entities := []
+  wires := []
   height := max n.length s.length
   width := max e.length w.length
   interface := {
@@ -83,6 +107,7 @@ def setName {n e s w} (name:String) (f:Factory n e s w) : Factory n e s w :=
     width:=f.width
     height:=f.height
     entities:=f.entities
+    wires := f.wires
     interface:=f.interface
     name:=name
   }
@@ -92,6 +117,7 @@ end Factory
 
 def emptyFactoryV {i} (offsets:Vector InterfaceImpl i.length := Vector.range i.length) : Factory [] i [] i := {
   entities := []
+  wires := []
   interface := {
     n := #v[]
     e := offsets
@@ -99,19 +125,20 @@ def emptyFactoryV {i} (offsets:Vector InterfaceImpl i.length := Vector.range i.l
     w := offsets
   }
   width := 0
-  height := if i.isEmpty then 0 else offsets[i.length-1]!
+  height := if i.isEmpty then 0 else offsets[i.length-1]! + 1
   name := s!"emptyFactoryV {reprStr i}"
 }
 
 def emptyFactoryH {i} (offsets:Vector InterfaceImpl i.length := Vector.range i.length) : Factory i [] i [] := {
   entities := []
+  wires := []
   interface := {
     n := offsets
     e := #v[]
     s := offsets
     w := #v[]
   }
-  width := if i.isEmpty then 0 else offsets[i.length-1]!
+  width := if i.isEmpty then 0 else offsets[i.length-1]! + 1
   height := 0
   name := s!"emptyFactoryH {reprStr i}"
 }

@@ -23,3 +23,11 @@ root = "Rocket"
 [[lean_exe]]
 name = "fulgora-150"
 root = "Fulgora150"
+
+[[lean_exe]]
+name = "gleba-300"
+root = "Gleba300"
+
+[[lean_exe]]
+name = "spaceship"
+root = "Spaceship"

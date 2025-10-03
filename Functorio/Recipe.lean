@@ -393,8 +393,358 @@ def isLiquid : Ingredient -> Bool
 | .petroleumGas => true
 | .steam => true
 | .sulfuricAcid => true
+| .thrusterFuel => true
+| .thrusterOxidizer => true
 | .water => true
 | _ => false
+
+def spoilResult : Ingredient -> Option Ingredient
+| .agriculturalSciencePack => .some spoilage
+| .bioflux => .some spoilage
+| .copperBacteria => .some copperOre
+| .ironBacteria => .some ironOre
+| .jelly => .some spoilage
+| .jellynut => .some spoilage
+| .nutrients => .some spoilage
+| .rawFish => .some spoilage
+| .yumako => .some spoilage
+| .yumakoMash => .some spoilage
+| _ => .none
+
+def name : Ingredient -> String
+| .accumulator => "accumulator"
+| .activeProviderChest => "active-provider-chest"
+| .advancedCircuit => "advanced-circuit"
+| .agriculturalSciencePack => "agricultural-science-pack"
+| .agriculturalTower => "agricultural-tower"
+| .ammonia => "ammonia"
+| .ammoniacalSolution => "ammoniacal-solution"
+| .arithmeticCombinator => "arithmetic-combinator"
+| .artificialJellynutSoil => "artificial-jellynut-soil"
+| .artificialYumakoSoil => "artificial-yumako-soil"
+| .artilleryShell => "artillery-shell"
+| .artilleryTurret => "artillery-turret"
+| .artilleryWagon => "artillery-wagon"
+| .assemblingMachine1 => "assembling-machine-1"
+| .assemblingMachine2 => "assembling-machine-2"
+| .assemblingMachine3 => "assembling-machine-3"
+| .asteroidCollector => "asteroid-collector"
+| .atomicBomb => "atomic-bomb"
+| .automationSciencePack => "automation-science-pack"
+| .barrel => "barrel"
+| .battery => "battery"
+| .batteryEquipment => "battery-equipment"
+| .batteryMk2Equipment => "battery-mk2-equipment"
+| .batteryMk3Equipment => "battery-mk3-equipment"
+| .beacon => "beacon"
+| .beltImmunityEquipment => "belt-immunity-equipment"
+| .bigElectricPole => "big-electric-pole"
+| .bigMiningDrill => "big-mining-drill"
+| .biochamber => "biochamber"
+| .bioflux => "bioflux"
+| .biolab => "biolab"
+| .biterEgg => "biter-egg"
+| .blueprint => "blueprint"
+| .blueprintBook => "blueprint-book"
+| .boiler => "boiler"
+| .bottomlessChest => "bottomless-chest"
+| .bufferChest => "buffer-chest"
+| .bulkInserter => "bulk-inserter"
+| .burnerGenerator => "burner-generator"
+| .burnerInserter => "burner-inserter"
+| .burnerMiningDrill => "burner-mining-drill"
+| .calcite => "calcite"
+| .cannonShell => "cannon-shell"
+| .captiveBiterSpawner => "captive-biter-spawner"
+| .captureRobotRocket => "capture-robot-rocket"
+| .car => "car"
+| .carbon => "carbon"
+| .carbonFiber => "carbon-fiber"
+| .carbonicAsteroidChunk => "carbonic-asteroid-chunk"
+| .cargoBay => "cargo-bay"
+| .cargoLandingPad => "cargo-landing-pad"
+| .cargoWagon => "cargo-wagon"
+| .centrifuge => "centrifuge"
+| .chemicalPlant => "chemical-plant"
+| .chemicalSciencePack => "chemical-science-pack"
+| .cliffExplosives => "cliff-explosives"
+| .clusterGrenade => "cluster-grenade"
+| .coal => "coal"
+| .coin => "coin"
+| .combatShotgun => "combat-shotgun"
+| .concrete => "concrete"
+| .constantCombinator => "constant-combinator"
+| .constructionRobot => "construction-robot"
+| .copperBacteria => "copper-bacteria"
+| .copperCable => "copper-cable"
+| .copperOre => "copper-ore"
+| .copperPlate => "copper-plate"
+| .crudeOil => "crude-oil"
+| .crudeOilBarrel => "crude-oil-barrel"
+| .crusher => "crusher"
+| .cryogenicPlant => "cryogenic-plant"
+| .cryogenicSciencePack => "cryogenic-science-pack"
+| .deciderCombinator => "decider-combinator"
+| .deconstructionPlanner => "deconstruction-planner"
+| .defenderCapsule => "defender-capsule"
+| .depletedUraniumFuelCell => "depleted-uranium-fuel-cell"
+| .destroyerCapsule => "destroyer-capsule"
+| .dischargeDefenseEquipment => "discharge-defense-equipment"
+| .displayPanel => "display-panel"
+| .distractorCapsule => "distractor-capsule"
+| .efficiencyModule => "efficiency-module"
+| .efficiencyModule2 => "efficiency-module-2"
+| .efficiencyModule3 => "efficiency-module-3"
+| .electricEnergyInterface => "electric-energy-interface"
+| .electricEngineUnit => "electric-engine-unit"
+| .electricFurnace => "electric-furnace"
+| .electricMiningDrill => "electric-mining-drill"
+| .electrolyte => "electrolyte"
+| .electromagneticPlant => "electromagnetic-plant"
+| .electromagneticSciencePack => "electromagnetic-science-pack"
+| .electronicCircuit => "electronic-circuit"
+| .emptyModuleSlot => "empty-module-slot"
+| .energyShieldEquipment => "energy-shield-equipment"
+| .energyShieldMk2Equipment => "energy-shield-mk2-equipment"
+| .engineUnit => "engine-unit"
+| .exoskeletonEquipment => "exoskeleton-equipment"
+| .explosiveCannonShell => "explosive-cannon-shell"
+| .explosiveRocket => "explosive-rocket"
+| .explosiveUraniumCannonShell => "explosive-uranium-cannon-shell"
+| .explosives => "explosives"
+| .expressLoader => "express-loader"
+| .expressSplitter => "express-splitter"
+| .expressTransportBelt => "express-transport-belt"
+| .expressUndergroundBelt => "express-underground-belt"
+| .fastInserter => "fast-inserter"
+| .fastLoader => "fast-loader"
+| .fastSplitter => "fast-splitter"
+| .fastTransportBelt => "fast-transport-belt"
+| .fastUndergroundBelt => "fast-underground-belt"
+| .firearmMagazine => "firearm-magazine"
+| .fissionReactorEquipment => "fission-reactor-equipment"
+| .flamethrower => "flamethrower"
+| .flamethrowerAmmo => "flamethrower-ammo"
+| .flamethrowerTurret => "flamethrower-turret"
+| .fluidWagon => "fluid-wagon"
+| .fluorine => "fluorine"
+| .fluoroketoneCold => "fluoroketone-cold"
+| .fluoroketoneColdBarrel => "fluoroketone-cold-barrel"
+| .fluoroketoneHot => "fluoroketone-hot"
+| .fluoroketoneHotBarrel => "fluoroketone-hot-barrel"
+| .flyingRobotFrame => "flying-robot-frame"
+| .foundation => "foundation"
+| .foundry => "foundry"
+| .fusionGenerator => "fusion-generator"
+| .fusionPowerCell => "fusion-power-cell"
+| .fusionReactor => "fusion-reactor"
+| .fusionReactorEquipment => "fusion-reactor-equipment"
+| .gate => "gate"
+| .grenade => "grenade"
+| .gunTurret => "gun-turret"
+| .hazardConcrete => "hazard-concrete"
+| .heatExchanger => "heat-exchanger"
+| .heatInterface => "heat-interface"
+| .heatPipe => "heat-pipe"
+| .heatingTower => "heating-tower"
+| .heavyArmor => "heavy-armor"
+| .heavyOil => "heavy-oil"
+| .heavyOilBarrel => "heavy-oil-barrel"
+| .holmiumOre => "holmium-ore"
+| .holmiumPlate => "holmium-plate"
+| .holmiumSolution => "holmium-solution"
+| .ice => "ice"
+| .icePlatform => "ice-platform"
+| .infinityCargoWagon => "infinity-cargo-wagon"
+| .infinityChest => "infinity-chest"
+| .infinityPipe => "infinity-pipe"
+| .inserter => "inserter"
+| .ironBacteria => "iron-bacteria"
+| .ironChest => "iron-chest"
+| .ironGearWheel => "iron-gear-wheel"
+| .ironOre => "iron-ore"
+| .ironPlate => "iron-plate"
+| .ironStick => "iron-stick"
+| .itemUnknown => "item-unknown"
+| .jelly => "jelly"
+| .jellynut => "jellynut"
+| .jellynutSeed => "jellynut-seed"
+| .lab => "lab"
+| .landMine => "land-mine"
+| .landfill => "landfill"
+| .laneSplitter => "lane-splitter"
+| .laserTurret => "laser-turret"
+| .lava => "lava"
+| .lightArmor => "light-armor"
+| .lightOil => "light-oil"
+| .lightOilBarrel => "light-oil-barrel"
+| .lightningCollector => "lightning-collector"
+| .lightningRod => "lightning-rod"
+| .linkedBelt => "linked-belt"
+| .linkedChest => "linked-chest"
+| .lithium => "lithium"
+| .lithiumBrine => "lithium-brine"
+| .lithiumPlate => "lithium-plate"
+| .loader => "loader"
+| .locomotive => "locomotive"
+| .logisticRobot => "logistic-robot"
+| .logisticSciencePack => "logistic-science-pack"
+| .longHandedInserter => "long-handed-inserter"
+| .lowDensityStructure => "low-density-structure"
+| .lubricant => "lubricant"
+| .lubricantBarrel => "lubricant-barrel"
+| .mechArmor => "mech-armor"
+| .mediumElectricPole => "medium-electric-pole"
+| .metallicAsteroidChunk => "metallic-asteroid-chunk"
+| .metallurgicSciencePack => "metallurgic-science-pack"
+| .militarySciencePack => "military-science-pack"
+| .modularArmor => "modular-armor"
+| .moltenCopper => "molten-copper"
+| .moltenIron => "molten-iron"
+| .nightVisionEquipment => "night-vision-equipment"
+| .nuclearFuel => "nuclear-fuel"
+| .nuclearReactor => "nuclear-reactor"
+| .nutrients => "nutrients"
+| .offshorePump => "offshore-pump"
+| .oilRefinery => "oil-refinery"
+| .oneWayValve => "one-way-valve"
+| .overflowValve => "overflow-valve"
+| .overgrowthJellynutSoil => "overgrowth-jellynut-soil"
+| .overgrowthYumakoSoil => "overgrowth-yumako-soil"
+| .oxideAsteroidChunk => "oxide-asteroid-chunk"
+| .passiveProviderChest => "passive-provider-chest"
+| .pentapodEgg => "pentapod-egg"
+| .personalLaserDefenseEquipment => "personal-laser-defense-equipment"
+| .personalRoboportEquipment => "personal-roboport-equipment"
+| .personalRoboportMk2Equipment => "personal-roboport-mk2-equipment"
+| .petroleumGas => "petroleum-gas"
+| .petroleumGasBarrel => "petroleum-gas-barrel"
+| .piercingRoundsMagazine => "piercing-rounds-magazine"
+| .piercingShotgunShell => "piercing-shotgun-shell"
+| .pipe => "pipe"
+| .pipeToGround => "pipe-to-ground"
+| .pistol => "pistol"
+| .plasticBar => "plastic-bar"
+| .poisonCapsule => "poison-capsule"
+| .powerArmor => "power-armor"
+| .powerArmorMk2 => "power-armor-mk2"
+| .powerSwitch => "power-switch"
+| .processingUnit => "processing-unit"
+| .productionSciencePack => "production-science-pack"
+| .productivityModule => "productivity-module"
+| .productivityModule2 => "productivity-module-2"
+| .productivityModule3 => "productivity-module-3"
+| .programmableSpeaker => "programmable-speaker"
+| .promethiumAsteroidChunk => "promethium-asteroid-chunk"
+| .promethiumSciencePack => "promethium-science-pack"
+| .proxyContainer => "proxy-container"
+| .pump => "pump"
+| .pumpjack => "pumpjack"
+| .qualityModule => "quality-module"
+| .qualityModule2 => "quality-module-2"
+| .qualityModule3 => "quality-module-3"
+| .quantumProcessor => "quantum-processor"
+| .radar => "radar"
+| .rail => "rail"
+| .railChainSignal => "rail-chain-signal"
+| .railRamp => "rail-ramp"
+| .railSignal => "rail-signal"
+| .railSupport => "rail-support"
+| .railgun => "railgun"
+| .railgunAmmo => "railgun-ammo"
+| .railgunTurret => "railgun-turret"
+| .rawFish => "raw-fish"
+| .recycler => "recycler"
+| .refinedConcrete => "refined-concrete"
+| .refinedHazardConcrete => "refined-hazard-concrete"
+| .repairPack => "repair-pack"
+| .requesterChest => "requester-chest"
+| .roboport => "roboport"
+| .rocket => "rocket"
+| .rocketFuel => "rocket-fuel"
+| .rocketLauncher => "rocket-launcher"
+| .rocketPart => "rocket-part"
+| .rocketSilo => "rocket-silo"
+| .rocketTurret => "rocket-turret"
+| .science => "science"
+| .scrap => "scrap"
+| .selectionTool => "selection-tool"
+| .selectorCombinator => "selector-combinator"
+| .shotgun => "shotgun"
+| .shotgunShell => "shotgun-shell"
+| .simpleEntityWithForce => "simple-entity-with-force"
+| .simpleEntityWithOwner => "simple-entity-with-owner"
+| .slowdownCapsule => "slowdown-capsule"
+| .smallElectricPole => "small-electric-pole"
+| .smallLamp => "small-lamp"
+| .solarPanel => "solar-panel"
+| .solarPanelEquipment => "solar-panel-equipment"
+| .solidFuel => "solid-fuel"
+| .spacePlatformFoundation => "space-platform-foundation"
+| .spacePlatformHub => "space-platform-hub"
+| .spacePlatformStarterPack => "space-platform-starter-pack"
+| .spaceSciencePack => "space-science-pack"
+| .speedModule => "speed-module"
+| .speedModule2 => "speed-module-2"
+| .speedModule3 => "speed-module-3"
+| .spidertron => "spidertron"
+| .splitter => "splitter"
+| .spoilage => "spoilage"
+| .stackInserter => "stack-inserter"
+| .steam => "steam"
+| .steamEngine => "steam-engine"
+| .steamTurbine => "steam-turbine"
+| .steelChest => "steel-chest"
+| .steelFurnace => "steel-furnace"
+| .steelPlate => "steel-plate"
+| .stone => "stone"
+| .stoneBrick => "stone-brick"
+| .stoneFurnace => "stone-furnace"
+| .stoneWall => "stone-wall"
+| .storageChest => "storage-chest"
+| .storageTank => "storage-tank"
+| .submachineGun => "submachine-gun"
+| .substation => "substation"
+| .sulfur => "sulfur"
+| .sulfuricAcid => "sulfuric-acid"
+| .sulfuricAcidBarrel => "sulfuric-acid-barrel"
+| .supercapacitor => "supercapacitor"
+| .superconductor => "superconductor"
+| .tank => "tank"
+| .teslaAmmo => "tesla-ammo"
+| .teslaTurret => "tesla-turret"
+| .teslagun => "teslagun"
+| .thruster => "thruster"
+| .thrusterFuel => "thruster-fuel"
+| .thrusterOxidizer => "thruster-oxidizer"
+| .toolbeltEquipment => "toolbelt-equipment"
+| .topUpValve => "top-up-valve"
+| .trainStop => "train-stop"
+| .transportBelt => "transport-belt"
+| .treeSeed => "tree-seed"
+| .tungstenCarbide => "tungsten-carbide"
+| .tungstenOre => "tungsten-ore"
+| .tungstenPlate => "tungsten-plate"
+| .turboLoader => "turbo-loader"
+| .turboSplitter => "turbo-splitter"
+| .turboTransportBelt => "turbo-transport-belt"
+| .turboUndergroundBelt => "turbo-underground-belt"
+| .undergroundBelt => "underground-belt"
+| .upgradePlanner => "upgrade-planner"
+| .uranium235 => "uranium-235"
+| .uranium238 => "uranium-238"
+| .uraniumCannonShell => "uranium-cannon-shell"
+| .uraniumFuelCell => "uranium-fuel-cell"
+| .uraniumOre => "uranium-ore"
+| .uraniumRoundsMagazine => "uranium-rounds-magazine"
+| .utilitySciencePack => "utility-science-pack"
+| .water => "water"
+| .waterBarrel => "water-barrel"
+| .wood => "wood"
+| .woodenChest => "wooden-chest"
+| .yumako => "yumako"
+| .yumakoMash => "yumako-mash"
+| .yumakoSeed => "yumako-seed"
 
 end Ingredient
 
@@ -927,7 +1277,6 @@ inductive RecipeName
   | railgunTurret
   | railgunTurretRecycling
   | rawFishRecycling
-  | recipeUnknown
   | recycler
   | recyclerRecycling
   | refinedConcrete
@@ -1107,7 +1456,7 @@ def getRecipe : RecipeName -> Recipe
 | .accumulatorRecycling => {
   name := "accumulator-recycling",
   inputs := [(1, .accumulator)],
-  outputs := [(1/2, .ironPlate), (5/4, .battery)],
+  outputs := [(5/4, .battery), (1/2, .ironPlate)],
   category := .recycling
   time := 5/8
 }
@@ -1128,7 +1477,7 @@ def getRecipe : RecipeName -> Recipe
 | .activeProviderChestRecycling => {
   name := "active-provider-chest-recycling",
   inputs := [(1, .activeProviderChest)],
-  outputs := [(1/4, .steelChest), (3/4, .electronicCircuit), (1/4, .advancedCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/4, .steelChest), (1/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -1149,7 +1498,7 @@ def getRecipe : RecipeName -> Recipe
 | .advancedCircuitRecycling => {
   name := "advanced-circuit-recycling",
   inputs := [(1, .advancedCircuit)],
-  outputs := [(1/2, .electronicCircuit), (1/2, .plasticBar), (1, .copperCable)],
+  outputs := [(1, .copperCable), (1/2, .electronicCircuit), (1/2, .plasticBar)],
   category := .recycling
   time := 3/8
 }
@@ -1212,7 +1561,7 @@ def getRecipe : RecipeName -> Recipe
 | .agriculturalTowerRecycling => {
   name := "agricultural-tower-recycling",
   inputs := [(1, .agriculturalTower)],
-  outputs := [(5/2, .steelPlate), (3/4, .electronicCircuit), (5, .spoilage), (1/4, .landfill)],
+  outputs := [(5, .spoilage), (5/2, .steelPlate), (3/4, .electronicCircuit), (1/4, .landfill)],
   category := .recycling
   time := 5/8
 }
@@ -1254,7 +1603,7 @@ def getRecipe : RecipeName -> Recipe
 | .artificialJellynutSoilRecycling => {
   name := "artificial-jellynut-soil-recycling",
   inputs := [(1, .artificialJellynutSoil)],
-  outputs := [(1/20, .jellynutSeed), (5/4, .nutrients), (1/8, .landfill)],
+  outputs := [(5/4, .nutrients), (1/8, .landfill), (1/20, .jellynutSeed)],
   category := .recycling
   time := 1/8
 }
@@ -1268,7 +1617,7 @@ def getRecipe : RecipeName -> Recipe
 | .artificialYumakoSoilRecycling => {
   name := "artificial-yumako-soil-recycling",
   inputs := [(1, .artificialYumakoSoil)],
-  outputs := [(1/20, .yumakoSeed), (5/4, .nutrients), (1/8, .landfill)],
+  outputs := [(5/4, .nutrients), (1/8, .landfill), (1/20, .yumakoSeed)],
   category := .recycling
   time := 1/8
 }
@@ -1282,7 +1631,7 @@ def getRecipe : RecipeName -> Recipe
 | .artilleryShellRecycling => {
   name := "artillery-shell-recycling",
   inputs := [(1, .artilleryShell)],
-  outputs := [(1/4, .radar), (1/4, .calcite), (1, .tungstenPlate), (2, .explosives)],
+  outputs := [(2, .explosives), (1, .tungstenPlate), (1/4, .radar), (1/4, .calcite)],
   category := .recycling
   time := 15/16
 }
@@ -1324,7 +1673,7 @@ def getRecipe : RecipeName -> Recipe
 | .assemblingMachine1Recycling => {
   name := "assembling-machine-1-recycling",
   inputs := [(1, .assemblingMachine1)],
-  outputs := [(3/4, .electronicCircuit), (5/4, .ironGearWheel), (9/4, .ironPlate)],
+  outputs := [(9/4, .ironPlate), (5/4, .ironGearWheel), (3/4, .electronicCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -1338,7 +1687,7 @@ def getRecipe : RecipeName -> Recipe
 | .assemblingMachine2Recycling => {
   name := "assembling-machine-2-recycling",
   inputs := [(1, .assemblingMachine2)],
-  outputs := [(1/2, .steelPlate), (3/4, .electronicCircuit), (5/4, .ironGearWheel), (1/4, .assemblingMachine1)],
+  outputs := [(5/4, .ironGearWheel), (3/4, .electronicCircuit), (1/2, .steelPlate), (1/4, .assemblingMachine1)],
   category := .recycling
   time := 1/32
 }
@@ -1352,7 +1701,7 @@ def getRecipe : RecipeName -> Recipe
 | .assemblingMachine3Recycling => {
   name := "assembling-machine-3-recycling",
   inputs := [(1, .assemblingMachine3)],
-  outputs := [(1/2, .assemblingMachine2), (1, .speedModule)],
+  outputs := [(1, .speedModule), (1/2, .assemblingMachine2)],
   category := .recycling
   time := 1/32
 }
@@ -1380,7 +1729,7 @@ def getRecipe : RecipeName -> Recipe
 | .atomicBombRecycling => {
   name := "atomic-bomb-recycling",
   inputs := [(1, .atomicBomb)],
-  outputs := [(5/2, .processingUnit), (5/2, .explosives), (25, .uranium235)],
+  outputs := [(25, .uranium235), (5/2, .processingUnit), (5/2, .explosives)],
   category := .recycling
   time := 25/8
 }
@@ -1436,7 +1785,7 @@ def getRecipe : RecipeName -> Recipe
 | .batteryEquipmentRecycling => {
   name := "battery-equipment-recycling",
   inputs := [(1, .batteryEquipment)],
-  outputs := [(5/4, .battery), (5/2, .steelPlate)],
+  outputs := [(5/2, .steelPlate), (5/4, .battery)],
   category := .recycling
   time := 5/8
 }
@@ -1450,7 +1799,7 @@ def getRecipe : RecipeName -> Recipe
 | .batteryMk2EquipmentRecycling => {
   name := "battery-mk2-equipment-recycling",
   inputs := [(1, .batteryMk2Equipment)],
-  outputs := [(5/2, .batteryEquipment), (15/4, .processingUnit), (5/4, .lowDensityStructure)],
+  outputs := [(15/4, .processingUnit), (5/2, .batteryEquipment), (5/4, .lowDensityStructure)],
   category := .recycling
   time := 5/8
 }
@@ -1464,7 +1813,7 @@ def getRecipe : RecipeName -> Recipe
 | .batteryMk3EquipmentRecycling => {
   name := "battery-mk3-equipment-recycling",
   inputs := [(1, .batteryMk3Equipment)],
-  outputs := [(5/4, .batteryMk2Equipment), (5/2, .supercapacitor)],
+  outputs := [(5/2, .supercapacitor), (5/4, .batteryMk2Equipment)],
   category := .recycling
   time := 5/8
 }
@@ -1499,7 +1848,7 @@ def getRecipe : RecipeName -> Recipe
 | .beltImmunityEquipmentRecycling => {
   name := "belt-immunity-equipment-recycling",
   inputs := [(1, .beltImmunityEquipment)],
-  outputs := [(5/4, .advancedCircuit), (5/2, .steelPlate)],
+  outputs := [(5/2, .steelPlate), (5/4, .advancedCircuit)],
   category := .recycling
   time := 5/8
 }
@@ -1527,7 +1876,7 @@ def getRecipe : RecipeName -> Recipe
 | .bigMiningDrillRecycling => {
   name := "big-mining-drill-recycling",
   inputs := [(1, .bigMiningDrill)],
-  outputs := [(1/4, .electricMiningDrill), (5, .tungstenCarbide), (5/2, .electricEngineUnit), (5/2, .advancedCircuit)],
+  outputs := [(5, .tungstenCarbide), (5/2, .electricEngineUnit), (5/2, .advancedCircuit), (1/4, .electricMiningDrill)],
   category := .recycling
   time := 15/8
 }
@@ -1541,7 +1890,7 @@ def getRecipe : RecipeName -> Recipe
 | .biochamberRecycling => {
   name := "biochamber-recycling",
   inputs := [(1, .biochamber)],
-  outputs := [(5/4, .nutrients), (1/4, .pentapodEgg), (5, .ironPlate), (5/4, .electronicCircuit), (1/4, .landfill)],
+  outputs := [(5, .ironPlate), (5/4, .nutrients), (5/4, .electronicCircuit), (1/4, .pentapodEgg), (1/4, .landfill)],
   category := .recycling
   time := 5/4
 }
@@ -1632,7 +1981,7 @@ def getRecipe : RecipeName -> Recipe
 | .boilerRecycling => {
   name := "boiler-recycling",
   inputs := [(1, .boiler)],
-  outputs := [(1/4, .stoneFurnace), (1, .pipe)],
+  outputs := [(1, .pipe), (1/4, .stoneFurnace)],
   category := .recycling
   time := 1/32
 }
@@ -1653,7 +2002,7 @@ def getRecipe : RecipeName -> Recipe
 | .bufferChestRecycling => {
   name := "buffer-chest-recycling",
   inputs := [(1, .bufferChest)],
-  outputs := [(1/4, .steelChest), (3/4, .electronicCircuit), (1/4, .advancedCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/4, .steelChest), (1/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -1702,7 +2051,7 @@ def getRecipe : RecipeName -> Recipe
 | .burnerMiningDrillRecycling => {
   name := "burner-mining-drill-recycling",
   inputs := [(1, .burnerMiningDrill)],
-  outputs := [(3/4, .ironGearWheel), (1/4, .stoneFurnace), (3/4, .ironPlate)],
+  outputs := [(3/4, .ironGearWheel), (3/4, .ironPlate), (1/4, .stoneFurnace)],
   category := .recycling
   time := 1/8
 }
@@ -1758,7 +2107,7 @@ def getRecipe : RecipeName -> Recipe
 | .captureRobotRocketRecycling => {
   name := "capture-robot-rocket-recycling",
   inputs := [(1, .captureRobotRocket)],
-  outputs := [(1/4, .flyingRobotFrame), (1/2, .steelPlate), (5, .bioflux), (1/2, .processingUnit)],
+  outputs := [(5, .bioflux), (1/2, .steelPlate), (1/2, .processingUnit), (1/4, .flyingRobotFrame)],
   category := .recycling
   time := 5/8
 }
@@ -1772,7 +2121,7 @@ def getRecipe : RecipeName -> Recipe
 | .carRecycling => {
   name := "car-recycling",
   inputs := [(1, .car)],
-  outputs := [(2, .engineUnit), (5, .ironPlate), (5/4, .steelPlate)],
+  outputs := [(5, .ironPlate), (2, .engineUnit), (5/4, .steelPlate)],
   category := .recycling
   time := 1/8
 }
@@ -1863,7 +2212,7 @@ def getRecipe : RecipeName -> Recipe
 | .cargoWagonRecycling => {
   name := "cargo-wagon-recycling",
   inputs := [(1, .cargoWagon)],
-  outputs := [(5/2, .ironGearWheel), (5, .ironPlate), (5, .steelPlate)],
+  outputs := [(5, .ironPlate), (5, .steelPlate), (5/2, .ironGearWheel)],
   category := .recycling
   time := 1/16
 }
@@ -1940,7 +2289,7 @@ def getRecipe : RecipeName -> Recipe
 | .centrifugeRecycling => {
   name := "centrifuge-recycling",
   inputs := [(1, .centrifuge)],
-  outputs := [(25, .concrete), (25/2, .steelPlate), (25, .advancedCircuit), (25, .ironGearWheel)],
+  outputs := [(25, .concrete), (25, .advancedCircuit), (25, .ironGearWheel), (25/2, .steelPlate)],
   category := .recycling
   time := 1/4
 }
@@ -2038,7 +2387,7 @@ def getRecipe : RecipeName -> Recipe
 | .combatShotgunRecycling => {
   name := "combat-shotgun-recycling",
   inputs := [(1, .combatShotgun)],
-  outputs := [(15/4, .steelPlate), (5/4, .ironGearWheel), (5/2, .copperPlate), (5/2, .wood)],
+  outputs := [(15/4, .steelPlate), (5/2, .copperPlate), (5/2, .wood), (5/4, .ironGearWheel)],
   category := .recycling
   time := 5/8
 }
@@ -2087,7 +2436,7 @@ def getRecipe : RecipeName -> Recipe
 | .constructionRobotRecycling => {
   name := "construction-robot-recycling",
   inputs := [(1, .constructionRobot)],
-  outputs := [(1/4, .flyingRobotFrame), (1/2, .electronicCircuit)],
+  outputs := [(1/2, .electronicCircuit), (1/4, .flyingRobotFrame)],
   category := .recycling
   time := 1/32
 }
@@ -2269,7 +2618,7 @@ def getRecipe : RecipeName -> Recipe
 | .dischargeDefenseEquipmentRecycling => {
   name := "discharge-defense-equipment-recycling",
   inputs := [(1, .dischargeDefenseEquipment)],
-  outputs := [(5/4, .processingUnit), (5, .steelPlate), (5/2, .laserTurret)],
+  outputs := [(5, .steelPlate), (5/2, .laserTurret), (5/4, .processingUnit)],
   category := .recycling
   time := 5/8
 }
@@ -2318,7 +2667,7 @@ def getRecipe : RecipeName -> Recipe
 | .efficiencyModule2Recycling => {
   name := "efficiency-module-2-recycling",
   inputs := [(1, .efficiencyModule2)],
-  outputs := [(1, .efficiencyModule), (5/4, .advancedCircuit), (5/4, .processingUnit)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .efficiencyModule)],
   category := .recycling
   time := 15/8
 }
@@ -2332,7 +2681,7 @@ def getRecipe : RecipeName -> Recipe
 | .efficiencyModule3Recycling => {
   name := "efficiency-module-3-recycling",
   inputs := [(1, .efficiencyModule3)],
-  outputs := [(1, .efficiencyModule2), (5/4, .advancedCircuit), (5/4, .processingUnit), (5/4, .spoilage)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (5/4, .spoilage), (1, .efficiencyModule2)],
   category := .recycling
   time := 15/4
 }
@@ -2360,7 +2709,7 @@ def getRecipe : RecipeName -> Recipe
 | .electricEngineUnitRecycling => {
   name := "electric-engine-unit-recycling",
   inputs := [(1, .electricEngineUnit)],
-  outputs := [(1/4, .engineUnit), (1/2, .electronicCircuit)],
+  outputs := [(1/2, .electronicCircuit), (1/4, .engineUnit)],
   category := .recycling
   time := 5/8
 }
@@ -2374,7 +2723,7 @@ def getRecipe : RecipeName -> Recipe
 | .electricFurnaceRecycling => {
   name := "electric-furnace-recycling",
   inputs := [(1, .electricFurnace)],
-  outputs := [(5/2, .steelPlate), (5/4, .advancedCircuit), (5/2, .stoneBrick)],
+  outputs := [(5/2, .steelPlate), (5/2, .stoneBrick), (5/4, .advancedCircuit)],
   category := .recycling
   time := 5/16
 }
@@ -2388,7 +2737,7 @@ def getRecipe : RecipeName -> Recipe
 | .electricMiningDrillRecycling => {
   name := "electric-mining-drill-recycling",
   inputs := [(1, .electricMiningDrill)],
-  outputs := [(3/4, .electronicCircuit), (5/4, .ironGearWheel), (5/2, .ironPlate)],
+  outputs := [(5/2, .ironPlate), (5/4, .ironGearWheel), (3/4, .electronicCircuit)],
   category := .recycling
   time := 1/8
 }
@@ -2437,7 +2786,7 @@ def getRecipe : RecipeName -> Recipe
 | .electronicCircuitRecycling => {
   name := "electronic-circuit-recycling",
   inputs := [(1, .electronicCircuit)],
-  outputs := [(1/4, .ironPlate), (3/4, .copperCable)],
+  outputs := [(3/4, .copperCable), (1/4, .ironPlate)],
   category := .recycling
   time := 1/32
 }
@@ -2521,7 +2870,7 @@ def getRecipe : RecipeName -> Recipe
 | .energyShieldEquipmentRecycling => {
   name := "energy-shield-equipment-recycling",
   inputs := [(1, .energyShieldEquipment)],
-  outputs := [(5/4, .advancedCircuit), (5/2, .steelPlate)],
+  outputs := [(5/2, .steelPlate), (5/4, .advancedCircuit)],
   category := .recycling
   time := 5/8
 }
@@ -2549,7 +2898,7 @@ def getRecipe : RecipeName -> Recipe
 | .engineUnitRecycling => {
   name := "engine-unit-recycling",
   inputs := [(1, .engineUnit)],
-  outputs := [(1/4, .steelPlate), (1/4, .ironGearWheel), (1/2, .pipe)],
+  outputs := [(1/2, .pipe), (1/4, .steelPlate), (1/4, .ironGearWheel)],
   category := .recycling
   time := 5/8
 }
@@ -2563,7 +2912,7 @@ def getRecipe : RecipeName -> Recipe
 | .exoskeletonEquipmentRecycling => {
   name := "exoskeleton-equipment-recycling",
   inputs := [(1, .exoskeletonEquipment)],
-  outputs := [(5/2, .processingUnit), (15/2, .electricEngineUnit), (5, .steelPlate)],
+  outputs := [(15/2, .electricEngineUnit), (5, .steelPlate), (5/2, .processingUnit)],
   category := .recycling
   time := 5/8
 }
@@ -2591,7 +2940,7 @@ def getRecipe : RecipeName -> Recipe
 | .explosiveRocketRecycling => {
   name := "explosive-rocket-recycling",
   inputs := [(1, .explosiveRocket)],
-  outputs := [(1/4, .rocket), (1/2, .explosives)],
+  outputs := [(1/2, .explosives), (1/4, .rocket)],
   category := .recycling
   time := 1/2
 }
@@ -2647,7 +2996,7 @@ def getRecipe : RecipeName -> Recipe
 | .expressSplitterRecycling => {
   name := "express-splitter-recycling",
   inputs := [(1, .expressSplitter)],
-  outputs := [(1/4, .fastSplitter), (5/2, .ironGearWheel), (5/2, .advancedCircuit)],
+  outputs := [(5/2, .ironGearWheel), (5/2, .advancedCircuit), (1/4, .fastSplitter)],
   category := .recycling
   time := 1/8
 }
@@ -2717,7 +3066,7 @@ def getRecipe : RecipeName -> Recipe
 | .fastSplitterRecycling => {
   name := "fast-splitter-recycling",
   inputs := [(1, .fastSplitter)],
-  outputs := [(1/4, .splitter), (5/2, .ironGearWheel), (5/2, .electronicCircuit)],
+  outputs := [(5/2, .ironGearWheel), (5/2, .electronicCircuit), (1/4, .splitter)],
   category := .recycling
   time := 1/8
 }
@@ -2808,7 +3157,7 @@ def getRecipe : RecipeName -> Recipe
 | .flamethrowerRecycling => {
   name := "flamethrower-recycling",
   inputs := [(1, .flamethrower)],
-  outputs := [(5/4, .steelPlate), (5/2, .ironGearWheel)],
+  outputs := [(5/2, .ironGearWheel), (5/4, .steelPlate)],
   category := .recycling
   time := 5/8
 }
@@ -2836,7 +3185,7 @@ def getRecipe : RecipeName -> Recipe
 | .fluidWagonRecycling => {
   name := "fluid-wagon-recycling",
   inputs := [(1, .fluidWagon)],
-  outputs := [(5/2, .ironGearWheel), (4, .steelPlate), (2, .pipe), (1/4, .storageTank)],
+  outputs := [(4, .steelPlate), (5/2, .ironGearWheel), (2, .pipe), (1/4, .storageTank)],
   category := .recycling
   time := 3/32
 }
@@ -2892,7 +3241,7 @@ def getRecipe : RecipeName -> Recipe
 | .flyingRobotFrameRecycling => {
   name := "flying-robot-frame-recycling",
   inputs := [(1, .flyingRobotFrame)],
-  outputs := [(1/4, .electricEngineUnit), (1/2, .battery), (1/4, .steelPlate), (3/4, .electronicCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/2, .battery), (1/4, .electricEngineUnit), (1/4, .steelPlate)],
   category := .recycling
   time := 5/4
 }
@@ -2906,7 +3255,7 @@ def getRecipe : RecipeName -> Recipe
 | .foundationRecycling => {
   name := "foundation-recycling",
   inputs := [(1, .foundation)],
-  outputs := [(1, .tungstenPlate), (1, .lithiumPlate), (1, .carbonFiber), (5, .stone)],
+  outputs := [(5, .stone), (1, .tungstenPlate), (1, .lithiumPlate), (1, .carbonFiber)],
   category := .recycling
   time := 15/8
 }
@@ -2969,14 +3318,14 @@ def getRecipe : RecipeName -> Recipe
 | .fusionReactorEquipmentRecycling => {
   name := "fusion-reactor-equipment-recycling",
   inputs := [(1, .fusionReactorEquipment)],
-  outputs := [(1/4, .fissionReactorEquipment), (5/2, .fusionPowerCell), (125/2, .tungstenPlate), (25, .carbonFiber), (25/4, .supercapacitor), (125/2, .quantumProcessor)],
+  outputs := [(125/2, .tungstenPlate), (125/2, .quantumProcessor), (25, .carbonFiber), (25/4, .supercapacitor), (5/2, .fusionPowerCell), (1/4, .fissionReactorEquipment)],
   category := .recycling
   time := 15/8
 }
 | .fusionReactorRecycling => {
   name := "fusion-reactor-recycling",
   inputs := [(1, .fusionReactor)],
-  outputs := [(50, .tungstenPlate), (50, .superconductor), (125/2, .quantumProcessor)],
+  outputs := [(125/2, .quantumProcessor), (50, .tungstenPlate), (50, .superconductor)],
   category := .recycling
   time := 15/4
 }
@@ -2990,7 +3339,7 @@ def getRecipe : RecipeName -> Recipe
 | .gateRecycling => {
   name := "gate-recycling",
   inputs := [(1, .gate)],
-  outputs := [(1/4, .stoneWall), (1/2, .steelPlate), (1/2, .electronicCircuit)],
+  outputs := [(1/2, .steelPlate), (1/2, .electronicCircuit), (1/4, .stoneWall)],
   category := .recycling
   time := 1/32
 }
@@ -3004,7 +3353,7 @@ def getRecipe : RecipeName -> Recipe
 | .grenadeRecycling => {
   name := "grenade-recycling",
   inputs := [(1, .grenade)],
-  outputs := [(5/4, .ironPlate), (5/2, .coal)],
+  outputs := [(5/2, .coal), (5/4, .ironPlate)],
   category := .recycling
   time := 1/2
 }
@@ -3018,7 +3367,7 @@ def getRecipe : RecipeName -> Recipe
 | .gunTurretRecycling => {
   name := "gun-turret-recycling",
   inputs := [(1, .gunTurret)],
-  outputs := [(5/2, .ironGearWheel), (5/2, .copperPlate), (5, .ironPlate)],
+  outputs := [(5, .ironPlate), (5/2, .ironGearWheel), (5/2, .copperPlate)],
   category := .recycling
   time := 1/2
 }
@@ -3046,7 +3395,7 @@ def getRecipe : RecipeName -> Recipe
 | .heatExchangerRecycling => {
   name := "heat-exchanger-recycling",
   inputs := [(1, .heatExchanger)],
-  outputs := [(5/2, .steelPlate), (25, .copperPlate), (5/2, .pipe)],
+  outputs := [(25, .copperPlate), (5/2, .steelPlate), (5/2, .pipe)],
   category := .recycling
   time := 3/16
 }
@@ -3060,7 +3409,7 @@ def getRecipe : RecipeName -> Recipe
 | .heatInterfaceRecycling => {
   name := "heat-interface-recycling",
   inputs := [(1, .heatInterface)],
-  outputs := [(1/4, .heatPipe), (5/4, .electronicCircuit)],
+  outputs := [(5/4, .electronicCircuit), (1/4, .heatPipe)],
   category := .recycling
   time := 1/32
 }
@@ -3074,7 +3423,7 @@ def getRecipe : RecipeName -> Recipe
 | .heatPipeRecycling => {
   name := "heat-pipe-recycling",
   inputs := [(1, .heatPipe)],
-  outputs := [(5/2, .steelPlate), (5, .copperPlate)],
+  outputs := [(5, .copperPlate), (5/2, .steelPlate)],
   category := .recycling
   time := 1/16
 }
@@ -3088,7 +3437,7 @@ def getRecipe : RecipeName -> Recipe
 | .heatingTowerRecycling => {
   name := "heating-tower-recycling",
   inputs := [(1, .heatingTower)],
-  outputs := [(1/2, .boiler), (5/4, .heatPipe), (5, .concrete)],
+  outputs := [(5, .concrete), (5/4, .heatPipe), (1/2, .boiler)],
   category := .recycling
   time := 5/8
 }
@@ -3200,7 +3549,7 @@ def getRecipe : RecipeName -> Recipe
 | .infinityChestRecycling => {
   name := "infinity-chest-recycling",
   inputs := [(1, .infinityChest)],
-  outputs := [(1/4, .steelChest), (5/4, .electronicCircuit)],
+  outputs := [(5/4, .electronicCircuit), (1/4, .steelChest)],
   category := .recycling
   time := 1/32
 }
@@ -3214,7 +3563,7 @@ def getRecipe : RecipeName -> Recipe
 | .infinityPipeRecycling => {
   name := "infinity-pipe-recycling",
   inputs := [(1, .infinityPipe)],
-  outputs := [(1/4, .pipe), (5/4, .electronicCircuit)],
+  outputs := [(5/4, .electronicCircuit), (1/4, .pipe)],
   category := .recycling
   time := 1/32
 }
@@ -3235,7 +3584,7 @@ def getRecipe : RecipeName -> Recipe
 | .ironBacteria => {
   name := "iron-bacteria",
   inputs := [(6, .jelly)],
-  outputs := [(1/10, .ironBacteria), (4, .spoilage)],
+  outputs := [(4, .spoilage), (1/10, .ironBacteria)],
   category := .organicOrHandCrafting
   time := 1
 }
@@ -3333,7 +3682,7 @@ def getRecipe : RecipeName -> Recipe
 | .jellynutProcessing => {
   name := "jellynut-processing",
   inputs := [(1, .jellynut)],
-  outputs := [(1/50, .jellynutSeed), (4, .jelly)],
+  outputs := [(4, .jelly), (1/50, .jellynutSeed)],
   category := .organicOrHandCrafting
   time := 1
 }
@@ -3382,7 +3731,7 @@ def getRecipe : RecipeName -> Recipe
 | .landMineRecycling => {
   name := "land-mine-recycling",
   inputs := [(1, .landMine)],
-  outputs := [(1/16, .steelPlate), (1/8, .explosives)],
+  outputs := [(1/8, .explosives), (1/16, .steelPlate)],
   category := .recycling
   time := 5/16
 }
@@ -3466,7 +3815,7 @@ def getRecipe : RecipeName -> Recipe
 | .lightningCollectorRecycling => {
   name := "lightning-collector-recycling",
   inputs := [(1, .lightningCollector)],
-  outputs := [(1/4, .lightningRod), (2, .supercapacitor), (1/4, .accumulator)],
+  outputs := [(2, .supercapacitor), (1/4, .lightningRod), (1/4, .accumulator)],
   category := .recycling
   time := 5/16
 }
@@ -3550,7 +3899,7 @@ def getRecipe : RecipeName -> Recipe
 | .locomotiveRecycling => {
   name := "locomotive-recycling",
   inputs := [(1, .locomotive)],
-  outputs := [(5, .engineUnit), (5/2, .electronicCircuit), (15/2, .steelPlate)],
+  outputs := [(15/2, .steelPlate), (5, .engineUnit), (5/2, .electronicCircuit)],
   category := .recycling
   time := 1/4
 }
@@ -3564,7 +3913,7 @@ def getRecipe : RecipeName -> Recipe
 | .logisticRobotRecycling => {
   name := "logistic-robot-recycling",
   inputs := [(1, .logisticRobot)],
-  outputs := [(1/4, .flyingRobotFrame), (1/2, .advancedCircuit)],
+  outputs := [(1/2, .advancedCircuit), (1/4, .flyingRobotFrame)],
   category := .recycling
   time := 1/32
 }
@@ -3606,7 +3955,7 @@ def getRecipe : RecipeName -> Recipe
 | .lowDensityStructureRecycling => {
   name := "low-density-structure-recycling",
   inputs := [(1, .lowDensityStructure)],
-  outputs := [(1/2, .steelPlate), (5, .copperPlate), (5/4, .plasticBar)],
+  outputs := [(5, .copperPlate), (5/4, .plasticBar), (1/2, .steelPlate)],
   category := .recycling
   time := 15/16
 }
@@ -3641,7 +3990,7 @@ def getRecipe : RecipeName -> Recipe
 | .mechArmorRecycling => {
   name := "mech-armor-recycling",
   inputs := [(1, .mechArmor)],
-  outputs := [(1/4, .powerArmorMk2), (50, .holmiumPlate), (25, .processingUnit), (25/2, .superconductor), (25/2, .supercapacitor)],
+  outputs := [(50, .holmiumPlate), (25, .processingUnit), (25/2, .superconductor), (25/2, .supercapacitor), (1/4, .powerArmorMk2)],
   category := .recycling
   time := 15/4
 }
@@ -3718,7 +4067,7 @@ def getRecipe : RecipeName -> Recipe
 | .modularArmorRecycling => {
   name := "modular-armor-recycling",
   inputs := [(1, .modularArmor)],
-  outputs := [(15/2, .advancedCircuit), (25/2, .steelPlate)],
+  outputs := [(25/2, .steelPlate), (15/2, .advancedCircuit)],
   category := .recycling
   time := 15/16
 }
@@ -3760,7 +4109,7 @@ def getRecipe : RecipeName -> Recipe
 | .nightVisionEquipmentRecycling => {
   name := "night-vision-equipment-recycling",
   inputs := [(1, .nightVisionEquipment)],
-  outputs := [(5/4, .advancedCircuit), (5/2, .steelPlate)],
+  outputs := [(5/2, .steelPlate), (5/4, .advancedCircuit)],
   category := .recycling
   time := 5/8
 }
@@ -3893,7 +4242,7 @@ def getRecipe : RecipeName -> Recipe
 | .overgrowthJellynutSoilRecycling => {
   name := "overgrowth-jellynut-soil-recycling",
   inputs := [(1, .overgrowthJellynutSoil)],
-  outputs := [(1/2, .artificialJellynutSoil), (5/4, .jellynutSeed), (5/2, .biterEgg), (25/2, .spoilage)],
+  outputs := [(25/2, .spoilage), (5/2, .biterEgg), (5/4, .jellynutSeed), (1/2, .artificialJellynutSoil)],
   category := .recycling
   time := 5/8
 }
@@ -3907,7 +4256,7 @@ def getRecipe : RecipeName -> Recipe
 | .overgrowthYumakoSoilRecycling => {
   name := "overgrowth-yumako-soil-recycling",
   inputs := [(1, .overgrowthYumakoSoil)],
-  outputs := [(1/2, .artificialYumakoSoil), (5/4, .yumakoSeed), (5/2, .biterEgg), (25/2, .spoilage)],
+  outputs := [(25/2, .spoilage), (5/2, .biterEgg), (5/4, .yumakoSeed), (1/2, .artificialYumakoSoil)],
   category := .recycling
   time := 5/8
 }
@@ -4012,7 +4361,7 @@ def getRecipe : RecipeName -> Recipe
 | .passiveProviderChestRecycling => {
   name := "passive-provider-chest-recycling",
   inputs := [(1, .passiveProviderChest)],
-  outputs := [(1/4, .steelChest), (3/4, .electronicCircuit), (1/4, .advancedCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/4, .steelChest), (1/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -4054,7 +4403,7 @@ def getRecipe : RecipeName -> Recipe
 | .personalRoboportEquipmentRecycling => {
   name := "personal-roboport-equipment-recycling",
   inputs := [(1, .personalRoboportEquipment)],
-  outputs := [(5/2, .advancedCircuit), (10, .ironGearWheel), (5, .steelPlate), (45/4, .battery)],
+  outputs := [(45/4, .battery), (10, .ironGearWheel), (5, .steelPlate), (5/2, .advancedCircuit)],
   category := .recycling
   time := 5/8
 }
@@ -4068,7 +4417,7 @@ def getRecipe : RecipeName -> Recipe
 | .personalRoboportMk2EquipmentRecycling => {
   name := "personal-roboport-mk2-equipment-recycling",
   inputs := [(1, .personalRoboportMk2Equipment)],
-  outputs := [(5/4, .personalRoboportEquipment), (25/2, .processingUnit), (25/2, .superconductor)],
+  outputs := [(25/2, .processingUnit), (25/2, .superconductor), (5/4, .personalRoboportEquipment)],
   category := .recycling
   time := 5/4
 }
@@ -4096,7 +4445,7 @@ def getRecipe : RecipeName -> Recipe
 | .piercingRoundsMagazineRecycling => {
   name := "piercing-rounds-magazine-recycling",
   inputs := [(1, .piercingRoundsMagazine)],
-  outputs := [(1/4, .firearmMagazine), (1/8, .steelPlate), (1/4, .copperPlate)],
+  outputs := [(1/4, .firearmMagazine), (1/4, .copperPlate), (1/8, .steelPlate)],
   category := .recycling
   time := 3/8
 }
@@ -4110,7 +4459,7 @@ def getRecipe : RecipeName -> Recipe
 | .piercingShotgunShellRecycling => {
   name := "piercing-shotgun-shell-recycling",
   inputs := [(1, .piercingShotgunShell)],
-  outputs := [(1/2, .shotgunShell), (5/4, .copperPlate), (1/2, .steelPlate)],
+  outputs := [(5/4, .copperPlate), (1/2, .shotgunShell), (1/2, .steelPlate)],
   category := .recycling
   time := 1/2
 }
@@ -4180,7 +4529,7 @@ def getRecipe : RecipeName -> Recipe
 | .poisonCapsuleRecycling => {
   name := "poison-capsule-recycling",
   inputs := [(1, .poisonCapsule)],
-  outputs := [(3/4, .steelPlate), (3/4, .electronicCircuit), (5/2, .coal)],
+  outputs := [(5/2, .coal), (3/4, .steelPlate), (3/4, .electronicCircuit)],
   category := .recycling
   time := 1/2
 }
@@ -4208,7 +4557,7 @@ def getRecipe : RecipeName -> Recipe
 | .powerArmorRecycling => {
   name := "power-armor-recycling",
   inputs := [(1, .powerArmor)],
-  outputs := [(10, .processingUnit), (5, .electricEngineUnit), (10, .steelPlate)],
+  outputs := [(10, .processingUnit), (10, .steelPlate), (5, .electricEngineUnit)],
   category := .recycling
   time := 5/4
 }
@@ -4271,7 +4620,7 @@ def getRecipe : RecipeName -> Recipe
 | .productivityModule2Recycling => {
   name := "productivity-module-2-recycling",
   inputs := [(1, .productivityModule2)],
-  outputs := [(1, .productivityModule), (5/4, .advancedCircuit), (5/4, .processingUnit)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .productivityModule)],
   category := .recycling
   time := 15/8
 }
@@ -4285,7 +4634,7 @@ def getRecipe : RecipeName -> Recipe
 | .productivityModule3Recycling => {
   name := "productivity-module-3-recycling",
   inputs := [(1, .productivityModule3)],
-  outputs := [(1, .productivityModule2), (5/4, .advancedCircuit), (5/4, .processingUnit), (1/4, .biterEgg)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .productivityModule2), (1/4, .biterEgg)],
   category := .recycling
   time := 15/4
 }
@@ -4306,7 +4655,7 @@ def getRecipe : RecipeName -> Recipe
 | .programmableSpeakerRecycling => {
   name := "programmable-speaker-recycling",
   inputs := [(1, .programmableSpeaker)],
-  outputs := [(3/4, .ironPlate), (1, .ironStick), (5/4, .copperCable), (1, .electronicCircuit)],
+  outputs := [(5/4, .copperCable), (1, .ironStick), (1, .electronicCircuit), (3/4, .ironPlate)],
   category := .recycling
   time := 1/8
 }
@@ -4362,7 +4711,7 @@ def getRecipe : RecipeName -> Recipe
 | .pumpjackRecycling => {
   name := "pumpjack-recycling",
   inputs := [(1, .pumpjack)],
-  outputs := [(5/4, .steelPlate), (5/2, .ironGearWheel), (5/4, .electronicCircuit), (5/2, .pipe)],
+  outputs := [(5/2, .ironGearWheel), (5/2, .pipe), (5/4, .steelPlate), (5/4, .electronicCircuit)],
   category := .recycling
   time := 5/16
 }
@@ -4383,7 +4732,7 @@ def getRecipe : RecipeName -> Recipe
 | .qualityModule2Recycling => {
   name := "quality-module-2-recycling",
   inputs := [(1, .qualityModule2)],
-  outputs := [(1, .qualityModule), (5/4, .advancedCircuit), (5/4, .processingUnit)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .qualityModule)],
   category := .recycling
   time := 15/8
 }
@@ -4397,7 +4746,7 @@ def getRecipe : RecipeName -> Recipe
 | .qualityModule3Recycling => {
   name := "quality-module-3-recycling",
   inputs := [(1, .qualityModule3)],
-  outputs := [(1, .qualityModule2), (5/4, .advancedCircuit), (5/4, .processingUnit), (1/4, .superconductor)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .qualityModule2), (1/4, .superconductor)],
   category := .recycling
   time := 15/4
 }
@@ -4418,7 +4767,7 @@ def getRecipe : RecipeName -> Recipe
 | .quantumProcessorRecycling => {
   name := "quantum-processor-recycling",
   inputs := [(1, .quantumProcessor)],
-  outputs := [(1/4, .tungstenCarbide), (1/4, .processingUnit), (1/4, .superconductor), (1/4, .carbonFiber), (1/2, .lithiumPlate)],
+  outputs := [(1/2, .lithiumPlate), (1/4, .tungstenCarbide), (1/4, .processingUnit), (1/4, .superconductor), (1/4, .carbonFiber)],
   category := .recycling
   time := 15/8
 }
@@ -4432,7 +4781,7 @@ def getRecipe : RecipeName -> Recipe
 | .radarRecycling => {
   name := "radar-recycling",
   inputs := [(1, .radar)],
-  outputs := [(5/4, .electronicCircuit), (5/4, .ironGearWheel), (5/2, .ironPlate)],
+  outputs := [(5/2, .ironPlate), (5/4, .electronicCircuit), (5/4, .ironGearWheel)],
   category := .recycling
   time := 1/32
 }
@@ -4453,7 +4802,7 @@ def getRecipe : RecipeName -> Recipe
 | .railChainSignalRecycling => {
   name := "rail-chain-signal-recycling",
   inputs := [(1, .railChainSignal)],
-  outputs := [(1/4, .electronicCircuit), (5/4, .ironPlate)],
+  outputs := [(5/4, .ironPlate), (1/4, .electronicCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -4467,7 +4816,7 @@ def getRecipe : RecipeName -> Recipe
 | .railRampRecycling => {
   name := "rail-ramp-recycling",
   inputs := [(1, .railRamp)],
-  outputs := [(25, .refinedConcrete), (2, .rail), (5/2, .steelPlate)],
+  outputs := [(25, .refinedConcrete), (5/2, .steelPlate), (2, .rail)],
   category := .recycling
   time := 1/32
 }
@@ -4488,7 +4837,7 @@ def getRecipe : RecipeName -> Recipe
 | .railSignalRecycling => {
   name := "rail-signal-recycling",
   inputs := [(1, .railSignal)],
-  outputs := [(1/4, .electronicCircuit), (5/4, .ironPlate)],
+  outputs := [(5/4, .ironPlate), (1/4, .electronicCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -4523,14 +4872,14 @@ def getRecipe : RecipeName -> Recipe
 | .railgunAmmoRecycling => {
   name := "railgun-ammo-recycling",
   inputs := [(1, .railgunAmmo)],
-  outputs := [(5/4, .steelPlate), (5/2, .copperCable), (1/2, .explosives)],
+  outputs := [(5/2, .copperCable), (5/4, .steelPlate), (1/2, .explosives)],
   category := .recycling
   time := 25/16
 }
 | .railgunRecycling => {
   name := "railgun-recycling",
   inputs := [(1, .railgun)],
-  outputs := [(5/2, .tungstenPlate), (5/2, .superconductor), (5, .quantumProcessor)],
+  outputs := [(5, .quantumProcessor), (5/2, .tungstenPlate), (5/2, .superconductor)],
   category := .recycling
   time := 5/8
 }
@@ -4544,7 +4893,7 @@ def getRecipe : RecipeName -> Recipe
 | .railgunTurretRecycling => {
   name := "railgun-turret-recycling",
   inputs := [(1, .railgunTurret)],
-  outputs := [(25, .quantumProcessor), (15/2, .tungstenPlate), (25/2, .superconductor), (5, .carbonFiber)],
+  outputs := [(25, .quantumProcessor), (25/2, .superconductor), (15/2, .tungstenPlate), (5, .carbonFiber)],
   category := .recycling
   time := 5/8
 }
@@ -4554,13 +4903,6 @@ def getRecipe : RecipeName -> Recipe
   outputs := [(1/4, .rawFish)],
   category := .recycling
   time := 1/32
-}
-| .recipeUnknown => {
-  name := "recipe-unknown",
-  inputs := [],
-  outputs := [],
-  category := .crafting
-  time := 1/2
 }
 | .recycler => {
   name := "recycler",
@@ -4572,7 +4914,7 @@ def getRecipe : RecipeName -> Recipe
 | .recyclerRecycling => {
   name := "recycler-recycling",
   inputs := [(1, .recycler)],
-  outputs := [(3/2, .processingUnit), (5, .steelPlate), (10, .ironGearWheel), (5, .concrete)],
+  outputs := [(10, .ironGearWheel), (5, .steelPlate), (5, .concrete), (3/2, .processingUnit)],
   category := .recycling
   time := 3/16
 }
@@ -4628,7 +4970,7 @@ def getRecipe : RecipeName -> Recipe
 | .requesterChestRecycling => {
   name := "requester-chest-recycling",
   inputs := [(1, .requesterChest)],
-  outputs := [(1/4, .steelChest), (3/4, .electronicCircuit), (1/4, .advancedCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/4, .steelChest), (1/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -4698,7 +5040,7 @@ def getRecipe : RecipeName -> Recipe
 | .rocketRecycling => {
   name := "rocket-recycling",
   inputs := [(1, .rocket)],
-  outputs := [(1/4, .explosives), (1/2, .ironPlate)],
+  outputs := [(1/2, .ironPlate), (1/4, .explosives)],
   category := .recycling
   time := 1/4
 }
@@ -4712,7 +5054,7 @@ def getRecipe : RecipeName -> Recipe
 | .rocketSiloRecycling => {
   name := "rocket-silo-recycling",
   inputs := [(1, .rocketSilo)],
-  outputs := [(250, .steelPlate), (250, .concrete), (25, .pipe), (50, .processingUnit), (50, .electricEngineUnit)],
+  outputs := [(250, .steelPlate), (250, .concrete), (50, .processingUnit), (50, .electricEngineUnit), (25, .pipe)],
   category := .recycling
   time := 15/8
 }
@@ -4726,7 +5068,7 @@ def getRecipe : RecipeName -> Recipe
 | .rocketTurretRecycling => {
   name := "rocket-turret-recycling",
   inputs := [(1, .rocketTurret)],
-  outputs := [(1, .rocketLauncher), (1, .processingUnit), (5, .carbonFiber), (5, .steelPlate), (5, .ironGearWheel)],
+  outputs := [(5, .carbonFiber), (5, .steelPlate), (5, .ironGearWheel), (1, .rocketLauncher), (1, .processingUnit)],
   category := .recycling
   time := 5/8
 }
@@ -4761,7 +5103,7 @@ def getRecipe : RecipeName -> Recipe
 | .selectorCombinatorRecycling => {
   name := "selector-combinator-recycling",
   inputs := [(1, .selectorCombinator)],
-  outputs := [(1/2, .advancedCircuit), (5/4, .deciderCombinator)],
+  outputs := [(5/4, .deciderCombinator), (1/2, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -4775,7 +5117,7 @@ def getRecipe : RecipeName -> Recipe
 | .shotgunRecycling => {
   name := "shotgun-recycling",
   inputs := [(1, .shotgun)],
-  outputs := [(15/4, .ironPlate), (5/4, .ironGearWheel), (5/2, .copperPlate), (5/4, .wood)],
+  outputs := [(15/4, .ironPlate), (5/2, .copperPlate), (5/4, .ironGearWheel), (5/4, .wood)],
   category := .recycling
   time := 5/8
 }
@@ -4824,7 +5166,7 @@ def getRecipe : RecipeName -> Recipe
 | .slowdownCapsuleRecycling => {
   name := "slowdown-capsule-recycling",
   inputs := [(1, .slowdownCapsule)],
-  outputs := [(1/2, .steelPlate), (1/2, .electronicCircuit), (5/4, .coal)],
+  outputs := [(5/4, .coal), (1/2, .steelPlate), (1/2, .electronicCircuit)],
   category := .recycling
   time := 1/2
 }
@@ -4838,7 +5180,7 @@ def getRecipe : RecipeName -> Recipe
 | .smallElectricPoleRecycling => {
   name := "small-electric-pole-recycling",
   inputs := [(1, .smallElectricPole)],
-  outputs := [(1/8, .wood), (1/4, .copperCable)],
+  outputs := [(1/4, .copperCable), (1/8, .wood)],
   category := .recycling
   time := 1/32
 }
@@ -4852,7 +5194,7 @@ def getRecipe : RecipeName -> Recipe
 | .smallLampRecycling => {
   name := "small-lamp-recycling",
   inputs := [(1, .smallLamp)],
-  outputs := [(1/4, .electronicCircuit), (3/4, .copperCable), (1/4, .ironPlate)],
+  outputs := [(3/4, .copperCable), (1/4, .electronicCircuit), (1/4, .ironPlate)],
   category := .recycling
   time := 1/32
 }
@@ -4873,14 +5215,14 @@ def getRecipe : RecipeName -> Recipe
 | .solarPanelEquipmentRecycling => {
   name := "solar-panel-equipment-recycling",
   inputs := [(1, .solarPanelEquipment)],
-  outputs := [(1/4, .solarPanel), (1/2, .advancedCircuit), (5/4, .steelPlate)],
+  outputs := [(5/4, .steelPlate), (1/2, .advancedCircuit), (1/4, .solarPanel)],
   category := .recycling
   time := 5/8
 }
 | .solarPanelRecycling => {
   name := "solar-panel-recycling",
   inputs := [(1, .solarPanel)],
-  outputs := [(5/4, .steelPlate), (15/4, .electronicCircuit), (5/4, .copperPlate)],
+  outputs := [(15/4, .electronicCircuit), (5/4, .steelPlate), (5/4, .copperPlate)],
   category := .recycling
   time := 5/8
 }
@@ -4985,7 +5327,7 @@ def getRecipe : RecipeName -> Recipe
 | .speedModule2Recycling => {
   name := "speed-module-2-recycling",
   inputs := [(1, .speedModule2)],
-  outputs := [(1, .speedModule), (5/4, .advancedCircuit), (5/4, .processingUnit)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .speedModule)],
   category := .recycling
   time := 15/8
 }
@@ -4999,7 +5341,7 @@ def getRecipe : RecipeName -> Recipe
 | .speedModule3Recycling => {
   name := "speed-module-3-recycling",
   inputs := [(1, .speedModule3)],
-  outputs := [(1, .speedModule2), (5/4, .advancedCircuit), (5/4, .processingUnit), (1/4, .tungstenCarbide)],
+  outputs := [(5/4, .advancedCircuit), (5/4, .processingUnit), (1, .speedModule2), (1/4, .tungstenCarbide)],
   category := .recycling
   time := 15/4
 }
@@ -5020,7 +5362,7 @@ def getRecipe : RecipeName -> Recipe
 | .spidertronRecycling => {
   name := "spidertron-recycling",
   inputs := [(1, .spidertron)],
-  outputs := [(1, .exoskeletonEquipment), (1/2, .fissionReactorEquipment), (1/4, .rocketTurret), (1/2, .radar), (1/4, .rawFish)],
+  outputs := [(1, .exoskeletonEquipment), (1/2, .fissionReactorEquipment), (1/2, .radar), (1/4, .rocketTurret), (1/4, .rawFish)],
   category := .recycling
   time := 5/8
 }
@@ -5055,7 +5397,7 @@ def getRecipe : RecipeName -> Recipe
 | .stackInserterRecycling => {
   name := "stack-inserter-recycling",
   inputs := [(1, .stackInserter)],
-  outputs := [(1/4, .bulkInserter), (1/4, .processingUnit), (1/2, .carbonFiber), (5/2, .jelly)],
+  outputs := [(5/2, .jelly), (1/2, .carbonFiber), (1/4, .bulkInserter), (1/4, .processingUnit)],
   category := .recycling
   time := 1/32
 }
@@ -5076,7 +5418,7 @@ def getRecipe : RecipeName -> Recipe
 | .steamEngineRecycling => {
   name := "steam-engine-recycling",
   inputs := [(1, .steamEngine)],
-  outputs := [(2, .ironGearWheel), (5/4, .pipe), (5/2, .ironPlate)],
+  outputs := [(5/2, .ironPlate), (2, .ironGearWheel), (5/4, .pipe)],
   category := .recycling
   time := 1/32
 }
@@ -5118,7 +5460,7 @@ def getRecipe : RecipeName -> Recipe
 | .steelFurnaceRecycling => {
   name := "steel-furnace-recycling",
   inputs := [(1, .steelFurnace)],
-  outputs := [(3/2, .steelPlate), (5/2, .stoneBrick)],
+  outputs := [(5/2, .stoneBrick), (3/2, .steelPlate)],
   category := .recycling
   time := 3/16
 }
@@ -5195,7 +5537,7 @@ def getRecipe : RecipeName -> Recipe
 | .storageChestRecycling => {
   name := "storage-chest-recycling",
   inputs := [(1, .storageChest)],
-  outputs := [(1/4, .steelChest), (3/4, .electronicCircuit), (1/4, .advancedCircuit)],
+  outputs := [(3/4, .electronicCircuit), (1/4, .steelChest), (1/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -5223,7 +5565,7 @@ def getRecipe : RecipeName -> Recipe
 | .submachineGunRecycling => {
   name := "submachine-gun-recycling",
   inputs := [(1, .submachineGun)],
-  outputs := [(5/2, .ironGearWheel), (5/4, .copperPlate), (5/2, .ironPlate)],
+  outputs := [(5/2, .ironGearWheel), (5/2, .ironPlate), (5/4, .copperPlate)],
   category := .recycling
   time := 5/8
 }
@@ -5237,7 +5579,7 @@ def getRecipe : RecipeName -> Recipe
 | .substationRecycling => {
   name := "substation-recycling",
   inputs := [(1, .substation)],
-  outputs := [(5/2, .steelPlate), (5/4, .advancedCircuit), (3/2, .copperCable)],
+  outputs := [(5/2, .steelPlate), (3/2, .copperCable), (5/4, .advancedCircuit)],
   category := .recycling
   time := 1/32
 }
@@ -5286,7 +5628,7 @@ def getRecipe : RecipeName -> Recipe
 | .supercapacitorRecycling => {
   name := "supercapacitor-recycling",
   inputs := [(1, .supercapacitor)],
-  outputs := [(1/2, .holmiumPlate), (1/2, .superconductor), (1, .electronicCircuit), (1/4, .battery)],
+  outputs := [(1, .electronicCircuit), (1/2, .holmiumPlate), (1/2, .superconductor), (1/4, .battery)],
   category := .recycling
   time := 5/8
 }
@@ -5314,7 +5656,7 @@ def getRecipe : RecipeName -> Recipe
 | .tankRecycling => {
   name := "tank-recycling",
   inputs := [(1, .tank)],
-  outputs := [(8, .engineUnit), (25/2, .steelPlate), (15/4, .ironGearWheel), (5/2, .advancedCircuit)],
+  outputs := [(25/2, .steelPlate), (8, .engineUnit), (15/4, .ironGearWheel), (5/2, .advancedCircuit)],
   category := .recycling
   time := 5/16
 }
@@ -5342,7 +5684,7 @@ def getRecipe : RecipeName -> Recipe
 | .teslaTurretRecycling => {
   name := "tesla-turret-recycling",
   inputs := [(1, .teslaTurret)],
-  outputs := [(1/4, .teslagun), (5/2, .supercapacitor), (5/2, .processingUnit), (25/2, .superconductor)],
+  outputs := [(25/2, .superconductor), (5/2, .supercapacitor), (5/2, .processingUnit), (1/4, .teslagun)],
   category := .recycling
   time := 15/8
 }
@@ -5356,7 +5698,7 @@ def getRecipe : RecipeName -> Recipe
 | .teslagunRecycling => {
   name := "teslagun-recycling",
   inputs := [(1, .teslagun)],
-  outputs := [(5/2, .holmiumPlate), (5/2, .superconductor), (15/2, .plasticBar)],
+  outputs := [(15/2, .plasticBar), (5/2, .holmiumPlate), (5/2, .superconductor)],
   category := .recycling
   time := 15/8
 }
@@ -5398,7 +5740,7 @@ def getRecipe : RecipeName -> Recipe
 | .toolbeltEquipmentRecycling => {
   name := "toolbelt-equipment-recycling",
   inputs := [(1, .toolbeltEquipment)],
-  outputs := [(3/4, .advancedCircuit), (5/2, .carbonFiber)],
+  outputs := [(5/2, .carbonFiber), (3/4, .advancedCircuit)],
   category := .recycling
   time := 5/8
 }
@@ -5419,7 +5761,7 @@ def getRecipe : RecipeName -> Recipe
 | .trainStopRecycling => {
   name := "train-stop-recycling",
   inputs := [(1, .trainStop)],
-  outputs := [(5/4, .electronicCircuit), (3/2, .ironPlate), (3/2, .ironStick), (3/4, .steelPlate)],
+  outputs := [(3/2, .ironPlate), (3/2, .ironStick), (5/4, .electronicCircuit), (3/4, .steelPlate)],
   category := .recycling
   time := 1/32
 }
@@ -5503,7 +5845,7 @@ def getRecipe : RecipeName -> Recipe
 | .turboSplitterRecycling => {
   name := "turbo-splitter-recycling",
   inputs := [(1, .turboSplitter)],
-  outputs := [(1/4, .expressSplitter), (15/4, .tungstenPlate), (1/2, .processingUnit)],
+  outputs := [(15/4, .tungstenPlate), (1/2, .processingUnit), (1/4, .expressSplitter)],
   category := .recycling
   time := 1/8
 }
@@ -5692,7 +6034,7 @@ def getRecipe : RecipeName -> Recipe
 | .yumakoProcessing => {
   name := "yumako-processing",
   inputs := [(1, .yumako)],
-  outputs := [(1/50, .yumakoSeed), (2, .yumakoMash)],
+  outputs := [(2, .yumakoMash), (1/50, .yumakoSeed)],
   category := .organicOrHandCrafting
   time := 1
 }

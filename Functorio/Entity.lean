@@ -8,21 +8,59 @@ import Functorio.Recipe
 open Lean
 open Lean (Json)
 
+structure Signal where
+  type: Option String
+  name: String
+  deriving DecidableEq, Inhabited, Repr
+
+structure Condition where
+  firstSignal: Signal
+  secondSignal: Option Signal
+  constantValue: Option Nat
+  comparator: String
+  deriving DecidableEq, Inhabited, Repr
+
+structure Output where
+  signal: Signal
+  copyCountFromInput : Bool
+  deriving DecidableEq, Inhabited, Repr
+
+structure BeltControlBehavior where
+  circuitCondition: Option Condition
+  circuitReadHandContents: Bool
+  circuitContentsReadMode: Nat
+  deriving DecidableEq, Inhabited, Repr
+
+structure ArithmeticCondition where
+  firstSignal: Signal
+  secondConstant: Nat
+  operation: String
+  outputSignal: Signal
+  deriving DecidableEq, Inhabited, Repr
+
 inductive EntityType
-  | belt (dir:Direction)
+  | belt (dir:Direction) (behavior:BeltControlBehavior := {
+      circuitCondition := .none
+      circuitReadHandContents := false
+      circuitContentsReadMode := 0
+    })
   | beltDown (direction:Direction)
   | beltUp (direction:Direction)
-  | splitter (direction:Direction) (outputPriority:Option String)
+  | splitter (direction:Direction) (outputPriority:Option String) (filter:Option Ingredient)
   | pipe
   | pipeToGround (direction:Direction)
   | pump (direction:Direction)
-  | inserter (direction:Direction)
-  | longInserter (direction:Direction)
+  | inserter (direction:Direction) (filter:List Ingredient)
+  | longInserter (direction:Direction) (filter:List Ingredient)
   | pole
   | bigPole
   | fabricator (fabricator:Fabricator) (recipe:RecipeName) (direction:Direction) (mirror:Bool)
+  | heatingTower
   | roboport
+  | ironChest
   | passiveProviderChest (capacity:Option Nat)
+  | deciderCombinator (direction:Direction) (conditions:List Condition) (outputs:List Output)
+  | arithmeticCombinator (direction:Direction) (condition:ArithmeticCondition)
   | refinedConcrete
   deriving DecidableEq, Inhabited, Repr
 
@@ -32,13 +70,19 @@ structure Entity where
   type : EntityType
   deriving DecidableEq, Inhabited, Repr
 
-def belt x y d := ({x:=x,y:=y,type:=.belt d} : Entity)
+def belt x y d (behavior : BeltControlBehavior := {
+    circuitCondition := .none
+    circuitReadHandContents := false
+    circuitContentsReadMode := 0
+  })
+:=
+  ({x:=x,y:=y,type:=.belt d behavior} : Entity)
 
 def beltDown x y d := ({x:=x,y:=y,type:=.beltDown d} : Entity)
 
 def beltUp x y d := ({x:=x,y:=y,type:=.beltUp d} : Entity)
 
-def splitter x y d (outputPriority : Option String := .none) := ({x:=x,y:=y,type:=.splitter d outputPriority} : Entity)
+def splitter x y d (outputPriority : Option String := .none) (filter := Option.none) := ({x:=x,y:=y,type:=.splitter d outputPriority filter} : Entity)
 
 def pipe x y := ({x:=x,y:=y,type:=.pipe} : Entity)
 
@@ -46,15 +90,17 @@ def pipeToGround x y d := ({x:=x,y:=y,type:=.pipeToGround d} : Entity)
 
 def pump x y d := ({x:=x,y:=y,type:=.pump d} : Entity)
 
-def inserter x y d := ({x:=x,y:=y,type:=.inserter d} : Entity)
+def inserter x y d (filter:=[]) := ({x:=x,y:=y,type:=.inserter d filter} : Entity)
 
-def longInserter x y d := ({x:=x,y:=y,type:=.longInserter d} : Entity)
+def longInserter x y d (filter:=[]) := ({x:=x,y:=y,type:=.longInserter d filter} : Entity)
 
 def pole x y := ({x:=x,y:=y,type:=.pole} : Entity)
 
 def bigPole x y := ({x:=x,y:=y,type:=.bigPole} : Entity)
 
 def fabricator x y f r (d := Direction.N) (mirror:=false) := ({x:=x,y:=y,type:=.fabricator f r d mirror} : Entity)
+
+def heatingTower x y := ({x:=x,y:=y,type:=.heatingTower} : Entity)
 
 def assembler r x y (d := Direction.W) := fabricator x y .assemblingMachine3 r d
 
@@ -68,31 +114,43 @@ def rocketSilo x y := fabricator x y .rocketSilo .rocketPart
 
 def roboport x y := ({x:=x,y:=y,type:=.roboport} : Entity)
 
+def ironChest x y := ({x:=x,y:=y,type:=.ironChest} : Entity)
+
 def passiveProviderChest x y (capacity : Option Nat := .none) := ({x:=x,y:=y,type:=.passiveProviderChest capacity} : Entity)
 
 def refinedConcrete x y := ({x:=x,y:=y,type:=.refinedConcrete} : Entity)
+
+def deciderCombinator x y (direction:Direction) (conditions:List Condition) (outputs:List Output) :=
+  ({x:=x, y:=y, type:=.deciderCombinator direction conditions outputs} : Entity)
+
+def arithmeticCombinator x y (direction:Direction) (condition:ArithmeticCondition) :=
+  ({x:=x, y:=y, type:=.arithmeticCombinator direction condition} : Entity)
+
+def recyler x y d (mirror:=false) := ({x:=x,y:=y,type:=.fabricator .recycler RecipeName.itemUnknownRecycling d mirror} : Entity)
 
 namespace Entity
 
 def width (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ | .longInserter _
-  | .pole | .passiveProviderChest _ | .refinedConcrete => 1
+  | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _ | .longInserter _ _
+  | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
-  | .splitter dir _ => if dir == .N || dir == .S then 2 else 1
-  | .pump dir => if dir == .N || dir == .S then 1 else 2
+  | .splitter dir _ _ => if dir == .N || dir == .S then 2 else 1
+  | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 1 else 2
+  | .heatingTower => 3
   | .roboport => 4
-  | .fabricator f _ _ _ => f.width
+  | .fabricator f _ dir _ => if dir == .N || dir == .S then f.width else f.height
 
 def height (e:Entity) : Nat :=
   match e.type with
-  | .belt _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _
-  | .longInserter _ | .pole | .passiveProviderChest _ | .refinedConcrete => 1
+  | .belt _ _ | .beltDown _ | .beltUp _ | .pipe | .pipeToGround _ | .inserter _ _
+  | .longInserter _ _ | .pole | .ironChest | .passiveProviderChest _ | .refinedConcrete => 1
   | .bigPole => 2
-  | .splitter dir _ => if dir == .N || dir == .S then 1 else 2
-  | .pump dir => if dir == .N || dir == .S then 2 else 1
+  | .splitter dir _ _ => if dir == .N || dir == .S then 1 else 2
+  | .deciderCombinator dir _ _ | .arithmeticCombinator dir _ | .pump dir => if dir == .N || dir == .S then 2 else 1
+  | .heatingTower => 3
   | .roboport => 4
-  | .fabricator f _ _ _ => f.height
+  | .fabricator f _ dir _ => if dir == .N || dir == .S then f.height else f.width
 
 def offsetPosition (dx dy:Nat) (entity:Entity) : Entity := {
   x := entity.x + dx

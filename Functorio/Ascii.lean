@@ -29,10 +29,10 @@ F furnace
 
 private def entitySymbol (e:Entity) : Option Char :=
   match e.type with
-  | .belt .N => '↑'
-  | .belt .E => '→'
-  | .belt .S => '↓'
-  | .belt .W => '←'
+  | .belt .N _ => '↑'
+  | .belt .E _ => '→'
+  | .belt .S _ => '↓'
+  | .belt .W _ => '←'
 
   | .beltDown .N => '⤒'
   | .beltDown .E => '⇥'
@@ -50,20 +50,20 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .pipeToGround .S => '┬'
   | .pipeToGround .W => '┤'
 
-  | .inserter .N => '⇩'
-  | .inserter .E => '⇦'
-  | .inserter .S => '⇧'
-  | .inserter .W => '⇨'
+  | .inserter .N _ => '⇩'
+  | .inserter .E _ => '⇦'
+  | .inserter .S _ => '⇧'
+  | .inserter .W _ => '⇨'
 
-  | .longInserter .N => '↡'
-  | .longInserter .E => '↞'
-  | .longInserter .S => '↟'
-  | .longInserter .W => '↠'
+  | .longInserter .N _ => '↡'
+  | .longInserter .E _ => '↞'
+  | .longInserter .S _ => '↟'
+  | .longInserter .W _ => '↠'
 
   | .pole => '⚡'
   | .bigPole => '↯'
 
-  | .splitter _ _ => 'S'
+  | .splitter _ _ _ => 'S'
   | .fabricator .assemblingMachine3 _ _ _ => 'A'
   | .fabricator .electricFurnace _ _ _ => 'F'
   | .fabricator .stoneFurnace _ _ _ => 'F'
@@ -73,14 +73,20 @@ private def entitySymbol (e:Entity) : Option Char :=
   | .fabricator .chemicalPlant _ _ _ => 'C'
   | .fabricator .oilRefinery _ _ _ => 'O'
   | .fabricator .rocketSilo _ _ _ => 'L'  -- L is for Launch-site
+  | .deciderCombinator _ _ _ => '≥'
+  | .arithmeticCombinator _ _ => '+'
+  | .heatingTower => 'H'
 
   | .roboport => 'R'
   | .pump _ => 'P'
   | .passiveProviderChest _ => '🄿'
+  | .ironChest => '☐'
 
   | .refinedConcrete => .none
 
-  | _ => '?'
+  | _ =>
+    dbg_trace s!"Couldn't print {reprStr e}"
+    '?'
 
 private def set {w h} (v:Vector (Vector Char w) h) (x y:Nat) (c:Char) : Vector (Vector Char w) h :=
   -- Mark overlapping entities with !

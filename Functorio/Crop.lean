@@ -16,6 +16,7 @@ private def cropOption {n e s w} (f:Factory n e s w) : Option (Factory n e s w) 
         y := e.y - yMin,
         type := e.type
       }),
+      wires := f.wires
       interface := {
         n := decreaseOffset xMin (f.interface.n)
         e := decreaseOffset yMin (f.interface.e)

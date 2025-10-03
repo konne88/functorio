@@ -36,26 +36,34 @@ def useLane (index:Nat) (lanes:LaneConfigs) : LaneConfigs :=
       ingredient := if lane.refCount <= 1 then default else lane.ingredient
     }
 
-def allocLane (ingredient:Ingredient) (lanes:LaneConfigs) : (Nat × LaneConfigs) := Id.run do
+def allocLane (ingredient:Ingredient) (lanes:LaneConfigs) (skip : Nat:=0): (Nat × LaneConfigs) := Id.run do
   let newLane := {ingredient := ingredient, refCount := 1}
+  let mut skip := skip
 
   for (lane, i) in lanes.zipIdx do
     if i == 0 then continue   -- Don't alloc the 0th lane, we need the space for exits
 
     if lane.depleted then
+      -- We found an empty lane!
+
       if ingredient.isLiquid then
         -- Don't alloc if the previous or next lane is already a pipe
         if i > 1 && lanes[i - 1]!.ingredient.isLiquid then continue
         if i < lanes.length - 1 && lanes[i + 1]!.ingredient.isLiquid then continue
 
+      if skip > 0 then
+        skip := skip - 1
+        continue
+
       return (i, lanes.set i newLane)
 
   -- Couldn't find a depleted lane, so we need to alloc a new one
-  if lanes.length > 0 && lanes[lanes.length - 1]!.ingredient.isLiquid then
-    let paddingLane := {ingredient := default, refCount := 0}
-    (lanes.length + 1, lanes ++ [paddingLane, newLane])
+  if ingredient.isLiquid && skip == 0 && lanes.length > 0 && lanes[lanes.length - 1]!.ingredient.isLiquid then
+    -- Padding between pipes
+    (lanes.length + 1, lanes ++ [depletedLane, newLane])
   else
-    (lanes.length, lanes ++ [newLane])
+    let newLanes := lanes ++ List.replicate skip depletedLane ++  [newLane]
+    (newLanes.length - 1, newLanes)
 
 def available (lanes:LaneConfigs): List (LaneConfig × Nat) :=
   lanes.zipIdx.filter fun (lane, _) => !lane.depleted
@@ -168,7 +176,7 @@ def canApplyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) :
       | .entity (.beltDown .E), .beltUp .E => true
       | .entity (.pipeToGround .W), .pipeToGround .E => true
       -- For splitters, the box below also has to be free.
-      | .empty, .splitter .E .none =>
+      | .empty, .splitter .E .none .none =>
         matrix[e.x]![e.y + 1]! == .empty
       | .empty, _ => true
       | _,_ => false
@@ -181,7 +189,7 @@ def applyEntities {w h} (matrix:Matrix w h) (entities:Option (List Entity)) : Ma
     let mut matrix := matrix
 
     for e in entities do
-      if e.type ==  .splitter .E .none then
+      if e.type ==  .splitter .E .none .none then
         matrix := matrix.setCell e.x e.y (.entity e.type)
         matrix := matrix.setCell e.x (e.y + 1) .blocked
       else
@@ -216,7 +224,8 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
   -- Go through all the columns
   for x in List.range matrix.size do
     let mut isUndergroundPipe := false
-    let mut isUndergroundBelt := false
+    let mut isUndergroundBeltN := false
+    let mut isUndergroundBeltS := false
 
     for y in List.range height do
       if y + 1 >= height then continue
@@ -233,11 +242,11 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
         matrix := matrix.setCell x y (.entity (.belt .N))
         matrix := matrix.setCell x (y+1) (.entity (.belt .N))
 
-      if isUndergroundBelt && cell == .empty && nextCell == .empty then
+      if isUndergroundBeltN && cell == .empty && nextCell == .empty then
         matrix := matrix.setCell x y (.entity (.beltDown .N))
         matrix := matrix.setCell x (y+1) (.entity (.beltUp .N))
 
-      if isUndergroundBelt && cell == .empty && nextCell == .entity (.beltDown .N)  then
+      if isUndergroundBeltN && cell == .empty && nextCell == .entity (.beltDown .N) then
         matrix := matrix.setCell x y (.entity (.beltDown .N))
         matrix := matrix.setCell x (y+1) (.entity (.belt .N))
 
@@ -248,6 +257,14 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
 
       if cell == .entity (.beltDown .S) && nextCell == .entity (.beltUp .S) then
         matrix := matrix.setCell x y (.entity (.belt .S))
+        matrix := matrix.setCell x (y+1) (.entity (.belt .S))
+
+      if isUndergroundBeltS && cell == .empty && nextCell == .empty then
+        matrix := matrix.setCell x y (.entity (.beltUp .S))
+        matrix := matrix.setCell x (y+1) (.entity (.beltDown .S))
+
+      if isUndergroundBeltS && cell == .empty && nextCell == .entity (.beltUp .N) then
+        matrix := matrix.setCell x y (.entity (.beltUp .S))
         matrix := matrix.setCell x (y+1) (.entity (.belt .S))
 
       -- Simplify pipe put/get
@@ -269,8 +286,10 @@ def reduceUndergroundEntities {w h} (matrix:Matrix w h) : Matrix w h := Id.run d
 
       -- Determine whether we are underground
       let cell := matrix[x]![y]!
-      if cell == .entity (.beltUp .N) then isUndergroundBelt := true  -- yes, beltUp means y + 1 is underground
-      if cell == .entity (.beltDown .N) then isUndergroundBelt := false
+      if cell == .entity (.beltUp .N) then isUndergroundBeltN := true  -- yes, beltUp means y + 1 is underground
+      if cell == .entity (.beltDown .N) then isUndergroundBeltN := false
+      if cell == .entity (.beltUp .S) then isUndergroundBeltS := false
+      if cell == .entity (.beltDown .S) then isUndergroundBeltS := true
       if cell == .entity (.pipeToGround .N) then isUndergroundPipe := true
       if cell == .entity (.pipeToGround .S) then isUndergroundPipe := false
 
@@ -463,14 +482,14 @@ def busTapGeneric
 
   -- Handle all outputs
   let mut outputLanes : Array Nat := #[]
-  for ingredient in outputs do
+  for (ingredient, i) in outputs.zipIdx do
     if previousWasLiquid && ingredient.isLiquid then x := x + 1  -- Gap between pipes so they don't connect.
 
     if x > 8 then
       (x, matrix) := bringUpAllLanes lanes x matrix
       (x, matrix) := bringDownAllLanes lanes x matrix
 
-    let (index, newLanes) := lanes.allocLane ingredient
+    let (index, newLanes) := lanes.allocLane ingredient (skip := outputs.length - 1 - i)
     lanes := newLanes
 
     let entities x := laneAccess .put lanes ingredient index x
@@ -487,6 +506,7 @@ def busTapGeneric
   let tapFactory : Factory (busTapInterface inputs outputs) (busInterface lanes) [] (busInterface state.output) := {
     width:= x
     height:= max state.output.height lanes.height
+    wires := []
     entities := matrix.reduceUndergroundEntities.toEntities
     interface := {
       n := offsets.toList.castToVector!
@@ -521,6 +541,14 @@ def busTap
   let outputs <- busTapGeneric inputs [outputIngredient] factory adapterMinHeight
   return {index := outputs[0]!}
 
+def busTap2
+  {outputIngredient} {outputThroughput} {outputIngredient'} {outputThroughput'} (inputs:List BusLane')
+  (factory:Factory [] [] (busTapInterface inputs [outputIngredient, outputIngredient']) [])
+  (adapterMinHeight:=0)
+: Bus (BusLane outputIngredient outputThroughput × BusLane outputIngredient' outputThroughput') := do
+  let outputs <- busTapGeneric inputs [outputIngredient, outputIngredient'] factory adapterMinHeight
+  return ({index := outputs[0]!}, {index := outputs[1]!})
+
 def split {i left input} (l:BusLane i input) (right := input - left) (_:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
   fun state =>
     (({index:= l.index}, {index:=l.index}),
@@ -539,6 +567,7 @@ def expressBeltThroughput : Throughput := 45 * 60  -- 2700
 def mergeSolid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)) :=
   busTap [l.toBusLane',l'.toBusLane'] {
     entities:=[
+      pole 0 0,
       belt 1 0 .E,
       belt 2 0 .S,
       belt 1 1 .N,
@@ -552,6 +581,7 @@ def mergeSolid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b)
       splitter 0 4 .N (outputPriority:="left"),
       beltUp 2 4 .S,
     ],
+    wires := []
     width:=3,
     height:=5,
     interface:={
@@ -568,6 +598,7 @@ def mergeLiquid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b
     entities:= (List.range 5).map (pipe . 0)
     width:=5,
     height:=1,
+    wires := []
     interface:={
       n := #v[]
       e := #v[]
@@ -580,10 +611,128 @@ def mergeLiquid {i a b} (l:BusLane i a) (l':BusLane i b) : Bus (BusLane i (a + b
 def merge {i a b} (l:BusLane i a) (l':BusLane i b) (_ : i.isLiquid || a+b ≤ expressBeltThroughput := by decide) : Bus (BusLane i (a + b)) :=
   if i.isLiquid then mergeLiquid l l' else mergeSolid l l'
 
+def splitBalanced {i left input} (l:BusLane i input) (right := input - left) (h:left + right = input := by decide) : Bus (BusLane i left × BusLane i right) :=
+  let inputSignal : Signal := {name:= i.name, type := .none}
+  let leftSignal : Signal := {name:="signal-L", type:="virtual"}
+  let rightSignal : Signal := {name:="signal-R", type:="virtual"}
+  let enableSignal : Signal := {name:="signal-check", type:="virtual"}
+
+  let counter x y :=
+    deciderCombinator x y .N [
+        {
+          firstSignal := inputSignal
+          secondSignal := .none
+          constantValue := .some 0
+          comparator:= "≥"
+        }
+      ] [
+        {
+          signal:= inputSignal
+          copyCountFromInput:=true
+        }
+      ]
+
+  let multiplier x y outputSignal c :=
+    arithmeticCombinator x y .N
+      {
+        firstSignal:=inputSignal
+        outputSignal := outputSignal
+        secondConstant:=c
+        operation:= "*"
+      }
+
+  if i.isLiquid then split l right h else
+
+  let fraction := left / right
+
+  busTap2 [l.toBusLane'] {
+    width:=4,
+    height:=8,
+    wires := [
+      -- Hookup left
+      { src:= 0, dst:= 1, srcType:= .greenInput, dstType:= .greenInput},
+      { src:= 1, dst:= 1, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 1, dst:= 2, srcType:= .greenOutput, dstType:= .greenInput},
+      -- Hookup right
+      { src:= 3, dst:= 4, srcType:= .greenInput, dstType:= .greenInput},
+      { src:= 4, dst:= 4, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 4, dst:= 5, srcType:= .greenOutput, dstType:= .greenInput},
+      -- Hookup combiner
+      { src:= 2, dst:= 6, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 5, dst:= 6, srcType:= .greenOutput, dstType:= .greenInput},
+      { src:= 6, dst:= 0, srcType:= .redOutput, dstType:= .redInput},
+      { src:= 6, dst:= 3, srcType:= .redOutput, dstType:= .redInput},
+    ]
+    entities:= [
+      -- Left logic
+      belt 0 6 .N {
+        circuitCondition := .some {
+          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="="
+        }
+        circuitReadHandContents := true
+        circuitContentsReadMode := 0
+      },
+      counter 0 2,
+      multiplier 0 0 leftSignal fraction.num,
+
+      -- Right logic
+      belt 1 6 .N {
+        circuitCondition := .some {
+          firstSignal:= enableSignal, secondSignal:=.none, constantValue:=.some 1, comparator:="≠"
+        }
+        circuitReadHandContents := true
+        circuitContentsReadMode := 0
+      },
+      counter 1 2,
+      multiplier 1 0 rightSignal fraction.den,
+
+      -- Combine left and right
+      deciderCombinator 2 2 .S [
+        {
+          firstSignal:= leftSignal
+          secondSignal:= rightSignal
+          constantValue:=.none
+          comparator:= "<"
+        }
+      ] [
+        {
+          signal:=enableSignal
+          copyCountFromInput:=false
+        }
+      ],
+
+      pole 2 1,
+      splitter 0 7 .N,
+      belt 2 7 .S,
+      belt 3 7 .S,
+
+      belt 2 6 .S,
+      belt 3 6 .S,
+
+      belt 0 5 .N,
+      belt 1 5 .E,
+      belt 2 5 .S,
+      belt 3 5 .S,
+
+      belt 0 4 .E,
+      belt 1 4 .E,
+      belt 2 4 .E,
+      belt 3 4 .S,
+    ]
+    interface:={
+      n := #v[]
+      e := #v[]
+      s := #v[1,2,3]
+      w := #v[]
+    }
+    name := s!"splitBalanced {reprStr i}"
+  }
+
 def bigPoleFactory : Factory [] [] [] [] := {
   entities := [bigPole 0 0]
   width := 2, height := 2
   name := "bigPole"
+  wires := []
   interface := { n:= #v[], e:= #v[], s:= #v[], w:= #v[] }
 }
 
@@ -612,6 +761,7 @@ def pipePumps : Bus Unit :=
     let factory : Factory [] (busInterface config) [] (busInterface config) := {
       entities := entities
       width := 5
+      wires := []
       height := config.height
       name := "pipePumps"
       interface := {
@@ -627,3 +777,101 @@ def pipePumps : Bus Unit :=
       output := config
       factory := row state.factory (column bigPoleFactory factory)
     })
+
+def spoilingChamber {n} {input:Ingredient} {output:Ingredient} (bacteria:BusLane input n) : Bus (BusLane output n) :=
+  let factory : Factory [] [] [(input, .N), (output, .S)] [] := {
+    name := s!"spoilingChamber {reprStr input}",
+    width := 4,
+    height := 9,
+    entities := [
+      belt 1 0 .E,
+      belt 2 0 .E,
+      belt 3 0 .S,
+
+      belt 0 1 .E,
+      belt 1 1 .N,
+      belt 2 1 .W,
+      belt 3 1 .S,
+
+      belt 0 2 .N,
+      splitter 1 2 .N,
+      belt 3 2 .S,
+
+      belt 0 3 .N,
+      splitter 1 3 .E,
+      belt 2 3 .N,
+      belt 3 3 .S,
+
+      beltUp 0 4 .N,
+      beltUp 2 4 .N,
+      belt 3 4 .S,
+
+      inserter 0 5 .S [output, .spoilage],
+      inserter 1 5 .S [output, .spoilage],
+      inserter 2 5 .S [output, .spoilage],
+      beltDown 3 5 .S,
+
+      ironChest 0 6,
+      ironChest 1 6,
+      ironChest 2 6,
+      pole 3 6,
+
+      inserter 0 7 .S,
+      inserter 1 7 .S,
+      inserter 2 7 .S,
+      beltUp 3 7 .S,
+
+      belt 0 8 .W,
+      belt 1 8 .W,
+      belt 2 8 .W,
+      belt 3 8 .S,
+    ],
+    wires := [],
+    interface := {
+      n := #v[],
+      e := #v[],
+      s := #v[2, 3],
+      w := #v[]
+    }
+  }
+  busTap [bacteria] (unsafeFactoryCast factory)
+
+def removeExcess {i n} (l:BusLane i n) : Bus (BusLane i n × BusLane i 0) :=
+  busTap2 [l.toBusLane'] {
+    entities:=[
+      belt 0 0 .E,
+      belt 1 0 .S,
+
+      belt 0 1 .N,
+      beltDown 1 1 .S,
+      pole 2 1,
+
+      belt 0 2 .N,
+      belt 1 2 .E,
+      belt 2 2 .S,
+
+      splitter 0 3 .N (outputPriority:="left"),
+      belt 2 3 .S,
+
+      belt 0 4 .N,
+      belt 1 4 .E,
+      belt 2 4 .S,
+
+      splitter 0 5 .N (outputPriority:="right") (filter:=Ingredient.spoilage),
+      belt 2 5 .S,
+
+      belt 0 6 .N,
+      beltUp 1 6 .S,
+      belt 2 6 .S,
+    ],
+    wires := []
+    width:=3,
+    height:=7,
+    interface:={
+      n := #v[]
+      e := #v[]
+      s := #v[0,1,2]
+      w := #v[]
+    }
+    name := s!"removeExcess {reprStr i}"
+  }

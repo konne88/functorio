@@ -7,37 +7,37 @@ instance : Config where
   adapterMinHeight := 3
 
 def makeWater : Ice 120 -> Bus (Water 2400) :=
-  busAssemblyLine RecipeName.iceMelting 2
+  busAssemblyLine (recipe .iceMelting) 2
 
 def makeLightOil : Water 900 -> HeavyOil 1200 -> Bus (LightOil 900) :=
-  busAssemblyLine RecipeName.heavyOilCracking 1
+  busAssemblyLine (recipe .heavyOilCracking) 1
 
 def makeHolmiumSolution : Water 960 -> HolmiumOre 192 -> Stone 96 -> Bus (HolmiumSolution 9600) :=
-  busAssemblyLine RecipeName.holmiumSolution 16
+  busAssemblyLine (recipe .holmiumSolution) 16
 
 def makeElectrolyte : HeavyOil 2400 -> HolmiumSolution 2400 -> Stone 240 -> Bus (Electrolyte 3600) :=
-  busAssemblyLine RecipeName.electrolyte 10
+  busAssemblyLine (recipe .electrolyte) 10
 
 def makeHolmiumPlate : HolmiumSolution 4500 -> Bus (Holmium 225) :=
-  busAssemblyLine RecipeName.holmiumPlate 3
+  busAssemblyLine (recipe .holmiumPlate) 3
 
 def makeSuperconductor : LightOil 240 -> Holmium 48 -> Copper 48 -> Plastic 48 -> Bus (Superconductor 144) :=
-  busAssemblyLine RecipeName.superconductor 2
+  busAssemblyLine (recipe .superconductor) 2
 
 def makeSupercapacitor : Electrolyte 720 -> Holmium 144 -> Superconductor 144 -> GreenCircuit 288 -> Battery 72 -> Bus (Supercapacitor 108) :=
-  busAssemblyLine RecipeName.supercapacitor 6
+  busAssemblyLine (recipe .supercapacitor) 6
 
 def makeAccumulator : Iron 144 -> Battery 360 -> Bus (Accumulator 108) :=
   busAssemblyLine { recipe := .accumulator, fabricator := .electromagneticPlant } 6
 
 def makeElectromagneticScience : Electrolyte 2700 -> HolmiumSolution 2700 -> Supercapacitor 108 -> Accumulator 108 -> Bus (ElectromagneticScience 162) :=
-  busAssemblyLine RecipeName.electromagneticSciencePack 9
+  busAssemblyLine (recipe .electromagneticSciencePack) 9
 
 def makeRocketFuel : LightOil 200 -> SolidFuel 200 -> Bus (RocketFuel 20) :=
-  busAssemblyLine RecipeName.rocketFuel 4
+  busAssemblyLine (recipe .rocketFuel) 4
 
 def makeRocket : BlueCircuit 20 -> LowDensityStructure 20 -> RocketFuel 20 -> Bus Unit :=
-  busAssemblyLine RecipeName.rocketPart 1
+  busAssemblyLine (recipe .rocketPart) 1
 
 def fulgora150 := bus do
   let ice <- input .ice 120

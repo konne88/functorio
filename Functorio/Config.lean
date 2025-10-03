@@ -1,11 +1,7 @@
 class Config where
-  generateRoboports : Bool
-  generateBigPoles : Bool
-  providerChestCapacity : Nat
-  adapterMinHeight : Nat
+  generateRoboports : Bool := false
+  generateBigPoles : Bool := false
+  providerChestCapacity : Nat := 0
+  adapterMinHeight : Nat := 0
 
 instance : Config where
-  generateRoboports := false
-  generateBigPoles := false
-  providerChestCapacity := 0
-  adapterMinHeight := 0

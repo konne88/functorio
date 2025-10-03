@@ -15,6 +15,11 @@ def den (f:Fraction) : Nat := f.snd
 @[simp]
 def mk (n m:Nat) : Fraction := (n,m)
 
+def roundUp (f:Fraction) : Nat :=
+  if f.den == 1
+  then f.num
+  else (f.num / f.den) + 1
+
 end Fraction
 
 instance : ToString Fraction where
@@ -26,10 +31,16 @@ instance (n:Nat) : OfNat Fraction n where
 
 attribute [simp] OfNat.ofNat
 
+-- attribute [simp] Nat.gcd
+
 @[simp]
 def normalize (r:Fraction) : Fraction :=
   let gcd : Nat := Nat.gcd r.num r.den
   Fraction.mk (r.num / gcd) (r.den / gcd)
+
+@[simp]
+instance : Zero Fraction where
+  zero := 0
 
 @[simp]
 instance : HMul Fraction Fraction Fraction where
@@ -42,6 +53,10 @@ instance : HDiv Fraction Fraction Fraction where
 @[simp]
 instance : HAdd Fraction Fraction Fraction where
   hAdd a b := normalize (Fraction.mk (a.num * b.den + b.num * a.den) (a.den * b.den))
+
+@[simp]
+instance : Add Fraction where
+  add a b := normalize (Fraction.mk (a.num * b.den + b.num * a.den) (a.den * b.den))
 
 @[simp]
 instance : HSub Fraction Fraction Fraction where
