@@ -10,7 +10,6 @@ namespace Test
 instance : Config where
   generateBigPoles := false
   generateRoboports := false
-  generateInputRateLimiters := false
   providerChestCapacity := 0
   adapterMinHeight := 3
 
