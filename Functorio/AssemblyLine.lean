@@ -166,8 +166,6 @@ def assemblyLineNoReturnedInputs [Config] (process:Process) (stations:Nat) : Fac
 
     columnList factories.toList.reverse
 
---    column3 (destroySpoilage' process) (capNonSpoilables process station.interface.n) (columnList factories.toList.reverse)
-
 def assemblyLineInterface (process:Process) : List InterfaceV :=
   process.inputIngredients.map (., .N) ++
   process.outputIngredients.map (., .S) ++
