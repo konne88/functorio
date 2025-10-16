@@ -157,7 +157,7 @@ for name in sorted(recipe_names):
     lean_code.append(f'  name := "{name}",')
 
     inputs_list = [
-        f"({ingredient['amount']}, .{to_camel_case(ingredient['name'])})"
+        f"({float_to_fraction(ingredient['amount'])}, .{to_camel_case(ingredient['name'])})"
         for ingredient in inputs
     ]
     lean_code.append(f"  inputs := [{', '.join(inputs_list)}],")
